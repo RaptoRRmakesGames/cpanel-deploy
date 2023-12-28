@@ -9,7 +9,7 @@
 </head>
 <body>
 
-    {% include '/include_files/header.html'%}
+    {% include '/admin/include_files/header.html'%}
 
     {% with messages = get_flashed_messages()%}
         {% if messages %}
@@ -22,7 +22,7 @@
     {% block content%}
     {% endblock %}
     <br><br>
-    {% include 'include_files/footer.html' %}
+    {% include '/admin/include_files/footer.html' %}
     
 </body>
 </html>
