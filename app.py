@@ -9,6 +9,10 @@ app = Flask(__name__)
 def hello():
     return render_template("index.html")
 
+@app.route("/about_as")
+def about():
+    
+    return render_template("about_as.html")
 
     
 # Run the application
