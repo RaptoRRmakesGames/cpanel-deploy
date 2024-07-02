@@ -1,34 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Flask App</title>
-    <link rel="stylesheet" href="./static/css/styles.css">
-    
-     <style>
-       
-    </style>
-   
-</head>
-<body>
+{% extends '/include_files/base.html' %}
 
-    <header>
-        <h1>Welcome to My Flask App</h1>
-    </header>
+{% block title %}
+{{title}}
+{% endblock %}
 
-    <main>
-        <p>This is a simple webpage for your Flask app. You can customize it as needed.</p>
+{% block content %}
 
-        <!-- Your Flask content goes here -->
-        <div id="flask-content">
-             Display dynamic content from your Flask app 
-        </div>
-    </main>
 
-    <footer>
-        <p>&copy; 2023 Πρωτη Flask σελίδα μου στο Cpanel. All rights reserved.</p>
-    </footer>
+<main>
+    <p>This is a simple webpage for your Flask app. You can customize it as needed.</p>
+    <!-- Your Flask content goes here -->
+    <div id="flask-content">
+         Display dynamic content from your Flask app 
+    </div>
+</main>
 
-</body>
-</html>
+
+{% endblock %}

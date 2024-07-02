@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{%block title%}{%endblock%}</title>
+    <link rel="stylesheet" type="text/css" href="../static/css/styles.css">
+
+</head>
+<body>
+
+    {% include '/include_files/header.html'%}
+
+    {% with messages = get_flashed_messages()%}
+        {% if messages %}
+            {% for msg in messages%}
+                <p>{{msg}}</p>
+            {% endfor %}
+        {% endif %}aa
+    {% endwith %}
+
+    {% block content%}
+    {% endblock %}
+    <br><br>
+    {% include '/include_files/footer.html' %}
+    slatt slatt
+    
+</body>
+</html>
