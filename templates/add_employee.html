@@ -1,0 +1,32 @@
+{% extends '/include_files/base.html' %}
+
+{% block title %}
+{{title}}
+{% endblock %}
+
+
+{% block content %}
+
+<h1>Add An Employee</h1>
+
+<form method="POST">
+
+    <label for="name">Name</label><br>
+    <input type="text" placeholder="Name" required name="name" id="">
+    <br>
+    <label for="title">Title</label><br>
+    <input type="text" placeholder="Title" required name="title" id="">
+    <br>
+    
+    <label for="def_dep">Default Department</label><br>
+    <select name="def_dep" id="" required>
+        <option value=""></option>
+        {% for department in departments%}
+        <option value="{{department}}">{{department}}</option>
+        {% endfor%}
+    </select> <br>
+
+    <input type="submit" name="" value="Add" id="">
+
+</form>
+{% endblock %}

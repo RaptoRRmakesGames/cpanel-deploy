@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS `employees` (
     `id` INT NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(255) NOT NULL,
     `title` VARCHAR(255) NOT NULL,
+    `default_dep` VARCHAR(255) NOT NULL,
     PRIMARY KEY (`id`)
 );
 
@@ -26,3 +27,9 @@ CREATE TABLE IF NOT EXISTS `schedules` (
     `schedule_json` LONGTEXT,
     PRIMARY KEY (`id`)
 );
+
+CREATE TABLE IF NOT EXISTS `programs` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(255) NOT NULL,
+    PRIMARY KEY (`id`)
+)

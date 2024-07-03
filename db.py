@@ -1,4 +1,4 @@
-import mysql.connector, json
+import mysql.connector, json, random
 
 def connect():
     
@@ -28,13 +28,357 @@ def create_database():
 
     db.commit()
 
+def get_subdept(id):
+    
+    db,c = connect(); c.execute('SELECT * FROM sub_department WHERE id=%s', [id]); return Department(c.fetchall()[0][0])
+
+def create_dept(name):
+
+    db,c = connect()
+    
+    try:
+        c.execute("INSERT INTO sub_department (name) VALUES (%s)", [name])
+    except Exception as e:
+        print(f'Error: {e}')
+    
+    db.commit()
+
+def get_random_program():
+    
+    db,c = connect()
+    
+    c.execute("SELECT name FROM programs")
+    
+    return random.choice(c.fetchall())[0]
+
+def add_program(name:str):
+    
+    db,c = connect()
+    
+    c.execute("INSERT INTO programs (name) VALUES (%s)", [name])
+    db.commit()
+
+def get_all_programs():
+    db,c = connect()
+    
+    c.execute("SELECT * FROM programs")
+    
+    return [f[1] for f in c.fetchall()]
+
+class Employee:
+    
+    @staticmethod
+    def create_employee(name, title, def_dep):
+        
+        db,c = connect()
+        
+        c.execute("INSERT INTO employees (name, title, default_dep) VALUES (%s,%s,%s)", [name, title, def_dep])
+        db.commit()
+        
+        c.execute('SELECT * FROM employees WHERE name=%s', [name])
+        
+        return Employee(c.fetchall()[0][0])
+    
+    @staticmethod
+    def get_all_employees():
+        
+        db,c = connect()
+        
+        c.execute("SELECT id FROM employees")
+        
+        return [Employee(id[0]) for id in c.fetchall()]
+    
+    def __init__(self, id) -> None:
+        db,c = connect()
+        
+        self.id = id 
+        
+        c.execute("SELECT * FROM employees WHERE id=%s", [self.id])
+        f = c.fetchall()[0]
+        self.raw = {
+            'id' : self.id,
+            'name' : f[1],
+            'title' : f[2],
+            'default_dep' : f[3]
+        }
+        
+        
+        self.title = self.raw['title']
+        self.name = self.raw['name']
+        
+        self.prefered_dep = self.raw['default_dep'].split(' - ')
+        
+    def pass_to_department(self, department, program=''):
+        
+        if program == '':
+            program = get_random_program()
+        
+        department.receive_employee(self, program)
+        
+    def __repr__(self) -> str:
+        return f"{self.name}"
+        
+class Department:
+    
+    @staticmethod
+    def get_all_departments():
+        
+        db,c = connect()
+        
+        c.execute("SELECT name, dep_ids FROM big_kitchens")
+        
+        departments = []
+        
+        kitchens = c.fetchall()
+        
+        for tup in kitchens:
+            kitchen, department_ids = tup 
+            
+            department_ids = json.loads(department_ids.replace("'", '"'))
+            
+            for id in department_ids:
+                dep = get_subdept(id)
+                
+                departments.append(f'{kitchen} - {dep.name}')
+        
+        return departments
+                
+    
+    def __init__(self, id):
+        
+        db,c = connect()
+        
+        self.id = id 
+        
+        c.execute("SELECT * FROM sub_department WHERE id=%s", [self.id])
+        f = c.fetchall()[0]
+        self.raw = {
+            'id' : self.id,
+            'name' : f[1]
+        }
+        
+        self.name = self.raw['name']
+        
+        self.employees = []
+        
+    def receive_employee(self, employee, program):
+        
+        self.employees.append((employee, program))
+
+class Kitchen:
+    
+    @staticmethod
+    def create_kitchen(name: str, dept_ids: list[str]):
+        """"returns a Kitchen object"""
+        
+        db,c = connect()
+        
+        c.execute('INSERT INTO big_kitchens (name, dep_ids) VALUES (%s,%s)', [name, str(dept_ids)])
+        
+        db.commit()
+        
+        c.execute('SELECT id FROM big_kitchens WHERE name=%s', [name])
+        
+        return Kitchen(c.fetchall()[0][0])
+    
+    def __repr__(self) -> str:
+        return f'Kitchen Object: {self.name}, #{self.id}'
+    
+    def __init__(self, id) -> None:
+        db,c = connect()
+        
+        c.execute("SELECT * FROM big_kitchens WHERE id=%s", [id])
+        f = c.fetchall()[0]
+        self._raw = {
+            'id' : id,
+            'name' : f[1],
+            'dep_ids': json.loads(f[2].replace("'", '"'))
+        }
+        
+        self.id = id 
+        
+        self.sub_departments = []
+        
+        self.name = self._raw['name']
+
+        
+        for ide in self._raw['dep_ids']:
+            self.sub_departments.append(get_subdept(ide))
+
+class KitchenGroup:
+    
+    def __init__(self,week='') -> None:
+        db,c = connect()
+        
+        self.week = week 
+        
+        c.execute('SELECT id FROM big_kitchens')
+        self.sub_kitchens = [Kitchen(id[0]) for id in c.fetchall()]
+        
+        if self.week != '':
+            
+            c.execute('SELECT * FROM schedules WHERE week=%s', [week])
+            
+            if len((f := c.fetchall() )) > 0:
+                self.load_schedule(f[0][2].replace("'", '"'))
+            else:
+                self.set_employees_to_default()
+            
+            print('empty')
+            
+    def get_unplaced_employees(self,):
+        
+        all_emps = Employee.get_all_employees()
+        
+        for kitchen in self.sub_kitchens:
+            
+            for dep in kitchen.sub_departments:
+                
+                for emp in all_emps:
+                
+                    if emp in dep.employees:
+                        all_emps.remove(emp)
+        
+        return all_emps
+        
+    def set_employees_to_default(self):
+        employees = Employee.get_all_employees()
+        
+        for employee in employees:
+            self.set_def_employee(employee)
+        
+    def set_def_employee(self,emp:Employee):
+        
+        pref_dep_kitch,pref_dep = emp.prefered_dep
+        
+        dep = self.get_department_by_name(pref_dep.lower(), pref_dep_kitch.lower())
+        
+        emp.pass_to_department(dep,)
+            
+    def set_week(self, week):
+        
+        self.week = week 
+        c.execute('SELECT * FROM schedules WHERE week=%s', [week])
+        
+        if len((f := c.fetchall() )) > 0:
+            self.load_schedule(f[0][2].replace("'", '"'))
+            
+        
+    def load_schedule(self, schedule_json):
+        
+        if self.week == '' == None:
+            raise Exception('This Schedule doesnt have a week set to it. Please use `KitchenGroup.set_week()`')
+        
+        schedule_dict = json.loads(schedule_json)
+        
+        for kitchen in schedule_dict:
+            
+            for dept in schedule_dict[kitchen]:
+                
+                for emp in schedule_dict[kitchen][dept]:
+                    
+                    # print(kitchen, dept, emp)
+                    em = Employee(emp[0])
+                    self.remove_employee_from_current_department(em)
+                    em.pass_to_department(self.get_department_by_name(dept, kitchen), emp[1])
+                    
+        
+        
+        
+    def __repr__(self) -> str:
+        txt = ''
+        for kitchen in self.sub_kitchens:
+            
+            txt += f"{kitchen}, departments:" + '\n'
+            
+            for dep in kitchen.sub_departments:
+                txt += f"{dep.name}, {dep.employees}" + '\n'
+        return txt
+    
+    def get_department_by_name(self, name, kitch_hint=''):
+        
+        if kitch_hint == '':
+            for kitch in self.sub_kitchens:
+                
+                
+                for dep in kitch.sub_departments:
+                    if dep.name.lower() == name.lower():
+                        return dep
+                
+        for kitch in self.sub_kitchens:
+            
+            if kitch.name.lower() == kitch_hint.lower():
+                
+                for dep in kitch.sub_departments:
+                    
+                    if dep.name.lower() == name.lower():
+                        return dep
+                    
+    def remove_employee_from_current_department(self, employee):
+        
+        for kitch in self.sub_kitchens:
+            for dep in kitch.sub_departments:
+                if employee in dep.employees:
+                    dep.employees.remove(employee)
+                    
+    def save_schedule(self):
+        
+        schedule_json = {}
+        
+        for kitchen in self.sub_kitchens:
+            
+            schedule_json[kitchen.name] = {}
+            
+            for department in kitchen.sub_departments:
+                
+                schedule_json[kitchen.name][department.name] = []
+                
+                for employee, program in department.employees:
+                    schedule_json[kitchen.name][department.name].append([employee.id, program])
+                    
+        db,c = connect()
+        
+        c.execute("INSERT INTO schedules (week, schedule_json) VALUES (%s, %s)", [self.week, str(schedule_json)])
+        
+        db.commit()
+        
 if __name__ == '__main__':
     
     db,c = connect()
     
     print('Connected to db')
     
-    create_database()
+    # while True:
     
-    print('Created database')
+    #     text = input('Enter Dept Name (empty to stop): ')
+    #     create_dept(text) if text != '' else 0
+        
+    #     if text=='':
+    #         break
     
+    # dep_ids_list = []
+    # while True:
+    #     text = input('Enter Dept Id (empty to stop): ')
+        
+    #     dep_ids_list.append(text) if text != '' else 0
+        
+    #     if text == '':
+    #         break
+        
+    # new_k = Kitchen.create_kitchen(input("Enter Kitchen Name: "), dep_ids_list)
+
+    # print(new_k) 
+    
+    k = KitchenGroup('2/7/2024')
+        
+    
+    # employee = Employee(1)
+    # employee.pass_to_department(k.get_department_by_name('Breakfast', 'Main Kitchen'), '6-12')
+    
+    # # employee2 = Employee.create_employee('Giorgos Kafantaris Junior', 'A Cook')
+    # employee2 = Employee(2)
+    # employee2.pass_to_department(k.get_department_by_name('Kitchen', 'Glass House Kitchen'), '6-12')
+    
+    # k.save_schedule()
+    
+    print(k)
