@@ -1,4 +1,5 @@
 import mysql.connector, json, random
+from datetime import datetime, timedelta
 
 def connect():
     
@@ -22,7 +23,7 @@ def create_database():
     with open('create_db.sql') as f:
         query = f.read()
         
-    print(query.split('\n'))
+    (query.split('\n'))
         
     c.execute(query, multi=True)
 
@@ -39,17 +40,64 @@ def create_dept(name):
     try:
         c.execute("INSERT INTO sub_department (name) VALUES (%s)", [name])
     except Exception as e:
-        print(f'Error: {e}')
+        (f'Error: {e}')
     
     db.commit()
 
-def get_random_program():
+def get_random_date():
     
     db,c = connect()
     
     c.execute("SELECT name FROM programs")
     
     return random.choice(c.fetchall())[0]
+
+def get_random_program():
+    
+    return [
+        {
+            'monday': get_random_date(),
+            'tuesday': get_random_date(),
+            'wednesday': get_random_date(),
+            'thursday': get_random_date(),
+            'friday': get_random_date(),
+            'saturday': get_random_date(),
+            'sunday': get_random_date(),
+        }
+    ]
+    
+def get_current_week():
+    today = datetime.today()
+
+    start_of_week = today - timedelta(days=today.weekday())
+    end_of_week = start_of_week + timedelta(days=6)
+    
+    monday_date = start_of_week.strftime('%Y-%m-%d')
+    sunday_date = end_of_week.strftime('%Y-%m-%d')
+
+    return f'({monday_date} - {sunday_date})'    
+
+
+def get_next_weeks(n=4):
+    # Get today's date
+    today = datetime.today()
+    
+    # Initialize a list to store week ranges
+    week_ranges = []
+    
+    for i in range(n):
+        # Calculate the start (Monday) and end (Sunday) of each week
+        start_of_week = today - timedelta(days=today.weekday()) + timedelta(weeks=i)
+        end_of_week = start_of_week + timedelta(days=6)
+        
+        # Format the dates as strings
+        monday_date = start_of_week.strftime('%Y-%m-%d')
+        sunday_date = end_of_week.strftime('%Y-%m-%d')
+        
+        # Add the formatted string to the list
+        week_ranges.append(f'({monday_date} - {sunday_date})')
+    
+    return week_ranges
 
 def add_program(name:str):
     
@@ -79,6 +127,15 @@ class Employee:
         
         return Employee(c.fetchall()[0][0])
     
+    @staticmethod 
+    def get_id_by_name(name):
+        
+        db,c = connect()
+        
+        c.execute("SELECT id FROM employees WHERE name =%s", [name])
+        
+        return c.fetchall()[0][0]
+    
     @staticmethod
     def get_all_employees():
         
@@ -88,12 +145,13 @@ class Employee:
         
         return [Employee(id[0]) for id in c.fetchall()]
     
-    def __init__(self, id) -> None:
+    def __init__(self, idd) -> None:
         db,c = connect()
         
-        self.id = id 
+        self.id = idd
         
         c.execute("SELECT * FROM employees WHERE id=%s", [self.id])
+        # (f"SELECT * FROM employee WHERE id={self.id}")
         f = c.fetchall()[0]
         self.raw = {
             'id' : self.id,
@@ -108,7 +166,10 @@ class Employee:
         
         self.prefered_dep = self.raw['default_dep'].split(' - ')
         
-    def pass_to_department(self, department, program=''):
+    def pass_to_department(self, department, program:dict):
+        
+        if self.id==1:
+            print('pass_to_department :',program)
         
         if program == '':
             program = get_random_program()
@@ -117,6 +178,14 @@ class Employee:
         
     def __repr__(self) -> str:
         return f"{self.name}"
+        
+    def __eq__(self, other):
+        if isinstance(other, Employee):
+            return self.id == other.id
+        return False
+
+    def __hash__(self):
+        return hash(self.id)
         
 class Department:
     
@@ -163,7 +232,20 @@ class Department:
         
     def receive_employee(self, employee, program):
         
+        if employee.id == 1 :
+        
+            print('receive_employee: ',self.employees)
         self.employees.append((employee, program))
+
+    def remove_duplicates(self):
+        unique_employees = {}
+        for employee_tuple in self.employees:
+            employee, dict_list = employee_tuple
+            unique_employees[employee] = dict_list  # This will overwrite any previous entries with the same employee
+        
+        # Convert back to the required format
+        self.employees = [(employee, dict_list) for employee, dict_list in unique_employees.items()]
+
 
 class Kitchen:
     
@@ -207,6 +289,16 @@ class Kitchen:
 
 class KitchenGroup:
     
+    @staticmethod
+    def get_all_weeks(week):
+        
+        db,c = connect()
+        
+        c.execute("SELECT week FROM schedules WHERE week=%s", [week])
+        
+        return c.fetchall()
+    
+    
     def __init__(self,week='') -> None:
         db,c = connect()
         
@@ -224,7 +316,7 @@ class KitchenGroup:
             else:
                 self.set_employees_to_default()
             
-            print('empty')
+            # ('empty')
             
     def get_unplaced_employees(self,):
         
@@ -253,7 +345,7 @@ class KitchenGroup:
         
         dep = self.get_department_by_name(pref_dep.lower(), pref_dep_kitch.lower())
         
-        emp.pass_to_department(dep,)
+        emp.pass_to_department(dep, get_random_program())
             
     def set_week(self, week):
         
@@ -263,28 +355,47 @@ class KitchenGroup:
         if len((f := c.fetchall() )) > 0:
             self.load_schedule(f[0][2].replace("'", '"'))
             
-        
     def load_schedule(self, schedule_json):
         
         if self.week == '' == None:
             raise Exception('This Schedule doesnt have a week set to it. Please use `KitchenGroup.set_week()`')
         
-        schedule_dict = json.loads(schedule_json)
+        schedule_dict = schedule_json
+        if not isinstance(schedule_json, dict):
+        
+            schedule_dict = json.loads(schedule_json)
+        # (schedule_dict)
         
         for kitchen in schedule_dict:
+            
+            if kitchen=='week':
+                continue
             
             for dept in schedule_dict[kitchen]:
                 
                 for emp in schedule_dict[kitchen][dept]:
                     
-                    # print(kitchen, dept, emp)
-                    em = Employee(emp[0])
-                    self.remove_employee_from_current_department(em)
-                    em.pass_to_department(self.get_department_by_name(dept, kitchen), emp[1])
+                    # print(emp)
                     
-        
-        
-        
+
+
+                    
+                    if str(emp[0]).isnumeric():
+                        # (emp[0], 'numeric')
+                        em = Employee(emp[0])
+                    else:
+                        # (emp[0], 'name')
+                        em = Employee(Employee.get_id_by_name(emp[0]))
+                        
+                    if em.id == 1:
+                        print('load_schedule: ',emp[1])
+                        
+                    self.remove_employee_from_current_department(em)
+                    # em.pass_to_department(self.get_department_by_name(dept, kitchen), emp[1])
+                    self.get_department_by_name(dept, kitchen).employees.append((em, emp[1]))
+                    # self.get_department_by_name(dept, kitchen).receive_employee(em, emp[1])
+        # print(self.sub_kitchens[0].sub_departments[0].employees[0])
+                    
     def __repr__(self) -> str:
         txt = ''
         for kitchen in self.sub_kitchens:
@@ -321,9 +432,21 @@ class KitchenGroup:
                 if employee in dep.employees:
                     dep.employees.remove(employee)
                     
+    def remove_duplicates(self):
+        
+        for kitch in self.sub_kitchens:
+            
+            for dep in kitch.sub_departments:
+                
+                dep.remove_duplicates()
+                    
     def save_schedule(self):
         
         schedule_json = {}
+        
+        self.remove_duplicates()
+        
+        print(self.sub_kitchens[0].sub_departments[0].employees)
         
         for kitchen in self.sub_kitchens:
             
@@ -334,11 +457,23 @@ class KitchenGroup:
                 schedule_json[kitchen.name][department.name] = []
                 
                 for employee, program in department.employees:
+                    # print('this print',department.employees)
                     schedule_json[kitchen.name][department.name].append([employee.id, program])
+                    
+                    if employee.id == 1:
+                        print(program)
+                    
+        # (schedule_json)
                     
         db,c = connect()
         
-        c.execute("INSERT INTO schedules (week, schedule_json) VALUES (%s, %s)", [self.week, str(schedule_json)])
+        # (schedule_json)
+        # 
+        
+        if len(KitchenGroup.get_all_weeks(self.week)) > 0:
+            c.execute("UPDATE schedules SET schedule_json=%s WHERE week=%s", [str(schedule_json),self.week])
+        else: 
+            c.execute("INSERT INTO schedules (week, schedule_json) VALUES (%s, %s)", [self.week, str(schedule_json)])
         
         db.commit()
         
@@ -346,7 +481,7 @@ if __name__ == '__main__':
     
     db,c = connect()
     
-    print('Connected to db')
+    ('Connected to db')
     
     # while True:
     
@@ -367,7 +502,7 @@ if __name__ == '__main__':
         
     # new_k = Kitchen.create_kitchen(input("Enter Kitchen Name: "), dep_ids_list)
 
-    # print(new_k) 
+    # (new_k) 
     
     k = KitchenGroup('2/7/2024')
         
@@ -381,4 +516,4 @@ if __name__ == '__main__':
     
     # k.save_schedule()
     
-    print(k)
+    (k)

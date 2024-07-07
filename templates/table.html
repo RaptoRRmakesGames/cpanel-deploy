@@ -6,7 +6,7 @@
 
 {% block content %}
 
-<style>
+<!-- <style>
 
     .header_row th{
         width: 170px;
@@ -26,25 +26,37 @@
         width: 170px;
     }
 
-</style>
+</style> -->
 
-<table border="1">
+<select name="" id="week">
+    {% for week in weeks%}
+
+        {% if week == selected_week %}
+
+        <option value="{{week}}" selected>{{week}}</option>
+        
+        {% else%}
+        <option value="{{week}}" >{{week}}</option>
+        {% endif %}
+    {% endfor %}
+</select>
+
+<table border="1" id="table">
     <!-- Header Row -->
     <tr class="header_row">
         <th>Name</th>
         <th>Title</th>
-        <th>Monday <button onclick="">Split</button></th>
-        <th>Tuesday <button onclick="">Split</button></th>
-        <th>Wednesday <button onclick="">Split</button></th>
-        <th>Thursday <button onclick="">Split</button></th>
-        <th>Friday <button onclick="">Split</button></th>
-        <th>Saturday <button onclick="">Split</button></th>
-        <th>Sunday <button onclick="">Split</button></th>
+        <th id="monday">Monday <button onclick="split_day(this)">Split</button></th>
+        <th id="tuesday">Tuesday <button onclick="split_day(this)">Split</button></th>
+        <th id="wednesday">Wednesday <button onclick="split_day(this)">Split</button></th>
+        <th id="thursday">Thursday <button onclick="split_day(this)">Split</button></th>
+        <th id="friday">Friday <button onclick="split_day(this)">Split</button></th>
+        <th id="saturday">Saturday <button onclick="split_day(this)">Split</button></th>
+        <th id="sunday">Sunday <button onclick="split_day(this)">Split</button></th>
         <th>Total Offs</th>
 
     </tr>
 
-    <table></table>
 
 
     {% for kitchen in group.sub_kitchens%}
@@ -56,27 +68,36 @@
         {% for department in kitchen.sub_departments %}
 
             <tr>
-                <td>
+                <td name="dep_name">
                     <strong>
                         {{department.name}}
                     </strong>
                 </td>
             </tr>
 
-            <!-- <tr><th>{{department.employees, department.name, department.employees | length}}</th></tr> -->
-            <table>
             {% for emp in department.employees%}
 
 
+            {% for program in emp[1]%}
+
             <tr class="employeeTrs">
 
+                <td style="display: none;">
+                    <input type="text" name="department" id="" value="{{department.name}}">
+                </td>
+
+                <td style="display: none;">
+                    <input type="text" name="kitchen" id="" value="{{kitchen.name}}">
+                </td>
+
+                {% if loop.index == 1%}
                 <td>
 
                     <div style="display: flex;">
 
                         <button onclick="splitEmployee(this)" style="margin-right: 1px;">Split</button> <br>
 
-                        <select>
+                        <select name="name"> 
                             {% for empl in all_employees%}
 
                                 {% if empl.name == emp[0].name %}
@@ -86,22 +107,28 @@
                                 {% endif %}
 
                             {% endfor %}
-                    </select>
+                        </select>
+                        {% else %}
+                        <td>
+                            <input type="text" name="name" value="{{emp[0].name}}" id="emp_name" readonly>
+                        </td>
+
                     </div>
                 </td>
+                {% endif %}
                 <td>
-                    <input type="text" value="{{emp[0].title}}" name="" id="">
+                    <input type="text" name="title" value="{{emp[0].title}}" readonly name="" id="">
                 </td>
 
                 <td>
 
-                    <select>
+                    <select name="monday">
 
-                        {% for program in all_programs%}
-                        {% if program == emp[1]%}
-                            <option value="{{program}}" selected>{{program}}</option>
+                        {% for pr in all_programs%}
+                        {% if pr == program['monday']%}
+                            <option value="{{pr}}" selected>{{pr}}</option>
                         {% else %}
-                            <option value="{{program}}">{{program}}</option>
+                            <option value="{{pr}}">{{pr}}</option>
                         {% endif %}
                         {% endfor %}
 
@@ -109,13 +136,74 @@
                 </td>
                 <td>
 
-                    <select>
+                    <select name="tuesday">
 
-                        {% for program in all_programs%}
-                        {% if program == emp[1]%}
-                            <option value="{{program}}" selected>{{program}}</option>
+                        {% for pr in all_programs%}
+                        {% if pr == program['tuesday']%}
+                            <option value="{{pr}}" selected>{{pr}}</option>
                         {% else %}
-                            <option value="{{program}}">{{program}}</option>
+                            <option value="{{pr}}">{{pr}}</option>
+                        {% endif %}
+                        {% endfor %}
+
+
+                    </select>
+                </td>
+                <td>
+
+                    <select name="wednesday">
+
+                        {% for pr in all_programs%}
+                        {% if pr == program['wednesday']%}
+                            <option value="{{pr}}" selected>{{pr}}</option>
+                        {% else %}
+                            <option value="{{pr}}">{{pr}}</option>
+                        {% endif %}
+                        {% endfor %}
+
+
+                    </select>
+                </td>
+                <td>
+
+                    <select name="thursday">
+
+                        {% for pr in all_programs%}
+                        {% if pr == program['thursday']%}
+                            <option value="{{pr}}" selected>{{pr}}</option>
+                        {% else %}
+                            <option value="{{pr}}">{{pr}}</option>
+                        {% endif %}
+                        {% endfor %}
+
+
+                    </select>
+                </td>
+                <td>
+
+                    <select name="friday">
+
+                        {% for pr in all_programs%}
+                        {% if pr == program['friday']%}
+                            <option value="{{pr}}" selected>{{pr}}</option>
+                        {% else %}
+                            <option value="{{pr}}">{{pr}}</option>
+                        {% endif %}
+                        {% endfor %}
+
+
+                    </select>
+                </td>
+                <td>
+
+                    <select name="saturday">
+
+
+                        {% for pr in all_programs%}
+                        {% if pr == program['saturday']%}
+                            <option value="{{pr}}" selected>{{pr}}</option>
+                        {% else %}
+                            <option value="{{pr}}">{{pr}}</option>
                         {% endif %}
                         {% endfor %}
 
@@ -123,75 +211,26 @@
                 </td>
                 <td>
 
-                    <select>
+                    <select name="sunday">
 
-                        {% for program in all_programs%}
-                        {% if program == emp[1]%}
-                            <option value="{{program}}" selected>{{program}}</option>
+
+                        {% for pr in all_programs%}
+                        {% if pr == program['sunday']%}
+                            <option value="{{pr}}" selected>{{pr}}</option>
                         {% else %}
-                            <option value="{{program}}">{{program}}</option>
+                            <option value="{{pr}}">{{pr}}</option>
                         {% endif %}
                         {% endfor %}
 
+
                     </select>
                 </td>
+
+                {% if loop.index != 1%}
                 <td>
-
-                    <select>
-
-                        {% for program in all_programs%}
-                        {% if program == emp[1]%}
-                            <option value="{{program}}" selected>{{program}}</option>
-                        {% else %}
-                            <option value="{{program}}">{{program}}</option>
-                        {% endif %}
-                        {% endfor %}
-
-                    </select>
+                    <button onclick="removeEmployee(this)">Remove</button>
                 </td>
-                <td>
-
-                    <select>
-
-                        {% for program in all_programs%}
-                        {% if program == emp[1]%}
-                            <option value="{{program}}" selected>{{program}}</option>
-                        {% else %}
-                            <option value="{{program}}">{{program}}</option>
-                        {% endif %}
-                        {% endfor %}
-
-                    </select>
-                </td>
-                <td>
-
-                    <select>
-
-                        {% for program in all_programs%}
-                        {% if program == emp[1]%}
-                            <option value="{{program}}" selected>{{program}}</option>
-                        {% else %}
-                            <option value="{{program}}">{{program}}</option>
-                        {% endif %}
-                        {% endfor %}
-
-                    </select>
-                </td>
-                <td>
-
-                    <select>
-
-                        {% for program in all_programs%}
-                        {% if program == emp[1]%}
-                            <option value="{{program}}" selected>{{program}}</option>
-                        {% else %}
-                            <option value="{{program}}">{{program}}</option>
-                        {% endif %}
-                        {% endfor %}
-
-
-                    </select>
-                </td>
+                {% endif %}
 
                 
             </tr>
@@ -200,15 +239,16 @@
             
             
             {% endfor %}
+            {% endfor %}
             <!-- <tr><td><button onclick="addEmployee(this)">Add Employee</button></td></tr> -->
-            </tr>
-        </table>
 
         {% endfor %}
 
     {% endfor %}
  
 </table>
+
+<button onclick="postTable()">Save</button>
 
 <div style="display: none;">
 <table>
@@ -314,18 +354,27 @@
     </td>
     
 </tr>
-<tr id="sample_employee_split_tr">
+<tr id="sample_employee_split_tr" class="employeeTrs">
 
-    <td>
-        <input type="text" value="Employee Name" name="" id="emp_name">
-    </td>
-    <td>
-        <input type="text" value="" name="" id="emp_title">
+    
+    <td style="display: none;">
+        <input type="text" name="department" id="" value="">
     </td>
 
+    <td style="display: none;">
+        <input type="text" name="kitchen" id="" value="">
+    </td>
+
+    <td>
+        <input type="text" name="name" value="Employee Name" id="emp_name" readonly>
+    </td>
+    <td>
+        <input type="text" value="" name="title" id="emp_title">
+    </td>
+
     <td>
 
-        <select>
+        <select name="monday">
 
             {% for program in all_programs%}
 
@@ -339,38 +388,7 @@
     </td>
     <td>
 
-        <select>
-
-
-            {% for program in all_programs%}
-
-                <option value="{{program}}">{{program}}</option>
-                
-
-            {% endfor %}
-
-            <option value=""></option>
-
-        </select>
-    </td>
-    <td>
-
-        <select>
-
-            {% for program in all_programs%}
-
-                <option value="{{program}}">{{program}}</option>
-                
-
-            {% endfor %}
-
-            <option value=""></option>
-
-        </select>
-    </td>
-    <td>
-
-        <select>
+        <select name="tuesday">
 
 
             {% for program in all_programs%}
@@ -386,7 +404,7 @@
     </td>
     <td>
 
-        <select>
+        <select name="wednesday">
 
             {% for program in all_programs%}
 
@@ -401,7 +419,7 @@
     </td>
     <td>
 
-        <select>
+        <select name="thursday">
 
 
             {% for program in all_programs%}
@@ -417,7 +435,38 @@
     </td>
     <td>
 
-        <select>
+        <select name="friday">
+
+            {% for program in all_programs%}
+
+                <option value="{{program}}">{{program}}</option>
+                
+
+            {% endfor %}
+
+            <option value=""></option>
+
+        </select>
+    </td>
+    <td>
+
+        <select name="saturday">
+
+
+            {% for program in all_programs%}
+
+                <option value="{{program}}">{{program}}</option>
+                
+
+            {% endfor %}
+
+            <option value=""></option>
+
+        </select>
+    </td>
+    <td>
+
+        <select name="sunday">
 
 
             {% for program in all_programs%}
@@ -438,15 +487,192 @@
     
 </tr>
 <tr id="sample_button_tr"><td><button onclick="addEmployee(this)">Add Employee</button></td></tr>
-
-
 <td id="sample_remove_button">
     <button onclick="removeEmployee(this)">Remove</button>
 </td>
 </table>
+
+
+
 </div>
 
 <script>
+
+    function getName(item, name){
+        //console.log(item, name)
+        var elements = item.querySelectorAll('[name="' + name + '"]')[0].value
+        return elements
+    }
+
+    function postTable(){
+
+        data = {
+            'week' : document.getElementById('week').value,
+        }
+
+
+        trs = document.getElementsByClassName('employeeTrs')
+        var department = document.querySelectorAll('[name="dep_name"]')
+
+        Array.from(trs).forEach(function(item){
+            if (item.id == 'sample_employee_split_tr'){
+                return;
+            }
+        
+            var name = getName(item, 'name');
+            var title = getName(item, 'title');
+            var monday = getName(item, 'monday');
+            var tuesday = getName(item, 'tuesday');
+            var wednesday = getName(item, 'wednesday');
+            var thursday = getName(item, 'thursday');
+            var friday = getName(item, 'friday');
+            var saturday = getName(item, 'saturday');
+            var sunday = getName(item, 'sunday');
+            var department = getName(item, 'department');
+            var kitchen = getName(item, 'kitchen');
+        
+            if (!(kitchen in data)){
+                data[kitchen] = {};
+            }
+        
+            if (!(department in data[kitchen])){
+                data[kitchen][department] = [];
+            }
+        
+            let found = false;
+            for(let i = 0; i < data[kitchen][department].length; i++){
+                if (data[kitchen][department][i][0] == name){
+                    data[kitchen][department][i][1].push({
+                        "monday" : monday,
+                        "tuesday" : tuesday,
+                        "wednesday" : wednesday,
+                        "thursday" : thursday,
+                        "friday" : friday,
+                        "saturday" : saturday,
+                        "sunday" : sunday,
+                    });
+                    found = true;
+                    break;
+                }
+            }
+        
+            if (!found){
+                data[kitchen][department].push([
+                    name,
+                    [{
+                        "monday" : monday,
+                        "tuesday" : tuesday,
+                        "wednesday" : wednesday,
+                        "thursday" : thursday,
+                        "friday" : friday,
+                        "saturday" : saturday,
+                        "sunday" : sunday,
+                    }]
+                ]);
+            }
+        
+            console.log('fwaeh: ', JSON.stringify(data[kitchen][department]));
+        });
+        
+        fetch('/save_schedule', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Successfully Saved Program')
+        })
+        .catch((error) => {
+            alert('Issue Saving Program: ' + error)
+        });
+        
+
+
+
+
+    }
+    
+
+
+
+
+    var all_departments = {{ all_departments | tojson }};
+    function split_day(button){
+        // Create a new <th> element for the header row
+        var new_th = document.createElement('th');
+        new_th.innerText = 'Change';
+        new_th.innerHTML += '<button onclick="remove_collumn(this)">X</button>'
+
+
+        new_th.id= button.parentNode.id + "_extra";
+        // Find the closest <th> element containing the button
+        var currentTh = button.closest('th');
+
+        // If the <th> element is found, insert the new <th> before the next sibling
+        if (currentTh) {
+            currentTh.insertAdjacentElement('afterend', new_th);
+
+            // Get all rows with the class 'employeeTrs'
+            var employeeRows = document.querySelectorAll('.employeeTrs');
+
+            // Iterate over each employee row and add a new cell with a dropdown
+            employeeRows.forEach(function(row) {
+                var new_td = document.createElement('td');
+
+                new_td.classList.add(new_th.id= button.parentNode.id + "_extra_td");
+                
+                // Create the dropdown (select) element
+                var select = document.createElement('select');
+
+                // Add a blank option to the dropdown
+                var blankOption = document.createElement('option');
+                blankOption.value = '';
+                blankOption.text = '';
+                select.appendChild(blankOption);
+                select.setAttribute('name', 'change_'+button.parentNode.id)
+
+                // Add options to the dropdown from the all_departments list
+                all_departments.forEach(function(dept) {
+                    var option = document.createElement('option');
+                    option.value = dept;
+                    option.text = dept;
+                    select.appendChild(option);
+                });
+
+                // Append the dropdown to the new td
+                new_td.appendChild(select);
+
+                // Insert the new td in the row
+                var correspondingThIndex = Array.from(currentTh.parentElement.children).indexOf(currentTh);
+                var nextSibling = row.children[correspondingThIndex + 3];
+                row.insertBefore(new_td, nextSibling);
+            });
+        } else {
+            console.error("Current <th> not found");
+        }
+
+        button.remove();
+    }
+
+    function remove_collumn(button){
+
+        //console.log(button.parentNode.id)
+
+        //console.log(document.getElementsByClassName(button.parentNode.id))
+        Array.from(document.getElementsByClassName(button.parentNode.id)).forEach(function(item){
+            //console.log(item)
+            item.remove();
+        })
+
+        document.getElementById(button.parentNode.id.split("_")[0]).innerHTML += '<button onclick="split_day(this)")>Split</button>'
+
+
+        button.parentNode.remove();
+    }
+
     function splitEmployee(button) {
         var new_tr = document.getElementById('sample_employee_split_tr');
         if (!new_tr) {
@@ -455,7 +681,18 @@
         }
         new_tr = new_tr.cloneNode(true);
         new_tr.removeAttribute('id');
-    
+
+        new_tr.childNodes[5].childNodes[1].value = button.parentElement.childNodes[5].value;
+        new_tr.childNodes[5].childNodes[1].readonly = true
+        console.log(new_tr.childNodes)
+        
+        new_tr.childNodes[7].childNodes[1].value = button.parentElement.parentElement.parentElement.childNodes[7].childNodes[1].value;
+        new_tr.childNodes[7].childNodes[1].setAttribute('readonly', true)
+
+        new_tr.childNodes[1].childNodes[1].value = button.parentElement.parentElement.parentElement.childNodes[1].childNodes[1].value;
+        new_tr.childNodes[3].childNodes[1].value = button.parentElement.parentElement.parentElement.childNodes[3].childNodes[1].value;
+
+        //console.log(new_tr.childNodes[3].childNodes[1], button.parentElement.parentElement.parentElement.childNodes[3].childNodes[1].value)
         var currentRow = button.closest('tr');
     
         if (currentRow) {
@@ -476,13 +713,13 @@
 
         var new_tr = document.getElementById('sample_employee_tr')
         
-        console.log(new_tr)
+        //console.log(new_tr)
         new_tr = new_tr.cloneNode(true);
         new_tr.removeAttribute('id')
 
         var new_bt = document.getElementById('sample_button_tr')
 
-        console.log(new_bt)
+        //console.log(new_bt)
         new_bt = new_bt.cloneNode(true);
         new_bt.removeAttribute('id')
 
@@ -490,7 +727,7 @@
         button.parentElement.parentElement.parentElement.appendChild(new_tr)
         button.parentElement.parentElement.parentElement.appendChild(new_bt)
         
-        console.log(button.parentElement.parentElement)
+        //console.log(button.parentElement.parentElement)
         button.remove()
 
     }
