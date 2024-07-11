@@ -1,5 +1,6 @@
 # Import the Flask class from the flask module
 from flask import Flask, render_template, get_flashed_messages, flash, session, request, redirect, url_for, jsonify
+from datetime import timedelta, datetime
 
 from db import get_subdept, create_dept, Employee, Department, Kitchen, KitchenGroup, add_program, get_all_programs, get_next_weeks, get_current_week
 
@@ -13,16 +14,44 @@ app.config['SECRET_KEY'] = "very_secret_key_12351232"
 def hello():
     return render_template("index.html")
 
+def get_next_seven_days(start_date_str):
+    start_date = datetime.strptime(start_date_str, "%d/%m/%Y")
+    next_seven_days = [(start_date + timedelta(days=i)).strftime("%d/%m/%Y") for i in range(8)][0:7]
+    return next_seven_days
+
 @app.route('/table')
-def table():
+@app.route('/table/<week>')
+def table(week=None):
     
     match request.method:
         
         case 'GET':
             
-            group = KitchenGroup(get_current_week())
+            if week == None:
             
-            print(group.sub_kitchens[0].sub_departments[2].employees)
+                group = KitchenGroup(get_current_week())
+                
+                day_start = group.week.split('-')[2].strip()
+                month_start = group.week.split('-')[1].strip()
+                year_start = group.week.split('-')[0].split('(')[1].strip()
+            
+            else:
+                
+                year_start = week.split('_')[2]
+                month_start = week.split('_')[1]
+                day_start = week.split('_')[0]
+                
+                year_end = week.split('_')[5]
+                month_end = week.split('_')[4]
+                day_end = week.split('_')[3]
+                
+                formated_week = f"({year_start}-{month_start}-{day_start} - {year_end}-{month_end}-{day_end})"
+                
+                print(formated_week)
+                
+                group = KitchenGroup(formated_week)
+                
+            dates = get_next_seven_days(f"{day_start}/{month_start}/{year_start}")
             
             all_employees = group.get_unplaced_employees()
             
@@ -31,9 +60,17 @@ def table():
             all_departments = Department.get_all_departments()
             
             weeks = get_next_weeks(4)
-            selected_week = get_current_week()
+            selected_week = get_current_week() if week == None else formated_week
             
-            # print(group)
+            all_weeks_saved = KitchenGroup.get_saved_weeks()
+            
+            todays_week = get_current_week()
+            
+            split_days = group.get_split_days()
+            
+            new_week_message = '' if week == None else 'Week Successfully Created. Make Sure to Save!' if not group.saved else ''
+            
+            print(split_days)
             
             return render_template(
                 'table.html',
@@ -42,8 +79,20 @@ def table():
                 all_programs = all_programs,
                 all_departments = all_departments,
                 weeks = weeks,
-                current_week = selected_week
+                selected_week = selected_week,
+                all_weeks_saved = all_weeks_saved,
+                new_week_message=new_week_message,
+                todays_week = todays_week,
+                dates=dates,
+                split_days = split_days
             )
+            
+@app.route('/see_week/<d_start>_<m_start>_<y_start>_<d_end>_<m_end>_<y_end>')
+def see_week(d_start, m_start, y_start, d_end, m_end, y_end):
+    
+    return f"{d_start}/{m_start}/{y_start} - {d_end}/{m_end}/{y_end}"
+    
+    
             
 @app.route('/save_schedule', methods=['POST'])
 def save_schedule():
@@ -70,8 +119,9 @@ def add_employee():
         case 'GET':
             
             all_departments = Department.get_all_departments()
+            all_programs = get_all_programs()
             
-            return render_template('add_employee.html', departments = all_departments)
+            return render_template('add_employee.html', departments = all_departments, programs=all_programs)
         
         case 'POST':
             

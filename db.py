@@ -50,19 +50,19 @@ def get_random_date():
     
     c.execute("SELECT name FROM programs")
     
-    return random.choice(c.fetchall())[0]
+    return c.fetchall()[0][0]
 
 def get_random_program():
     
     return [
         {
-            'monday': get_random_date(),
-            'tuesday': get_random_date(),
-            'wednesday': get_random_date(),
-            'thursday': get_random_date(),
-            'friday': get_random_date(),
-            'saturday': get_random_date(),
-            'sunday': get_random_date(),
+            'monday': (get_random_date(), ''),
+            'tuesday': (get_random_date(), ''),
+            'wednesday': (get_random_date(), ''),
+            'thursday': (get_random_date(), ''),
+            'friday': (get_random_date(), ''),
+            'saturday': (get_random_date(), ''),
+            'sunday': (get_random_date(), ''),
         }
     ]
     
@@ -168,8 +168,6 @@ class Employee:
         
     def pass_to_department(self, department, program:dict):
         
-        if self.id==1:
-            print('pass_to_department :',program)
         
         if program == '':
             program = get_random_program()
@@ -232,9 +230,6 @@ class Department:
         
     def receive_employee(self, employee, program):
         
-        if employee.id == 1 :
-        
-            print('receive_employee: ',self.employees)
         self.employees.append((employee, program))
 
     def remove_duplicates(self):
@@ -245,7 +240,6 @@ class Department:
         
         # Convert back to the required format
         self.employees = [(employee, dict_list) for employee, dict_list in unique_employees.items()]
-
 
 class Kitchen:
     
@@ -298,6 +292,15 @@ class KitchenGroup:
         
         return c.fetchall()
     
+    @staticmethod
+    def get_saved_weeks():
+        
+        db,c = connect()
+        
+        c.execute("SELECT week FROM schedules")
+        
+        return c.fetchall()
+    
     
     def __init__(self,week='') -> None:
         db,c = connect()
@@ -313,8 +316,10 @@ class KitchenGroup:
             
             if len((f := c.fetchall() )) > 0:
                 self.load_schedule(f[0][2].replace("'", '"'))
+                self.saved = True
             else:
                 self.set_employees_to_default()
+                self.saved = False
             
             # ('empty')
             
@@ -355,6 +360,29 @@ class KitchenGroup:
         if len((f := c.fetchall() )) > 0:
             self.load_schedule(f[0][2].replace("'", '"'))
             
+    def get_all_employees_programs(self):
+
+        return [emp for kitchen in self.sub_kitchens for dep in kitchen.sub_departments for emp in dep.employees]
+    
+    def get_split_days(self):
+        
+        days = set()
+        
+        for emp, program in self.get_all_employees_programs():
+            
+            for prog in program:
+                
+                for key in prog: 
+                    
+                    if prog[key][1] != '':
+                        days.add(key.lower())
+                        print(prog[key][1])
+                    
+                    
+                        
+        return list(days)
+        
+            
     def load_schedule(self, schedule_json):
         
         if self.week == '' == None:
@@ -375,27 +403,22 @@ class KitchenGroup:
                 
                 for emp in schedule_dict[kitchen][dept]:
                     
-                    # print(emp)
-                    
-
-
+                    # print(emp[1])
+                    if emp[0] == None:
+                        continue
                     
                     if str(emp[0]).isnumeric():
-                        # (emp[0], 'numeric')
+                        (emp[0], 'numeric')
                         em = Employee(emp[0])
                     else:
-                        # (emp[0], 'name')
+                        (emp[0], 'name')
                         em = Employee(Employee.get_id_by_name(emp[0]))
                         
-                    if em.id == 1:
-                        print('load_schedule: ',emp[1])
-                        
+
                     self.remove_employee_from_current_department(em)
                     # em.pass_to_department(self.get_department_by_name(dept, kitchen), emp[1])
                     self.get_department_by_name(dept, kitchen).employees.append((em, emp[1]))
-                    # self.get_department_by_name(dept, kitchen).receive_employee(em, emp[1])
-        # print(self.sub_kitchens[0].sub_departments[0].employees[0])
-                    
+
     def __repr__(self) -> str:
         txt = ''
         for kitchen in self.sub_kitchens:
@@ -446,8 +469,6 @@ class KitchenGroup:
         
         self.remove_duplicates()
         
-        print(self.sub_kitchens[0].sub_departments[0].employees)
-        
         for kitchen in self.sub_kitchens:
             
             schedule_json[kitchen.name] = {}
@@ -457,11 +478,8 @@ class KitchenGroup:
                 schedule_json[kitchen.name][department.name] = []
                 
                 for employee, program in department.employees:
-                    # print('this print',department.employees)
                     schedule_json[kitchen.name][department.name].append([employee.id, program])
                     
-                    if employee.id == 1:
-                        print(program)
                     
         # (schedule_json)
                     
@@ -474,6 +492,8 @@ class KitchenGroup:
             c.execute("UPDATE schedules SET schedule_json=%s WHERE week=%s", [str(schedule_json),self.week])
         else: 
             c.execute("INSERT INTO schedules (week, schedule_json) VALUES (%s, %s)", [self.week, str(schedule_json)])
+            
+        self.saved = True
         
         db.commit()
         
