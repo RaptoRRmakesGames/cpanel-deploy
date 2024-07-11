@@ -70,8 +70,6 @@ def table(week=None):
             
             new_week_message = '' if week == None else 'Week Successfully Created. Make Sure to Save!' if not group.saved else ''
             
-            print(split_days)
-            
             return render_template(
                 'table.html',
                 group=group,

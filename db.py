@@ -166,11 +166,39 @@ class Employee:
         
         self.prefered_dep = self.raw['default_dep'].split(' - ')
         
+    def get_last_program(self, dic: dict):
+        
+        for kitchen in dic:
+            for department in dic[kitchen]:
+                for employee_id in department:
+                    if str(employee_id)==str(self.id):
+                        return department[employee_id][1]
+        
+        return get_random_program()
+        
     def pass_to_department(self, department, program:dict):
         
         
         if program == '':
             program = get_random_program()
+        if program== 'last_program':
+            
+            db,c = connect()
+            
+            c.execute("SELECT schedule_json FROM schedules ORDER BY id ASC")
+            
+            try:
+                dic = json.loads(c.fetchall()[0][0].replace("'", '"'))
+                program = self.get_last_program(dic)
+                
+                # print(program)
+                
+                
+            except IndexError as e:
+                program = get_random_program()
+                # print(e)
+            
+            
         
         department.receive_employee(self, program)
         
@@ -318,10 +346,23 @@ class KitchenGroup:
                 self.load_schedule(f[0][2].replace("'", '"'))
                 self.saved = True
             else:
-                self.set_employees_to_default()
+                # self.set_employees_to_default()
+                self.load_last_schedule()
                 self.saved = False
             
             # ('empty')
+            
+    def load_last_schedule(self):
+        db,c = connect()
+        
+        c.execute("SELECT schedule_json FROM schedules ORDER BY id DESC")
+        
+        f = c.fetchall()
+        if len(c.fetchall()) < 1:
+            self.set_employees_to_default()
+            return 
+        self.load_schedule(f[0][0].replace("'", '"'))
+
             
     def get_unplaced_employees(self,):
         
@@ -350,7 +391,7 @@ class KitchenGroup:
         
         dep = self.get_department_by_name(pref_dep.lower(), pref_dep_kitch.lower())
         
-        emp.pass_to_department(dep, get_random_program())
+        emp.pass_to_department(dep, 'last_program')
             
     def set_week(self, week):
         
