@@ -51,7 +51,6 @@ def get_all_titles():
     
     return [f[1] for f in c.fetchall()]
 
-
 def create_dept(name):
 
     db,c = connect()
@@ -96,12 +95,14 @@ def get_current_week():
 
     return f'({monday_date} - {sunday_date})'    
 
-def get_all_departments():
+def get_all_departments(get_id=True):
     db,c = connect()
     
     c.execute('SELECT id, name FROM sub_department')
     
-    return [(f[0], f[1]) for f in c.fetchall()]
+    if get_id:
+        return [(f[0], f[1]) for f in c.fetchall()]
+    return [f[1] for f in c.fetchall()]
 
 def get_next_weeks(n=4):
     # Get today's date
@@ -189,7 +190,18 @@ class Employee:
         self.title = self.raw['title']
         self.name = self.raw['name']
         
+        
         self.prefered_dep = self.raw['default_dep'].split(' - ')
+        self.prefered_dep_str = self.raw['default_dep']
+        print(self.prefered_dep_str)
+    
+    def update(self, name, title, def_dep):
+        
+        db,c = connect()
+        
+        c.execute("UPDATE employees SET name=%s, title=%s, default_dep=%s WHERE id=%s", [name, title, def_dep, self.id])
+        
+        db.commit()
         
     def get_last_program(self, dic: dict):
         
@@ -262,7 +274,14 @@ class Department:
                 departments.append(f'{kitchen} - {dep.name}')
         
         return departments
-                
+               
+    @staticmethod
+    def get_id_from_name(name):
+        db,c = connect()
+        
+        c.execute("SELECT id FROM sub_department WHERE name=%s", [name])
+        
+        return c.fetchall()[0][0]
     
     def __init__(self, id):
         
@@ -293,6 +312,14 @@ class Department:
         
         # Convert back to the required format
         self.employees = [(employee, dict_list) for employee, dict_list in unique_employees.items()]
+    
+    def update(self, name):
+        
+        db,c = connect()
+        
+        c.execute("UPDATE sub_department SET name=%s WHERE id = %s", [name, self.id])
+        
+        db.commit()
 
 class Kitchen:
     
@@ -309,6 +336,29 @@ class Kitchen:
         c.execute('SELECT id FROM big_kitchens WHERE name=%s', [name])
         
         return Kitchen(c.fetchall()[0][0])
+    
+    @staticmethod
+    def get_all_kitchens():
+        
+        db,c = connect()
+        
+        c.execute("SELECT name FROM big_kitchens")
+        
+        return [f[0] for f in c.fetchall()]
+    
+    @staticmethod
+    def get_id_from_name(name):
+        
+        db,c =connect()
+        
+        c.execute("SELECT id FROM big_kitchens WHERE name=%s", [name])
+        
+        f = c.fetchall()
+        
+        if len(f) == 0:
+            raise Exception("Name doesnt exist")
+        
+        return f[0][0]
     
     def __repr__(self) -> str:
         return f'Kitchen Object: {self.name}, #{self.id}'
@@ -333,6 +383,14 @@ class Kitchen:
         
         for ide in self._raw['dep_ids']:
             self.sub_departments.append(get_subdept(ide))
+            
+    def update(self, new_name, departments):
+        
+        db,c = connect()
+        
+        c.execute("UPDATE big_kitchens SET name=%s, dep_ids=%s WHERE id=%s", [new_name, str(departments), self.id])
+        
+        db.commit()
 
 class KitchenGroup:
     
@@ -404,9 +462,7 @@ class KitchenGroup:
             
             for emp in not_added_employees:
                 self.set_def_employee(Employee(Employee.get_id_by_name(emp)))
-        
-
-            
+                 
     def get_unplaced_employees(self,):
         
         all_emps = Employee.get_all_employees()
@@ -465,8 +521,7 @@ class KitchenGroup:
                     
                         
         return list(days)
-        
-            
+          
     def load_schedule(self, schedule_json):
         
         if self.week == '' == None:

@@ -19,14 +19,50 @@ Add Kitchen
     <!-- Your Flask content goes here -->
     <form method="POST" id="form" onsubmit="return false;" style=" display: inline-grid; flex-direction: row; justify-items: start;">
 
+        {% if edit == True%}
+        <div >
+            <label for="name">Kitchen ID</label>  <br>
+            <input type="text" name="id" id="" value="{{kitchen.id}}" readonly required>
+        </div>
+        {% endif %}
         <div >
             <label for="name">Kitchen Name</label>  <br>
-            <input type="text" name="name" id="" required>
+            <input type="text" name="name" id="" required {% if edit  %}value="{{kitchen.name}}"{% endif %}>
         </div>
 
         <label for="">Departments: </label>
         <div id="departments">
 
+            {% if edit %}
+
+            {% for dep in kitchen.sub_departments%}
+
+            <div class="repeater_field" style="margin: 0;">
+                {% if loop.index-1 != 0%}
+                <select name="department_{{loop.index-1}}" id="" placeholder="Department" required>
+                {% else %}
+                <select name="department" id="" placeholder="Department" required>
+                {% endif %}
+                    <option value=""></option>
+                    {% for department in departments%}
+                    
+                    {% if department[1] == dep.name%}
+                    <option value="{{department[0]}}" selected>{{department[1]}}</option>
+                    {% else %}
+                    <option value="{{department[0]}}">{{department[1]}}</option>
+                    {% endif %}
+                    
+                    {% endfor %}
+                </select>
+                {% if loop.index != 1%}
+                <button onclick="remove(this)">X</button>
+                {% endif %}
+            </div>
+
+            {%endfor %}
+
+            {%else %}
+            
             <div class="repeater_field" style="margin: 0;">
                 <select name="department" id="" placeholder="Department" required>
                     <option value=""></option>
@@ -36,12 +72,16 @@ Add Kitchen
                 </select>
             </div>
 
+            {% endif %}
         </div>
         <button id='add_button' onclick="add_dep()">Add Department</button>
 
 
-
+        {% if edit%}
+        <input type="submit" name="" id="" onclick="submit('form')" value="Update">
+        {% else %}
         <input type="submit" name="" id="" onclick="submit('form')" value="Create">
+        {% endif %}
 
 
     </form>

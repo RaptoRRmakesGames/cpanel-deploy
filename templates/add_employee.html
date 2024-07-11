@@ -11,22 +11,37 @@
 
 <form method="POST">
 
+    {% if edit%}
+    <label for="name">ID</label><br>
+    <input type="text" placeholder="Name" required value="{{employee.id}}" name="id" id="" readonly>
+    <br>
+    {% endif %}
+
     <label for="name">Name</label><br>
-    <input type="text" placeholder="Name" required name="name" id="">
+    <input type="text" placeholder="Name" {% if edit %} value="{{employee.name}}" {% endif %} required name="name" id="">
     <br>
     <label for="title">Title</label><br>
     <select name="title" id="">
         {% for title in titles%}
-            <option value="{{title}}">{{title}}</option>
+            {% if title == employee.title %}
+            <option value="{{title}}" selected>{{title}}</option>
+            {% else %}
+            <option value="{{title}}" >{{title}}</option>
+            {% endif %}
         {% endfor %}
     </select>
     <br>
     
     <label for="def_dep">Default Department</label><br>
     <select name="def_dep" id="" required>
+        {{employee.prefered_dep_str}}
         <option value=""></option>
         {% for department in departments%}
-        <option value="{{department}}">{{department}}</option>
+            {% if employee.prefered_dep_str == department%}
+            <option value="{{department}}" selected>{{department}}</option>
+            {% else %}
+            <option value="{{department}}" >{{department}}</option>
+            {% endif %}
         {% endfor%}
     </select> <br>
     <label for="">Work Schedule</label><br>

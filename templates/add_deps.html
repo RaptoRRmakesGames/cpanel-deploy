@@ -11,10 +11,15 @@
 
 <form method="POST">
 
-    <label for="name">Department Name</label><br>
-    <input type="text" placeholder="Name" required name="name" id=""><br>
+    {% if edit %}
+    <label for="name">Department Id</label><br>
+    <input type="text" placeholder="Name" readonly value="{{department.id}}" required name="id" id=""><br>
+    {% endif %}
 
-    <input type="submit" name="" value="Add" id="">
+    <label for="name">Department Name</label><br>
+    <input type="text" placeholder="Name" {% if edit %} value="{{department.name}}" {% endif %}required name="name" id=""><br>
+
+    <input type="submit" name="" value="Edit" id="">
 
 </form>
 {% endblock %}

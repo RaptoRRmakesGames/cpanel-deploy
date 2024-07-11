@@ -1,0 +1,139 @@
+{% extends '/include_files/base.html' %}
+
+{% block title %}
+{{title}}
+{% endblock %}
+
+
+{% block content %}
+
+<style>
+    th{
+        width: 150px;
+    }
+    td{
+        text-align: center;
+    }
+
+    .boxes{
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+    }
+    .table{
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        border: 5px solid black;
+        margin: 7px;
+    }
+</style>
+
+
+<h1>Edit Objects</h1>
+
+<div class="boxes">
+
+    <div class="table">
+        <h3>Kitchens</h3>
+        <table border="1">
+            <tr>
+                <th>Name</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+
+            {% for kitchen in kitchens%}
+            <tr>
+                <td>{{kitchen}}</td>
+                <td><button onclick='redirect("/edit/kitchen/{{kitchen}}")'>Edit</button></td>
+                <td><button onclick='redirect("/delete/kitchen/{{kitchen}}")'>Delete</button></td>
+
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div class="table">
+        <h3>Departments</h3>
+        <table border="1">
+            <tr>
+                <th>Name</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+
+            {% for dep in departments%}
+            <tr>
+                <td>{{dep}}</td>
+                <td><button onclick='redirect("/edit/department/{{dep}}")'>Edit</button></td>
+                <td><button onclick='redirect("/delete/department/{{dep}}")'>Delete</button></td>
+
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div class="table">
+        <h3>Employees</h3>
+        <table border="1">
+            <tr>
+                <th>Name</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+
+            {% for employee in employees%}
+            <tr>
+                <td>{{employee}}</td>
+                <td><button onclick='redirect("/edit/employee/{{employee}}")'>Edit</button></td>
+                <td><button onclick='redirect("/delete/employee/{{employee}}")'>Delete</button></td>
+
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div class="table">
+        <h3>Programs</h3>
+        <table border="1">
+            <tr>
+                <th>Program</th>
+                <th>Delete</th>
+            </tr>
+
+            {% for program in programs%}
+            <tr>
+                <td>{{program}}</td>
+                <td><button onclick='redirect("/delete/program/{{program}}")'>Delete</button></td>
+
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div class="table">
+        <h3>Title</h3>
+        <table border="1">
+            <tr>
+                <th>Title</th>
+                <th>Delete</th>
+            </tr>
+
+            {% for title in titles%}
+            <tr>
+                <td>{{title}}</td>
+                <td><button onclick='redirect("/delete/title/{{title}}")'>Delete</button></td>
+
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+</div>
+
+<script>
+    function redirect(url){
+
+        window.location.href = url
+    }
+</script>
+
+{% endblock %}
+
