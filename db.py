@@ -358,7 +358,7 @@ class KitchenGroup:
         c.execute("SELECT schedule_json FROM schedules ORDER BY id DESC")
         
         f = c.fetchall()
-        if len(c.fetchall()) < 1:
+        if len(f) < 1:
             self.set_employees_to_default()
             return 
         self.load_schedule(f[0][0].replace("'", '"'))
