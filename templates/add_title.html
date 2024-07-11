@@ -1,0 +1,20 @@
+{% extends '/include_files/base.html' %}
+
+{% block title %}
+{{title}}
+{% endblock %}
+
+
+{% block content %}
+
+<h1>Add A Title</h1>
+
+<form method="POST">
+
+    <label for="name">Title</label><br>
+    <input type="text" placeholder="Title" required name="name" id=""><br>
+
+    <input type="submit" name="" value="Add" id="">
+
+</form>
+{% endblock %}

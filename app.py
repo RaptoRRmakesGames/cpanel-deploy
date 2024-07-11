@@ -2,7 +2,8 @@
 from flask import Flask, render_template, get_flashed_messages, flash, session, request, redirect, url_for, jsonify
 from datetime import timedelta, datetime
 
-from db import get_subdept, create_dept, Employee, Department, Kitchen, KitchenGroup, add_program, get_all_programs, get_next_weeks, get_current_week
+from db import get_subdept, create_dept, Employee, Department, Kitchen, KitchenGroup, add_program, get_all_programs, get_next_weeks
+from db import get_current_week, get_all_departments, create_title, get_all_titles
 
 # Create an instance of the Flask class
 app = Flask(__name__)
@@ -18,6 +19,119 @@ def get_next_seven_days(start_date_str):
     start_date = datetime.strptime(start_date_str, "%d/%m/%Y")
     next_seven_days = [(start_date + timedelta(days=i)).strftime("%d/%m/%Y") for i in range(8)][0:7]
     return next_seven_days
+
+@app.route('/add_kitchen', methods=['GET', 'POST'])
+def add_kitchen():
+    
+    match request.method:
+        case 'GET':
+            return render_template("add_kitchen.html", departments = get_all_departments())
+            
+        case 'POST':
+            
+            
+            name, deps = request.form.get('name'), []
+            for key in request.form:
+                if key=='name' or key=='submit':
+                    continue
+                deps.append(request.form.get(key))
+                
+            Kitchen.create_kitchen(name, deps)
+            
+            flash('Created Kitchen Successfully!')
+            
+            return redirect(url_for('add_kitchen'))
+        
+@app.route('/add_department', methods=['GET', 'POST'])
+def add_dep():
+    
+    match request.method:
+        case 'GET':
+            return render_template("add_deps.html")
+            
+        case 'POST':
+                
+            create_dept(request.form.get('name'))
+            
+            flash("Created Department Successfully!")
+            
+            return redirect(url_for('add_dep'))
+
+@app.route('/add_title', methods=['GET', 'POST'])
+def add_title():
+    
+    match request.method:
+        case 'GET':
+            return render_template("add_title.html")
+            
+        case 'POST':
+                
+            create_title(request.form.get('name'))
+            
+            flash("Created Title Successfully!")
+            
+            return redirect(url_for('add_title'))
+ 
+@app.route('/save_schedule', methods=['POST'])
+def save_schedule():
+    data = request.json 
+    
+    schedule = KitchenGroup(data['week'])
+    
+    schedule.load_schedule(data)
+    
+    # print(schedule.sub_kitchens[0].sub_departments[0].employees[0])
+    
+    schedule.save_schedule()
+    
+    # print('sigma: \n', data['Main Kitchen']['Hot Kitchen'], '\n carti')
+
+    
+    return jsonify({'status':'success', })
+        
+@app.route('/add_employee', methods=['GET', 'POST'])
+def add_employee():
+    
+    match request.method:
+        
+        case 'GET':
+            
+            all_departments = Department.get_all_departments()
+            all_programs = get_all_programs()
+            all_titles = get_all_titles()
+            
+            print(all_titles)
+            
+            return render_template('add_employee.html', departments = all_departments, programs=all_programs, titles=all_titles)
+        
+        case 'POST':
+            
+            name, title, def_dep = request.form.get('name'), request.form.get('title'), request.form.get('def_dep')
+            
+            Employee.create_employee(name, title, def_dep)
+            
+            flash('Added Employee Successfully!')
+            return redirect(url_for('add_employee'))
+            
+@app.route('/add_program', methods=['GET', 'POST'])
+def create_program():
+    
+    match request.method:
+        case 'GET':
+            
+            return render_template('add_program.html')
+    
+        case 'POST':
+            
+            name = request.form.get('name')
+            
+            add_program(name)
+            
+            flash('Program Created')
+            
+            return redirect(url_for('create_program'))
+
+
 
 @app.route('/table')
 @app.route('/table/<week>')
@@ -89,65 +203,7 @@ def table(week=None):
 def see_week(d_start, m_start, y_start, d_end, m_end, y_end):
     
     return f"{d_start}/{m_start}/{y_start} - {d_end}/{m_end}/{y_end}"
-    
-    
-            
-@app.route('/save_schedule', methods=['POST'])
-def save_schedule():
-    data = request.json 
-    
-    schedule = KitchenGroup(data['week'])
-    
-    schedule.load_schedule(data)
-    
-    # print(schedule.sub_kitchens[0].sub_departments[0].employees[0])
-    
-    schedule.save_schedule()
-    
-    # print('sigma: \n', data['Main Kitchen']['Hot Kitchen'], '\n carti')
-
-    
-    return jsonify({'status':'success', })
-        
-@app.route('/add_employee', methods=['GET', 'POST'])
-def add_employee():
-    
-    match request.method:
-        
-        case 'GET':
-            
-            all_departments = Department.get_all_departments()
-            all_programs = get_all_programs()
-            
-            return render_template('add_employee.html', departments = all_departments, programs=all_programs)
-        
-        case 'POST':
-            
-            name, title, def_dep = request.form.get('name'), request.form.get('title'), request.form.get('def_dep')
-            
-            Employee.create_employee(name, title, def_dep)
-            
-            flash('Added Employee Successfully!')
-            return redirect(url_for('add_employee'))
-            
-@app.route('/add_program', methods=['GET', 'POST'])
-def create_program():
-    
-    match request.method:
-        case 'GET':
-            
-            return render_template('add_program.html')
-    
-        case 'POST':
-            
-            name = request.form.get('name')
-            
-            add_program(name)
-            
-            flash('Program Created')
-            
-            return redirect(url_for('create_program'))
-
+   
     
 # Run the application
 if __name__ == '__main__':

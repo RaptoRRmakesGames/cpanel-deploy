@@ -1,0 +1,78 @@
+{% extends '/include_files/base.html' %}
+
+{% block title %}
+Add Kitchen
+{% endblock %}
+
+{% block content %}
+
+<style>
+    #form *{
+        margin-bottom: 10px;
+    }
+</style>
+
+
+<main>
+    <p>Add a kitchen for your schedules</p>
+    <p>Make sure to create departments first!</p>
+    <!-- Your Flask content goes here -->
+    <form method="POST" id="form" onsubmit="return false;" style=" display: inline-grid; flex-direction: row; justify-items: start;">
+
+        <div >
+            <label for="name">Kitchen Name</label>  <br>
+            <input type="text" name="name" id="" required>
+        </div>
+
+        <label for="">Departments: </label>
+        <div id="departments">
+
+            <div class="repeater_field" style="margin: 0;">
+                <select name="department" id="" placeholder="Department" required>
+                    <option value=""></option>
+                    {% for department in departments%}
+                    <option value="{{department[0]}}">{{department[1]}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+        </div>
+        <button id='add_button' onclick="add_dep()">Add Department</button>
+
+
+
+        <input type="submit" name="" id="" onclick="submit('form')" value="Create">
+
+
+    </form>
+</main>
+
+<script>
+
+    function submit(form_id){
+        document.getElementById(form_id).submit();
+    }
+
+    function add_dep(){
+        var form = document.getElementById('departments')
+
+        var new_div = document.getElementsByClassName('repeater_field')[0].cloneNode(true)
+        new_div.getElementsByTagName('select')[0].value= ''
+        new_div.getElementsByTagName('select')[0].name = 'department_'+document.getElementById('departments').childElementCount.toString();
+        console.log(document.getElementById('departments').childNodes.length.toString())
+        new_div.innerHTML += '<button onclick="remove(this)">X</button>'
+
+        //form.insertBefore(new_div,document.getElementById('add_button'))
+        form.appendChild(new_div)
+
+    }
+
+    function remove(button){
+
+        button.parentNode.remove();
+    }
+
+</script>
+
+
+{% endblock %}

@@ -29,9 +29,28 @@ def create_database():
 
     db.commit()
 
-def get_subdept(id):
+def get_subdept(ide):
     
-    db,c = connect(); c.execute('SELECT * FROM sub_department WHERE id=%s', [id]); return Department(c.fetchall()[0][0])
+    db,c = connect(); c.execute('SELECT * FROM sub_department WHERE id=%s', [ide]); return Department(c.fetchall()[0][0])
+    
+def create_title(name):
+    db,c = connect()
+    
+    try:
+        c.execute("INSERT INTO titles (name) VALUES (%s)", [name])
+    except Exception as e:
+        (f'Error: {e}')
+    
+    db.commit()
+
+def get_all_titles():
+    
+    db,c = connect()
+    
+    c.execute("SELECT * FROM titles")
+    
+    return [f[1] for f in c.fetchall()]
+
 
 def create_dept(name):
 
@@ -77,6 +96,12 @@ def get_current_week():
 
     return f'({monday_date} - {sunday_date})'    
 
+def get_all_departments():
+    db,c = connect()
+    
+    c.execute('SELECT id, name FROM sub_department')
+    
+    return [(f[0], f[1]) for f in c.fetchall()]
 
 def get_next_weeks(n=4):
     # Get today's date
@@ -352,6 +377,14 @@ class KitchenGroup:
             
             # ('empty')
             
+    def get_all_employees(self):
+        
+        db,c = connect()
+        
+        c.execute('SELECT name FROM employees')
+        
+        return [f[0] for f in c.fetchall()]
+            
     def load_last_schedule(self):
         db,c = connect()
         
@@ -361,7 +394,17 @@ class KitchenGroup:
         if len(f) < 1:
             self.set_employees_to_default()
             return 
-        self.load_schedule(f[0][0].replace("'", '"'))
+        employees_added = self.load_schedule(f[0][0].replace("'", '"'))
+        all_employees = self.get_all_employees()
+        
+        if len(employees_added) == all_employees:
+            return
+        else:
+            not_added_employees = list(set(all_employees) - set(employees_added))
+            
+            for emp in not_added_employees:
+                self.set_def_employee(Employee(Employee.get_id_by_name(emp)))
+        
 
             
     def get_unplaced_employees(self,):
@@ -435,6 +478,8 @@ class KitchenGroup:
             schedule_dict = json.loads(schedule_json)
         # (schedule_dict)
         
+        emps_added = []
+        
         for kitchen in schedule_dict:
             
             if kitchen=='week':
@@ -455,10 +500,11 @@ class KitchenGroup:
                         (emp[0], 'name')
                         em = Employee(Employee.get_id_by_name(emp[0]))
                         
-
+                    emps_added.append(em.name)
                     self.remove_employee_from_current_department(em)
                     # em.pass_to_department(self.get_department_by_name(dept, kitchen), emp[1])
                     self.get_department_by_name(dept, kitchen).employees.append((em, emp[1]))
+        return emps_added
 
     def __repr__(self) -> str:
         txt = ''

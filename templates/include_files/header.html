@@ -1,10 +1,71 @@
+
+<style> 
+    a, span, li{
+        font-size: xx-large;
+        text-decoration: none;
+        color: black;
+    }
+    ul{
+        list-style-type: none;
+        margin-right: 63px;
+    }
+
+    li a{
+        text-decoration: solid !important;
+    }
+
+    nav{
+        list-style-type: none
+    }
+
+    .link{
+        font-size: x-large;
+    }
+
+    .invisible{
+        display: none !important;
+       ;
+    }
+</style>
 <header>
-    <nav>
-        <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/add_employee">Add Employee</a></li>
-            <li><a href="/add_program">Add Program</a></li>
+    <nav style="display: inline-block;">
+        <li style=" margin-right: 28px"><a href="/">Home</a></li>
+        <h1 href="">Add <a href="#" onclick="toggle_open('add')"><span>&#8594;</span></a></h1>
+        <ul id="add" class="invisible">
+            <li><a href="/add_program" class="link">Add Program</a></li>
+            <li><a href="/add_employee" class="link">Add Employee</a></li>
+            <li><a href="/add_department" class="link">Add Department</a></li>
+            <li><a href="/add_kitchen" class="link">Add Kitchen</a></li>
+            <li><a href="/add_title" class="link">Add Title</a></li>
+        </ul>
+        <h1 href="">Edit <a href="#" onclick="toggle_open('edit')"><span>&#8594;</span></a></h1>
+        <ul id="edit" class="invisible">
+            <li><a href="/edit_objects"class="link">Edit Objects</a></li>
+        </ul>
+        <h1 href="">Schedule <a href="#" onclick="toggle_open('schedule')"><span>&#8594;</span></a></h1>
+        <ul id="schedule" class="invisible">
             <li><a href="/table">Create Schedule</a></li>
         </ul>
     </nav>
 </header>
+
+<script>
+    const codes = ['→', '↓'];
+    Array.from(document.getElementsByTagName('span')).forEach(function (span) {
+        span.addEventListener('click', function () {
+            if (span.innerHTML === codes[0]) {
+                span.innerHTML = codes[1];
+            } else {
+                span.innerHTML = codes[0];
+            }
+            console.log(span.innerHTML, codes[0]);
+        });
+    });
+
+    function toggle_open(id){
+
+        document.getElementById(id).classList.toggle('invisible')
+    }
+    
+    
+</script>
