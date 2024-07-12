@@ -37,7 +37,8 @@
         {{employee.prefered_dep_str}}
         <option value=""></option>
         {% for department in departments%}
-            {% if employee.prefered_dep_str == department%}
+        
+            {% if edit and employee.prefered_dep_str == department%}
             <option value="{{department}}" selected>{{department}}</option>
             {% else %}
             <option value="{{department}}" >{{department}}</option>
