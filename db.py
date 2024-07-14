@@ -363,7 +363,7 @@ class Kitchen:
             strings = name.split('%20')
             final_string = ''
             for stri in strings:
-                final_string += stri + ''
+                final_string += stri + ' '
             final_string.strip()
             
             c.execute("SELECT id FROM big_kitchens WHERE name=%s", [final_string])
