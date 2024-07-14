@@ -196,6 +196,7 @@ def edit_objects():
 def edit_kitchen(kitchen):
     match request.method:
         case "GET":
+            print(kitchen)
             return render_template(
                 "add_kitchen.html", departments=get_all_departments(),
                 edit=True, kitchen = Kitchen(Kitchen.get_id_from_name(kitchen))
