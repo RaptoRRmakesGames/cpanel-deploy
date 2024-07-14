@@ -355,9 +355,6 @@ class Kitchen:
         
         f = c.fetchall()
         
-        if len(f) == 0:
-            raise Exception("Name doesnt exist")
-        
         return f[0][0]
     
     def __repr__(self) -> str:
