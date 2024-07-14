@@ -355,6 +355,8 @@ class Kitchen:
         
         f = c.fetchall()
         
+        print(f, name)
+        
         return f[0][0]
     
     def __repr__(self) -> str:
