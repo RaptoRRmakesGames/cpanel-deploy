@@ -23,7 +23,7 @@
     <label for="title">Title</label><br>
     <select name="title" id="">
         {% for title in titles%}
-            {% if title == employee.title %}
+            {% if edit and title == employee.title %}
             <option value="{{title}}" selected>{{title}}</option>
             {% else %}
             <option value="{{title}}" >{{title}}</option>
