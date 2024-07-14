@@ -139,6 +139,15 @@ def get_all_programs():
     
     return [f[1] for f in c.fetchall()]
 
+def remove_from_string(stre, to_remove='%20'):
+    final_str = ''
+    
+    for stri in stre.split(to_remove):
+    
+        final_str += stri + ' '
+        
+    return final_str
+
 class Employee:
     
     @staticmethod
@@ -160,7 +169,15 @@ class Employee:
         
         c.execute("SELECT id FROM employees WHERE name =%s", [name])
         
-        return c.fetchall()[0][0]
+        try:
+            
+            return c.fetchall()[0][0]
+        except IndexError:
+            c.execute("SELECT id FROM employees WHERE name =%s", [remove_from_string(name)])
+            
+            return c.fetchall()[0][0]
+            
+        
     
     @staticmethod
     def get_all_employees():
