@@ -355,7 +355,7 @@ class Kitchen:
         
         f = c.fetchall()
         
-        print(f, name)
+        print('fwaeh carteh seeyuh: ',f, name)
         
         return f[0][0]
     
