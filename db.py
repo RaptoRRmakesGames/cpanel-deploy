@@ -357,8 +357,20 @@ class Kitchen:
         
         print('fwaeh carteh seeyuh: ',f, name)
         
-        return f[0][0]
-    
+        try:
+            return f[0][0]
+        except IndexError:
+            strings = name.split('%20')
+            final_string = ''
+            for stri in strings:
+                final_string += stri + ''
+            final_string.strip()
+            
+            c.execute("SELECT id FROM big_kitchens WHERE name=%s", [final_string])
+        
+            f = c.fetchall()
+            return f[0][0]
+            
     def __repr__(self) -> str:
         return f'Kitchen Object: {self.name}, #{self.id}'
     
