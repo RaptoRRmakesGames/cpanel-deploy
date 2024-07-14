@@ -367,7 +367,10 @@ class Kitchen:
             final_string.strip()
             
             c.execute("SELECT id FROM big_kitchens WHERE name=%s", [final_string])
-            print(f'final string: {final_string}')
+            try:
+                raise Exception(f'final string: {final_string}')
+            except Exception as e:
+                print('fwaeh')
             f = c.fetchall()
             return f[0][0]
             
