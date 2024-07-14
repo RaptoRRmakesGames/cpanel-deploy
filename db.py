@@ -291,7 +291,7 @@ class Department:
                 final_string += stri + ' '
             final_string.strip()
             
-            c.execute("SELECT id FROM big_department WHERE name=%s", [final_string])
+            c.execute("SELECT id FROM sub_department WHERE name=%s", [final_string])
             f = c.fetchall()
             return f[0][0]
     
