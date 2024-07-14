@@ -281,7 +281,19 @@ class Department:
         
         c.execute("SELECT id FROM sub_department WHERE name=%s", [name])
         
-        return c.fetchall()[0][0]
+        try:
+            
+            return c.fetchall()[0][0]
+        except IndexError:
+            strings = name.split('%20')
+            final_string = ''
+            for stri in strings:
+                final_string += stri + ' '
+            final_string.strip()
+            
+            c.execute("SELECT id FROM big_department WHERE name=%s", [final_string])
+            f = c.fetchall()
+            return f[0][0]
     
     def __init__(self, id):
         
@@ -355,8 +367,6 @@ class Kitchen:
         
         f = c.fetchall()
         
-        print('fwaeh carteh seeyuh: ',f, name)
-        
         try:
             return f[0][0]
         except IndexError:
@@ -367,7 +377,6 @@ class Kitchen:
             final_string.strip()
             
             c.execute("SELECT id FROM big_kitchens WHERE name=%s", [final_string])
-            print( f'final string: {final_string}')
             f = c.fetchall()
             return f[0][0]
             
