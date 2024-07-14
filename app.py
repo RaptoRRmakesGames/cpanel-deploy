@@ -26,7 +26,8 @@ from db import (
     get_all_departments,
     create_title,
     get_all_titles,
-    connect
+    connect,
+    remove_from_string
 )
 
 # Create an instance of the Flask class
@@ -263,6 +264,7 @@ def delete_program(program):
     
     db,c =connect()
     
+    program = remove_from_string(program)
     flash(f"`{program}` Deleted Successfully")
     
     c.execute("DELETE FROM programs WHERE name=%s ", [program])
@@ -274,6 +276,7 @@ def delete_program(program):
 def delete_title(title):
     
     db,c =connect()
+    title = remove_from_string(title)
     flash(f"`{title}` Deleted Successfully")
     c.execute("DELETE FROM titles WHERE name=%s ", [title])
     db.commit()
@@ -285,6 +288,7 @@ def delete_title(title):
 def delete_kitchen(kitchen):
     
     db,c =connect()
+    kitchen = remove_from_string(kitchen)
     flash(f"`{kitchen}` Deleted Successfully")
     c.execute("DELETE FROM big_kitchens WHERE name=%s ", [kitchen])
     db.commit()
@@ -295,6 +299,7 @@ def delete_kitchen(kitchen):
 def delete_department(department):
     
     db,c =connect()
+    department = remove_from_string(department)
     flash(f"`{department}` Deleted Successfully")
     c.execute("DELETE FROM sub_department WHERE name=%s ", [department])
     db.commit()
@@ -305,8 +310,8 @@ def delete_department(department):
 def delete_employee(employee):
     
     db,c =connect()
-    flash(f"`{employee}` Deleted Successfully")
-    c.execute("DELETE FROM employees WHERE name=%s ", [employee])
+    flash(f"`{remove_from_string(employee)}` Deleted Successfully")
+    c.execute("DELETE FROM employees WHERE name=%s ", [remove_from_string(employee)])
     db.commit()
     
     return redirect(url_for('edit_objects'))
