@@ -367,7 +367,7 @@ class Kitchen:
             final_string.strip()
             
             c.execute("SELECT id FROM big_kitchens WHERE name=%s", [final_string])
-        
+            print(f'final string: {final_string}')
             f = c.fetchall()
             return f[0][0]
             
