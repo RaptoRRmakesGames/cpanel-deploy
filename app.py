@@ -12,29 +12,18 @@ from flask import (
 )
 from datetime import timedelta, datetime
 
-from db import (
-    get_subdept,
-    create_dept,
-    Employee,
-    Department,
-    Kitchen,
-    KitchenGroup,
-    add_program,
-    get_all_programs,
-    get_next_weeks,
-    get_current_week,
-    get_all_departments,
-    create_title,
-    get_all_titles,
-    connect,
-    remove_from_string,
-    User
-)
+import db
 
 # Create an instance of the Flask class
 app = Flask(__name__)
 
 app.config["SECRET_KEY"] = "very_secret_key_12351232"
+
+@app.before_request
+def before():
+    
+    if 'user_id' in session:
+        db.USER_ID = session['user_id']
 
 
 # Define a route and a view function
@@ -64,7 +53,7 @@ def add_kitchen():
     match request.method:
         case "GET":
             return render_template(
-                "add_kitchen.html", session=session, departments=get_all_departments()
+                "add_kitchen.html", session=session, departments=db.get_all_departments()
             )
 
         case "POST":
@@ -75,7 +64,7 @@ def add_kitchen():
                     continue
                 deps.append(request.form.get(key))
 
-            Kitchen.create_kitchen(name, deps)
+            db.Kitchen.create_kitchen(name, deps)
 
             flash("Created Kitchen Successfully!")
 
@@ -92,7 +81,7 @@ def add_dep():
 
         case "POST":
 
-            create_dept(request.form.get("name"))
+            db.create_dept(request.form.get("name"))
 
             flash("Created Department Successfully!")
 
@@ -108,7 +97,7 @@ def add_title():
 
         case "POST":
 
-            create_title(request.form.get("name"))
+            db.create_title(request.form.get("name"))
 
             flash("Created Title Successfully!")
 
@@ -120,7 +109,7 @@ def save_schedule():
     if not auth() : return redirect(url_for('login_page'))
     data = request.json
 
-    schedule = KitchenGroup(data["week"])
+    schedule = db.KitchenGroup(data["week"])
 
     schedule.load_schedule(data)
 
@@ -140,14 +129,14 @@ def add_employee():
 
         case "GET":
 
-            all_departments = Department.get_all_departments()
-            all_programs = get_all_programs()
-            all_titles = get_all_titles()
+            all_departments = db.Department.get_all_departments()
+            all_programs = db.get_all_programs()
+            all_titles = db.get_all_titles()
 
             print(all_titles)
 
             return render_template(
-                "add_employee.html", session=session,
+                "add_db.Employee.html", session=session,
                 departments=all_departments,
                 programs=all_programs,
                 titles=all_titles,
@@ -161,7 +150,7 @@ def add_employee():
                 request.form.get("def_dep"),
             )
 
-            Employee.create_employee(name, title, def_dep)
+            db.Employee.create_employee(name, title, def_dep)
 
             flash("Added Employee Successfully!")
             return redirect(url_for("add_employee"))
@@ -179,7 +168,7 @@ def create_program():
 
             name = request.form.get("name")
 
-            add_program(name)
+            db.add_program(name)
 
             flash("Program Created")
 
@@ -189,11 +178,11 @@ def create_program():
 @app.route("/edit_objects")
 def edit_objects():
     if not auth() : return redirect(url_for('login_page'))
-    all_kitchens = Kitchen.get_all_kitchens()
-    all_departments = get_all_departments(False)
-    all_employees = Employee.get_all_employees()
-    all_programs = get_all_programs()
-    all_titles = get_all_titles()
+    all_kitchens = db.Kitchen.get_all_kitchens()
+    all_departments = db.get_all_departments(False)
+    all_employees = db.Employee.get_all_employees()
+    all_programs = db.get_all_programs()
+    all_titles = db.get_all_titles()
 
     return render_template(
         "edit_objects.html", session=session,
@@ -211,8 +200,8 @@ def edit_kitchen(kitchen):
         case "GET":
             print(kitchen)
             return render_template(
-                "add_kitchen.html", session=session, departments=get_all_departments(),
-                edit=True, kitchen = Kitchen(Kitchen.get_id_from_name(kitchen))
+                "add_kitchen.html", session=session, departments=db.get_all_departments(),
+                edit=True, kitchen = db.Kitchen(db.Kitchen.get_id_from_name(kitchen))
             )
 
         case "POST":
@@ -223,11 +212,11 @@ def edit_kitchen(kitchen):
                     continue
                 deps.append(request.form.get(key))
 
-            k = Kitchen(Kitchen.get_id_from_name(kitchen))
+            k = db.Kitchen(db.Kitchen.get_id_from_name(kitchen))
             
             if k.name != name:
                 
-                db, c = connect()
+                db, c = db.connect()
                 
                 c.execute('SELECT id, default_dep, name FROM employees')
                 
@@ -257,17 +246,17 @@ def edit_department(dep):
     match request.method:
         case "GET":
             return render_template(
-                "add_deps.html", session=session, departments=get_all_departments(),
-                edit=True, department = Department(Department.get_id_from_name(dep))
+                "add_deps.html", session=session, departments=db.get_all_departments(),
+                edit=True, department = db.Department(db.Department.get_id_from_name(dep))
             )
 
         case "POST":
 
             name = request.form.get("name")
 
-            old_dep  = Department(Department.get_id_from_name(dep))
+            old_dep  = db.Department(db.Department.get_id_from_name(dep))
             
-            db,c = connect()
+            db,c = db.connect()
             
             c.execute("SELECT id, default_dep,name FROM employees")
             
@@ -301,8 +290,8 @@ def edit_demployee(emp):
         case "GET":
             
             return render_template(
-                "add_employee.html", session=session, departments=Department.get_all_departments(),
-                edit=True, employee = Employee(Employee.get_id_by_name(emp)), titles=get_all_titles(), programs=get_all_programs()
+                "add_db.Employee.html", session=session, departments=db.Department.get_all_departments(),
+                edit=True, employee = db.Employee(db.Employee.get_id_by_name(emp)), titles=db.get_all_titles(), programs=db.get_all_programs()
             )
 
         case "POST":
@@ -311,7 +300,7 @@ def edit_demployee(emp):
             title = request.form.get('title')
             pref_dep = request.form.get('def_dep')
 
-            Employee(Employee.get_id_by_name(emp)).update(name, title, pref_dep)
+            db.Employee(db.Employee.get_id_by_name(emp)).update(name, title, pref_dep)
 
             flash("Updated Department Successfully!")
 
@@ -321,9 +310,9 @@ def edit_demployee(emp):
 def delete_program(program):
     if not auth() : return redirect(url_for('login_page'))
     
-    db,c =connect()
+    db,c =db.connect()
     
-    program = remove_from_string(program)
+    program = db.remove_from_string(program)
     flash(f"`{program}` Deleted Successfully")
     
     c.execute("DELETE FROM programs WHERE name=%s ", [program])
@@ -335,8 +324,8 @@ def delete_program(program):
 def delete_title(title):
     if not auth() : return redirect(url_for('login_page'))
     
-    db,c =connect()
-    title = remove_from_string(title)
+    db,c =db.connect()
+    title = db.remove_from_string(title)
     flash(f"`{title}` Deleted Successfully")
     c.execute("DELETE FROM titles WHERE name=%s ", [title])
     db.commit()
@@ -347,8 +336,8 @@ def delete_title(title):
 def delete_kitchen(kitchen):
     if not auth() : return redirect(url_for('login_page'))
     
-    db,c =connect()
-    kitchen = remove_from_string(kitchen)
+    db,c =db.connect()
+    kitchen = db.remove_from_string(kitchen)
     flash(f"`{kitchen}` Deleted Successfully. Make sure to edit Employees that were assigned to that kitchen!")
     c.execute("DELETE FROM big_kitchens WHERE name=%s ", [kitchen])
     db.commit()
@@ -359,8 +348,8 @@ def delete_kitchen(kitchen):
 def delete_department(department):
     if not auth() : return redirect(url_for('login_page'))
     
-    db,c =connect()
-    department = remove_from_string(department)
+    db,c =db.connect()
+    department = db.remove_from_string(department)
     flash(f"`{department}` Deleted Successfully. Make sure to edit Employees that were assigned to that department!")
     c.execute("DELETE FROM sub_department WHERE name=%s ", [department])
     db.commit()
@@ -371,9 +360,9 @@ def delete_department(department):
 def delete_employee(employee):
     if not auth() : return redirect(url_for('login_page'))
     
-    db,c =connect()
-    flash(f"`{remove_from_string(employee)}` Deleted Successfully")
-    c.execute("DELETE FROM employees WHERE name=%s ", [remove_from_string(employee)])
+    db,c =db.connect()
+    flash(f"`{db.remove_from_string(employee)}` Deleted Successfully")
+    c.execute("DELETE FROM employees WHERE name=%s ", [db.remove_from_string(employee)])
     db.commit()
     
     return redirect(url_for('edit_objects'))
@@ -391,7 +380,7 @@ def table(week=None):
 
             if week == None:
 
-                group = KitchenGroup(get_current_week())
+                group = db.KitchenGroup(db.get_current_week())
 
                 day_start = group.week.split("-")[2].strip()
                 month_start = group.week.split("-")[1].strip()
@@ -411,22 +400,22 @@ def table(week=None):
 
                 print(formated_week)
 
-                group = KitchenGroup(formated_week)
+                group = db.KitchenGroup(formated_week)
 
             dates = get_next_seven_days(f"{day_start}/{month_start}/{year_start}")
 
             all_employees = group.get_unplaced_employees()
 
-            all_programs = get_all_programs()
+            all_programs = db.get_all_programs()
 
-            all_departments = Department.get_all_departments()
+            all_departments = db.Department.get_all_departments()
 
-            weeks = get_next_weeks(4)
-            selected_week = get_current_week() if week == None else formated_week
+            weeks = db.get_next_weeks(4)
+            selected_week = db.get_current_week() if week == None else formated_week
 
-            all_weeks_saved = KitchenGroup.get_saved_weeks()
+            all_weeks_saved = db.KitchenGroup.get_saved_weeks()
 
-            todays_week = get_current_week()
+            todays_week = db.get_current_week()
 
             split_days = group.get_split_days()
 
@@ -467,14 +456,12 @@ def login_page():
     match request.method:
         
         case 'POST':
-            user = User.login(request.form.get('email'), request.form.get('pass'))
+            user = db.User.login(request.form.get('email'), request.form.get('pass'))
             print(user)
-            if isinstance(user,  User):
+            if isinstance(user,  db.User):
                 flash('Login Successful!')
                 session['auth'] = True
-                session['user_creds'] = {
-                    'fwahe' : 'fwaeh'
-                }
+                session['user_id'] = user.id
             
                 return redirect(url_for('index'))
             

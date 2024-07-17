@@ -1,7 +1,10 @@
 import mysql.connector, json, random
 from datetime import datetime, timedelta
 import bcrypt
-from flask import flash
+from flask import flash, session
+
+
+USER_ID = None
 
 def hash_password(password: str) -> str:
     # Generate a salt
@@ -50,7 +53,7 @@ def create_title(name):
     db,c = connect()
     
     try:
-        c.execute("INSERT INTO titles (name) VALUES (%s)", [name])
+        c.execute("INSERT INTO titles (name,user_id) VALUES (%s,%s)", [name, USER_ID])
     except Exception as e:
         (f'Error: {e}')
     
@@ -60,7 +63,7 @@ def get_all_titles():
     
     db,c = connect()
     
-    c.execute("SELECT * FROM titles")
+    c.execute("SELECT * FROM titles WHERE user_id=%s", [USER_ID])
     
     return [f[1] for f in c.fetchall()]
 
@@ -69,7 +72,7 @@ def create_dept(name):
     db,c = connect()
     
     try:
-        c.execute("INSERT INTO sub_department (name) VALUES (%s)", [name])
+        c.execute("INSERT INTO sub_department (name, user_id) VALUES (%s,%s)", [name, USER_ID])
     except Exception as e:
         (f'Error: {e}')
     
@@ -79,7 +82,7 @@ def get_random_date():
     
     db,c = connect()
     
-    c.execute("SELECT name FROM programs")
+    c.execute("SELECT name FROM programs WHERE user_id =%s", [USER_ID])
     
     return c.fetchall()[0][0]
 
@@ -87,13 +90,13 @@ def get_random_program():
     
     return [
         {
-            'monday': (get_random_date(), ''),
-            'tuesday': (get_random_date(), ''),
-            'wednesday': (get_random_date(), ''),
-            'thursday': (get_random_date(), ''),
-            'friday': (get_random_date(), ''),
-            'saturday': (get_random_date(), ''),
-            'sunday': (get_random_date(), ''),
+            'monday': (get_random_date(USER_ID), ''),
+            'tuesday': (get_random_date(USER_ID), ''),
+            'wednesday': (get_random_date(USER_ID), ''),
+            'thursday': (get_random_date(USER_ID), ''),
+            'friday': (get_random_date(USER_ID), ''),
+            'saturday': (get_random_date(USER_ID), ''),
+            'sunday': (get_random_date(USER_ID), ''),
         }
     ]
     
@@ -111,7 +114,7 @@ def get_current_week():
 def get_all_departments(get_id=True):
     db,c = connect()
     
-    c.execute('SELECT id, name FROM sub_department')
+    c.execute('SELECT id, name FROM sub_department WHERE user_id=%s', [USER_ID])
     
     if get_id:
         return [(f[0], f[1]) for f in c.fetchall()]
@@ -142,13 +145,13 @@ def add_program(name:str):
     
     db,c = connect()
     
-    c.execute("INSERT INTO programs (name) VALUES (%s)", [name])
+    c.execute("INSERT INTO programs (name, user_id) VALUES (%s, %s)", [name, USER_ID])
     db.commit()
 
 def get_all_programs():
     db,c = connect()
     
-    c.execute("SELECT * FROM programs")
+    c.execute("SELECT * FROM programs WHERE user_id=%s", [USER_ID])
     
     return [f[1] for f in c.fetchall()]
 
@@ -196,7 +199,6 @@ class User:
             return 'Wrong Password'
         
         return User(f[0])
-        
     
     def __init__(self, ide) -> None:
         self.id = ide
@@ -215,7 +217,6 @@ class User:
         self.parent_id = f[5]
         self.email = f[6]
         
-        
 
 class Employee:
     
@@ -224,7 +225,7 @@ class Employee:
         
         db,c = connect()
         
-        c.execute("INSERT INTO employees (name, title, default_dep) VALUES (%s,%s,%s)", [name, title, def_dep])
+        c.execute("INSERT INTO employees (name, title, default_dep, user_id) VALUES (%s,%s,%s,%s)", [name, title, def_dep, USER_ID])
         db.commit()
         
         c.execute('SELECT * FROM employees WHERE name=%s', [name])
@@ -236,24 +237,22 @@ class Employee:
         
         db,c = connect()
         
-        c.execute("SELECT id FROM employees WHERE name =%s", [name])
+        c.execute("SELECT id FROM employees WHERE name =%s AND user_id=%s", [name, USER_ID])
         
         try:
             
             return c.fetchall()[0][0]
         except IndexError:
-            c.execute("SELECT id FROM employees WHERE name =%s", [remove_from_string(name)])
+            c.execute("SELECT id FROM employees WHERE name =%s AND user_id=%s", [remove_from_string(name), USER_ID])
             
             return c.fetchall()[0][0]
             
-        
-    
     @staticmethod
     def get_all_employees():
         
         db,c = connect()
         
-        c.execute("SELECT id FROM employees")
+        c.execute("SELECT id FROM employees WHERE user_id=%s", [USER_ID])
         
         return [Employee(id[0]) for id in c.fetchall()]
     
@@ -262,9 +261,15 @@ class Employee:
         
         self.id = idd
         
-        c.execute("SELECT * FROM employees WHERE id=%s", [self.id])
+        c.execute("SELECT * FROM employees WHERE id=%s AND user_id=%s", [self.id, USER_ID])
         # (f"SELECT * FROM employee WHERE id={self.id}")
-        f = c.fetchall()[0]
+        try:
+            f = c.fetchall()[0]
+        except IndexError:
+            
+            print("Employee Doesnt Exist")
+            return 
+        
         self.raw = {
             'id' : self.id,
             'name' : f[1],
@@ -308,7 +313,7 @@ class Employee:
             
             db,c = connect()
             
-            c.execute("SELECT schedule_json FROM schedules ORDER BY id ASC")
+            c.execute("SELECT schedule_json FROM schedules WHERE user_id=%s ORDER BY id ASC", [USER_ID])
             
             try:
                 dic = json.loads(c.fetchall()[0][0].replace("'", '"'))
@@ -343,7 +348,7 @@ class Department:
         
         db,c = connect()
         
-        c.execute("SELECT name, dep_ids FROM big_kitchens")
+        c.execute("SELECT name, dep_ids FROM big_kitchens WHERE user_id=%s", [USER_ID])
         
         departments = []
         
@@ -365,7 +370,7 @@ class Department:
     def get_id_from_name(name):
         db,c = connect()
         
-        c.execute("SELECT id FROM sub_department WHERE name=%s", [name])
+        c.execute("SELECT id FROM sub_department WHERE name=%s AND user_id=%s", [name,USER_ID])
         
         try:
             
@@ -377,7 +382,7 @@ class Department:
                 final_string += stri + ' '
             final_string.strip()
             
-            c.execute("SELECT id FROM sub_department WHERE name=%s", [final_string])
+            c.execute("SELECT id FROM sub_department WHERE name=%s AND user_id=%s", [final_string,USER_ID])
             f = c.fetchall()
             return f[0][0]
     
@@ -387,8 +392,12 @@ class Department:
         
         self.id = id 
         
-        c.execute("SELECT * FROM sub_department WHERE id=%s", [self.id])
-        f = c.fetchall()[0]
+        c.execute("SELECT * FROM sub_department WHERE id=%s AND user_id=%s", [self.id, USER_ID])
+        try:
+            f = c.fetchall()[0]
+        except IndexError:
+            print('Department Doesnt Exist')
+            return
         self.raw = {
             'id' : self.id,
             'name' : f[1]
@@ -427,11 +436,11 @@ class Kitchen:
         
         db,c = connect()
         
-        c.execute('INSERT INTO big_kitchens (name, dep_ids) VALUES (%s,%s)', [name, str(dept_ids)])
+        c.execute('INSERT INTO big_kitchens (name, dep_ids, user_id) VALUES (%s,%s, %s)', [name, str(dept_ids), USER_ID])
         
         db.commit()
         
-        c.execute('SELECT id FROM big_kitchens WHERE name=%s', [name])
+        c.execute('SELECT id FROM big_kitchens WHERE name=%s AND user_id=%s', [name, USER_ID])
         
         return Kitchen(c.fetchall()[0][0])
     
@@ -440,7 +449,7 @@ class Kitchen:
         
         db,c = connect()
         
-        c.execute("SELECT name FROM big_kitchens")
+        c.execute("SELECT name FROM big_kitchens WHERE user_id=%s", [USER_ID])
         
         return [f[0] for f in c.fetchall()]
     
@@ -449,7 +458,7 @@ class Kitchen:
         
         db,c =connect()
         
-        c.execute("SELECT id FROM big_kitchens WHERE name=%s", [name])
+        c.execute("SELECT id FROM big_kitchens WHERE name=%s AND user_id=%s", [name, USER_ID])
         
         f = c.fetchall()
         
@@ -469,10 +478,10 @@ class Kitchen:
     def __repr__(self) -> str:
         return f'Kitchen Object: {self.name}, #{self.id}'
     
-    def __init__(self, id) -> None:
+    def __init__(self, ide) -> None:
         db,c = connect()
         
-        c.execute("SELECT * FROM big_kitchens WHERE id=%s", [id])
+        c.execute("SELECT * FROM big_kitchens WHERE id=%s AND user_id=%s", [ide, USER_ID])
         f = c.fetchall()[0]
         self._raw = {
             'id' : id,
@@ -505,7 +514,7 @@ class KitchenGroup:
         
         db,c = connect()
         
-        c.execute("SELECT week FROM schedules WHERE week=%s", [week])
+        c.execute("SELECT week FROM schedules WHERE week=%s  AND user_id=%s", [week, USER_ID])
         
         return c.fetchall()
     
@@ -514,22 +523,21 @@ class KitchenGroup:
         
         db,c = connect()
         
-        c.execute("SELECT week FROM schedules")
+        c.execute("SELECT week FROM schedules WHERE user_id=%s", [USER_ID])
         
         return c.fetchall()
-    
     
     def __init__(self,week='') -> None:
         db,c = connect()
         
         self.week = week 
         
-        c.execute('SELECT id FROM big_kitchens')
+        c.execute('SELECT id FROM big_kitchens WHERE user_id=%s', [USER_ID])
         self.sub_kitchens = [Kitchen(id[0]) for id in c.fetchall()]
         
         if self.week != '':
             
-            c.execute('SELECT * FROM schedules WHERE week=%s', [week])
+            c.execute('SELECT * FROM schedules WHERE week=%s AND user_id=%s', [week, USER_ID])
             
             if len((f := c.fetchall() )) > 0:
                 self.load_schedule(f[0][2].replace("'", '"'))
@@ -545,14 +553,14 @@ class KitchenGroup:
         
         db,c = connect()
         
-        c.execute('SELECT name FROM employees')
+        c.execute('SELECT name FROM employees WHERE user_id=%s', [USER_ID])
         
         return [f[0] for f in c.fetchall()]
             
     def load_last_schedule(self):
         db,c = connect()
         
-        c.execute("SELECT schedule_json FROM schedules ORDER BY id DESC")
+        c.execute("SELECT schedule_json FROM schedules WHERE user_id=%s ORDER BY id DESC", [USER_ID])
         
         f = c.fetchall()
         if len(f) < 1:
@@ -605,7 +613,7 @@ class KitchenGroup:
     def set_week(self, week):
         
         self.week = week 
-        c.execute('SELECT * FROM schedules WHERE week=%s', [week])
+        c.execute('SELECT * FROM schedules WHERE week=%s AND user_id=%s', [week, USER_ID])
         
         if len((f := c.fetchall() )) > 0:
             self.load_schedule(f[0][2].replace("'", '"'))
@@ -741,9 +749,9 @@ class KitchenGroup:
         # 
         
         if len(KitchenGroup.get_all_weeks(self.week)) > 0:
-            c.execute("UPDATE schedules SET schedule_json=%s WHERE week=%s", [str(schedule_json),self.week])
+            c.execute("UPDATE schedules SET schedule_json=%s WHERE week=%s AND user_id=%s", [str(schedule_json),self.week, USER_ID])
         else: 
-            c.execute("INSERT INTO schedules (week, schedule_json) VALUES (%s, %s)", [self.week, str(schedule_json)])
+            c.execute("INSERT INTO schedules (week, schedule_json, user_id) VALUES (%s, %s, %s)", [self.week, str(schedule_json), USER_ID])
             
         self.saved = True
         
@@ -791,4 +799,3 @@ if __name__ == '__main__':
     # (k)
     
     # User.register_user('Kafantaris', 'CEO', 'gjkafantaris@gmail.com', '1234', 1,1,-1)
-    print(User.login('gjkafantaris@gmail.com', '1234'))
