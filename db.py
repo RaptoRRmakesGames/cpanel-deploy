@@ -1,5 +1,18 @@
 import mysql.connector, json, random
 from datetime import datetime, timedelta
+import bcrypt
+from flask import flash
+
+def hash_password(password: str) -> str:
+    # Generate a salt
+    salt = bcrypt.gensalt()
+    # Hash the password with the salt
+    hashed_password = bcrypt.hashpw(password.encode(), salt)
+    return hashed_password.decode()
+
+def verify_password(stored_password: str, provided_password: str) -> bool:
+    # Compare the provided password with the stored hashed password
+    return bcrypt.checkpw(provided_password.encode(), stored_password.encode())
 
 def connect():
     
@@ -147,6 +160,62 @@ def remove_from_string(stre, to_remove='%20'):
         final_str += stri + ' '
         
     return final_str
+
+class User:
+    
+    @staticmethod 
+    def register_user(username,role, email, password, admin, owner, parent_id):
+        
+        db,c = connect()
+        
+        password = hash_password(password)
+        
+        c.execute(
+        "INSERT INTO users (name, role, admin, owner, parent_id, password, email) VALUES (%s,%s,%s,%s,%s,%s,%s)",
+        [username,role, admin, owner, parent_id, password, email]
+        )
+        
+        db.commit()
+        
+    @staticmethod
+    def login(email, password):
+        
+        db,c = connect()
+        
+        c.execute("SELECT * FROM users WHERE email=%s", [email])
+        
+        f = c.fetchall()
+        
+        print(f)
+        
+        if len(f) == 0:
+            return 'No user With this Email!'
+
+        f = f[0]        
+        if not verify_password(f[6], password):
+            return 'Wrong Password'
+        
+        return User(f[0])
+        
+    
+    def __init__(self, ide) -> None:
+        self.id = ide
+        
+        db,c = connect()
+        c.execute('SELECT * FROM users WHERE id=%s', [self.id])
+        try:
+            f = c.fetchall()[0]
+        except IndexError:
+            return None
+        
+        self.name = f[1]
+        self.role = f[2]
+        self.admin = f[3]
+        self.owner = f[4]
+        self.parent_id = f[5]
+        self.email = f[6]
+        
+        
 
 class Employee:
     
@@ -527,6 +596,10 @@ class KitchenGroup:
         
         dep = self.get_department_by_name(pref_dep.lower(), pref_dep_kitch.lower())
         
+        if dep == None:
+            flash(f'Error!: `{pref_dep}` department  in `{pref_dep_kitch}` doesnt exist!')
+            return 
+        
         emp.pass_to_department(dep, 'last_program')
             
     def set_week(self, week):
@@ -703,7 +776,7 @@ if __name__ == '__main__':
 
     # (new_k) 
     
-    k = KitchenGroup('2/7/2024')
+    # k = KitchenGroup('2/7/2024')
         
     
     # employee = Employee(1)
@@ -715,4 +788,7 @@ if __name__ == '__main__':
     
     # k.save_schedule()
     
-    (k)
+    # (k)
+    
+    # User.register_user('Kafantaris', 'CEO', 'gjkafantaris@gmail.com', '1234', 1,1,-1)
+    print(User.login('gjkafantaris@gmail.com', '1234'))

@@ -27,7 +27,8 @@ from db import (
     create_title,
     get_all_titles,
     connect,
-    remove_from_string
+    remove_from_string,
+    User
 )
 
 # Create an instance of the Flask class
@@ -38,8 +39,14 @@ app.config["SECRET_KEY"] = "very_secret_key_12351232"
 
 # Define a route and a view function
 @app.route("/")
-def hello():
-    return render_template("index.html")
+def index():
+    if not auth() : return redirect(url_for('login_page'))
+    
+    return render_template("index.html", session=session,)
+
+def auth():
+    if 'auth' in session: return session['auth']
+    else: return False
 
 
 def get_next_seven_days(start_date_str):
@@ -52,10 +59,12 @@ def get_next_seven_days(start_date_str):
 @app.route("/add_kitchen", methods=["GET", "POST"])
 def add_kitchen():
 
+    if not auth() : return redirect(url_for('login_page'))
+    
     match request.method:
         case "GET":
             return render_template(
-                "add_kitchen.html", departments=get_all_departments()
+                "add_kitchen.html", session=session, departments=get_all_departments()
             )
 
         case "POST":
@@ -76,9 +85,10 @@ def add_kitchen():
 @app.route("/add_department", methods=["GET", "POST"])
 def add_dep():
 
+    if not auth() : return redirect(url_for('login_page'))
     match request.method:
         case "GET":
-            return render_template("add_deps.html")
+            return render_template("add_deps.html", session=session,)
 
         case "POST":
 
@@ -91,10 +101,10 @@ def add_dep():
 
 @app.route("/add_title", methods=["GET", "POST"])
 def add_title():
-
+    if not auth() : return redirect(url_for('login_page'))
     match request.method:
         case "GET":
-            return render_template("add_title.html")
+            return render_template("add_title.html", session=session,)
 
         case "POST":
 
@@ -107,6 +117,7 @@ def add_title():
 
 @app.route("/save_schedule", methods=["POST"])
 def save_schedule():
+    if not auth() : return redirect(url_for('login_page'))
     data = request.json
 
     schedule = KitchenGroup(data["week"])
@@ -124,7 +135,7 @@ def save_schedule():
 
 @app.route("/add_employee", methods=["GET", "POST"])
 def add_employee():
-
+    if not auth() : return redirect(url_for('login_page'))
     match request.method:
 
         case "GET":
@@ -136,7 +147,7 @@ def add_employee():
             print(all_titles)
 
             return render_template(
-                "add_employee.html",
+                "add_employee.html", session=session,
                 departments=all_departments,
                 programs=all_programs,
                 titles=all_titles,
@@ -158,11 +169,11 @@ def add_employee():
 
 @app.route("/add_program", methods=["GET", "POST"])
 def create_program():
-
+    if not auth() : return redirect(url_for('login_page'))
     match request.method:
         case "GET":
 
-            return render_template("add_program.html")
+            return render_template("add_program.html", session=session,)
 
         case "POST":
 
@@ -177,7 +188,7 @@ def create_program():
 
 @app.route("/edit_objects")
 def edit_objects():
-
+    if not auth() : return redirect(url_for('login_page'))
     all_kitchens = Kitchen.get_all_kitchens()
     all_departments = get_all_departments(False)
     all_employees = Employee.get_all_employees()
@@ -185,7 +196,7 @@ def edit_objects():
     all_titles = get_all_titles()
 
     return render_template(
-        "edit_objects.html",
+        "edit_objects.html", session=session,
         kitchens=all_kitchens,
         departments=all_departments,
         employees=all_employees,
@@ -195,11 +206,12 @@ def edit_objects():
     
 @app.route('/edit/kitchen/<kitchen>', methods=['GET', 'POST'])
 def edit_kitchen(kitchen):
+    if not auth() : return redirect(url_for('login_page'))
     match request.method:
         case "GET":
             print(kitchen)
             return render_template(
-                "add_kitchen.html", departments=get_all_departments(),
+                "add_kitchen.html", session=session, departments=get_all_departments(),
                 edit=True, kitchen = Kitchen(Kitchen.get_id_from_name(kitchen))
             )
 
@@ -211,7 +223,29 @@ def edit_kitchen(kitchen):
                     continue
                 deps.append(request.form.get(key))
 
-            Kitchen(Kitchen.get_id_from_name(kitchen)).update(name, deps)
+            k = Kitchen(Kitchen.get_id_from_name(kitchen))
+            
+            if k.name != name:
+                
+                db, c = connect()
+                
+                c.execute('SELECT id, default_dep, name FROM employees')
+                
+                emps = c.fetchall()
+                
+                for emp in emps:
+                    
+                    empid = emp[0]
+                    emp_def_kitch, emp_def_dep = emp[1].split(" - ")
+                    empname = emp[2]
+                    
+                    if emp_def_kitch == k.name:
+                        c.execute('UPDATE employees SET default_dep=%s WHERE id=%s', [f'{name} - {emp_def_dep}', empid])
+                        db.commit()
+                        
+                        flash(f'Updated Employee `{empname}`')
+            
+            k.update(name, deps)
 
             flash("Updated Kitchen Successfully!")
 
@@ -219,10 +253,11 @@ def edit_kitchen(kitchen):
     
 @app.route('/edit/department/<dep>', methods=['GET', 'POST'])
 def edit_department(dep):
+    if not auth() : return redirect(url_for('login_page'))
     match request.method:
         case "GET":
             return render_template(
-                "add_deps.html", departments=get_all_departments(),
+                "add_deps.html", session=session, departments=get_all_departments(),
                 edit=True, department = Department(Department.get_id_from_name(dep))
             )
 
@@ -230,7 +265,30 @@ def edit_department(dep):
 
             name = request.form.get("name")
 
-            Department(Department.get_id_from_name(dep)).update(name)
+            old_dep  = Department(Department.get_id_from_name(dep))
+            
+            db,c = connect()
+            
+            c.execute("SELECT id, default_dep,name FROM employees")
+            
+            emps = c.fetchall()
+            
+            for emp in emps:
+                
+                empid = emp[0]
+                
+                empname=emp[2]
+                
+                def_dep_kitch,def_dep = emp[1].split(' - ')
+                
+                if old_dep.name == def_dep:
+                    c.execute('UPDATE employees SET default_dep=%s WHERE id=%s', [f"{def_dep_kitch} - {name}", empid])
+                    
+                    db.commit()
+                    flash(f"Updated Department in Employee `{empname}`")
+                
+            
+            old_dep.update(name)
 
             flash("Updated Department Successfully!")
 
@@ -238,12 +296,12 @@ def edit_department(dep):
         
 @app.route('/edit/employee/<emp>', methods=['GET', 'POST'])
 def edit_demployee(emp):
+    if not auth() : return redirect(url_for('login_page'))
     match request.method:
         case "GET":
-            print(emp)
             
             return render_template(
-                "add_employee.html", departments=Department.get_all_departments(),
+                "add_employee.html", session=session, departments=Department.get_all_departments(),
                 edit=True, employee = Employee(Employee.get_id_by_name(emp)), titles=get_all_titles(), programs=get_all_programs()
             )
 
@@ -261,6 +319,7 @@ def edit_demployee(emp):
         
 @app.route('/delete/program/<program>')
 def delete_program(program):
+    if not auth() : return redirect(url_for('login_page'))
     
     db,c =connect()
     
@@ -274,6 +333,7 @@ def delete_program(program):
 
 @app.route('/delete/title/<title>')
 def delete_title(title):
+    if not auth() : return redirect(url_for('login_page'))
     
     db,c =connect()
     title = remove_from_string(title)
@@ -283,13 +343,13 @@ def delete_title(title):
     
     return redirect(url_for('edit_objects'))
 
-
 @app.route('/delete/kitchen/<kitchen>')
 def delete_kitchen(kitchen):
+    if not auth() : return redirect(url_for('login_page'))
     
     db,c =connect()
     kitchen = remove_from_string(kitchen)
-    flash(f"`{kitchen}` Deleted Successfully")
+    flash(f"`{kitchen}` Deleted Successfully. Make sure to edit Employees that were assigned to that kitchen!")
     c.execute("DELETE FROM big_kitchens WHERE name=%s ", [kitchen])
     db.commit()
     
@@ -297,10 +357,11 @@ def delete_kitchen(kitchen):
 
 @app.route('/delete/department/<department>')
 def delete_department(department):
+    if not auth() : return redirect(url_for('login_page'))
     
     db,c =connect()
     department = remove_from_string(department)
-    flash(f"`{department}` Deleted Successfully")
+    flash(f"`{department}` Deleted Successfully. Make sure to edit Employees that were assigned to that department!")
     c.execute("DELETE FROM sub_department WHERE name=%s ", [department])
     db.commit()
     
@@ -308,6 +369,7 @@ def delete_department(department):
 
 @app.route('/delete/employee/<employee>')
 def delete_employee(employee):
+    if not auth() : return redirect(url_for('login_page'))
     
     db,c =connect()
     flash(f"`{remove_from_string(employee)}` Deleted Successfully")
@@ -319,6 +381,9 @@ def delete_employee(employee):
 @app.route("/table")
 @app.route("/table/<week>")
 def table(week=None):
+    if not auth() : return redirect(url_for('login_page'))
+    
+    
 
     match request.method:
 
@@ -376,7 +441,7 @@ def table(week=None):
             )
 
             return render_template(
-                "table.html",
+                "table.html", session=session,
                 group=group,
                 all_employees=all_employees,
                 all_programs=all_programs,
@@ -390,12 +455,43 @@ def table(week=None):
                 split_days=split_days,
             )
 
-
 @app.route("/see_week/<d_start>_<m_start>_<y_start>_<d_end>_<m_end>_<y_end>")
 def see_week(d_start, m_start, y_start, d_end, m_end, y_end):
+    if not auth() : return redirect(url_for('login_page'))
 
     return f"{d_start}/{m_start}/{y_start} - {d_end}/{m_end}/{y_end}"
 
+@app.route('/login', methods=['GET', 'POST'])
+def login_page():
+    
+    match request.method:
+        
+        case 'POST':
+            user = User.login(request.form.get('email'), request.form.get('pass'))
+            print(user)
+            if isinstance(user,  User):
+                flash('Login Successful!')
+                session['auth'] = True
+                session['user_creds'] = {
+                    'fwahe' : 'fwaeh'
+                }
+            
+                return redirect(url_for('index'))
+            
+            else: flash(user); return redirect(url_for('login_page'))
+            
+        case 'GET':
+            
+            return render_template('login.html')
+        
+@app.route('/logout')
+def logout():
+    
+    session.clear()
+    
+    flash("Successfully Logged Out!")
+    
+    return redirect(url_for('login_page'))
 
 # Run the application
 if __name__ == "__main__":

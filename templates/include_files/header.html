@@ -27,6 +27,7 @@
        ;
     }
 </style>
+{% if session['auth']%}
 <header>
     <nav style="display: inline-block;">
         <li style=" margin-right: 28px"><a href="/">Home</a></li>
@@ -46,8 +47,10 @@
         <ul id="schedule" class="invisible">
             <li><a href="/table">Create Schedule</a></li>
         </ul>
+        <li><a href="/logout">Logout</a></li>
     </nav>
 </header>
+{% endif%}
 
 <script>
     const codes = ['→', '↓'];

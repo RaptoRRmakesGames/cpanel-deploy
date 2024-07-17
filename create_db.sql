@@ -1,3 +1,9 @@
+CREATE TABLE IF NOT EXISTS `large_department` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(255) NOT NULL,
+    `kitchen_ids` VARCHAR(500) NOT NULL,
+    PRIMARY KEY (`id`)
+);
 CREATE TABLE IF NOT EXISTS `big_kitchens` (
     `id` INT NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(255) NOT NULL,
@@ -37,5 +43,15 @@ CREATE TABLE IF NOT EXISTS `programs` (
 CREATE TABLE IF NOT EXISTS `titles` (
     `id` INT NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(255) NOT NULL,
+    PRIMARY KEY (`id`)
+)
+
+CREATE TABLE IF NOT EXISTS `users` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(255) NOT NULL,
+    `role` VARCHAR(255) NOT NULL,
+    `admin` INT NOT NULL,
+    `owner` INT NOT NULL DEFAULT 0, 
+    `parent_id` INT NOT NULL DEFAULT 1,
     PRIMARY KEY (`id`)
 )
