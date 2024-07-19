@@ -236,6 +236,32 @@ def edit_kitchen(kitchen):
                         db_obj.commit()
                         
                         flash(f'Updated Employee `{empname}`')
+                        
+            c.execute('SELECT id, week, schedule_json FROM schedules WHERE user_id=%s ', [session['parent_id']])
+            
+            f = c.fetchall()
+            
+            for sched in f:
+                
+                week_id = sched[0]
+                week_name = sched[1]
+                sched_json = json.loads(sched[2].replace("'", '"'))
+                new_js = {}
+                for kitchen_key in sched_json:
+                    
+                    if kitchen_key == k.name:
+                        new_js[name] = sched_json[kitchen_key]
+                    else:
+                        
+                        new_js[kitchen_key] = sched_json[kitchen_key]
+
+                
+                print(new_js)
+                            
+                c.execute('UPDATE schedules SET schedule_json=%s WHERE id=%s', [str(new_js), week_id])   
+                db_obj.commit()       
+                
+                flash(f'Week `{week_name}` updated for Kitchen name change')
             
             k.update(name, deps)
 
