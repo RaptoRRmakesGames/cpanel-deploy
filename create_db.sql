@@ -12,16 +12,12 @@ CREATE TABLE IF NOT EXISTS `big_kitchens` (
     `user_id` INT NOT NULL,
     PRIMARY KEY (`id`)
 );
-
-
 CREATE TABLE IF NOT EXISTS `sub_department` (
     `id` INT NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(255) NOT NULL,
     `user_id` INT NOT NULL,
     PRIMARY KEY (`id`)
 );
-
-
 CREATE TABLE IF NOT EXISTS `employees` (
     `id` INT NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(255) NOT NULL,
