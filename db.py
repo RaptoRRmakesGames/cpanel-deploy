@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 import bcrypt
 from flask import flash, session
 
-
 USER_ID = None
 
 def hash_password(password: str) -> str:
@@ -90,13 +89,13 @@ def get_random_program():
     
     return [
         {
-            'monday': (get_random_date(USER_ID), ''),
-            'tuesday': (get_random_date(USER_ID), ''),
-            'wednesday': (get_random_date(USER_ID), ''),
-            'thursday': (get_random_date(USER_ID), ''),
-            'friday': (get_random_date(USER_ID), ''),
-            'saturday': (get_random_date(USER_ID), ''),
-            'sunday': (get_random_date(USER_ID), ''),
+            'monday': (get_random_date(), ''),
+            'tuesday': (get_random_date(), ''),
+            'wednesday': (get_random_date(), ''),
+            'thursday': (get_random_date(), ''),
+            'friday': (get_random_date(), ''),
+            'saturday': (get_random_date(), ''),
+            'sunday': (get_random_date(), ''),
         }
     ]
     
@@ -173,12 +172,27 @@ class User:
         
         password = hash_password(password)
         
+        if parent_id == '' or parent_id == None:
+            parent_id = -1
+        
         c.execute(
         "INSERT INTO users (name, role, admin, owner, parent_id, password, email) VALUES (%s,%s,%s,%s,%s,%s,%s)",
         [username,role, admin, owner, parent_id, password, email]
         )
         
+        if parent_id == -1:
+            c.execute('UPDATE users SET parent_id=id WHERE name=%s', [username])
+        
         db.commit()
+        
+    @staticmethod
+    def check_email_valid(email):
+        
+        db,c = connect()
+        
+        c.execute('SELECT * FROM users WHERE email=%s', [email])
+        
+        return len(c.fetchall()) != 0
         
     @staticmethod
     def login(email, password):
@@ -212,8 +226,8 @@ class User:
         
         self.name = f[1]
         self.role = f[2]
-        self.admin = f[3]
-        self.owner = f[4]
+        self.admin = bool(f[3])
+        self.owner = bool(f[4])
         self.parent_id = f[5]
         self.email = f[6]
         
@@ -386,11 +400,11 @@ class Department:
             f = c.fetchall()
             return f[0][0]
     
-    def __init__(self, id):
+    def __init__(self, ide):
         
         db,c = connect()
         
-        self.id = id 
+        self.id = ide
         
         c.execute("SELECT * FROM sub_department WHERE id=%s AND user_id=%s", [self.id, USER_ID])
         try:
@@ -489,7 +503,7 @@ class Kitchen:
             'dep_ids': json.loads(f[2].replace("'", '"'))
         }
         
-        self.id = id 
+        self.id = ide
         
         self.sub_departments = []
         
@@ -763,39 +777,37 @@ if __name__ == '__main__':
     
     ('Connected to db')
     
-    # while True:
-    
-    #     text = input('Enter Dept Name (empty to stop): ')
-    #     create_dept(text) if text != '' else 0
+    while True:
         
-    #     if text=='':
-    #         break
-    
-    # dep_ids_list = []
-    # while True:
-    #     text = input('Enter Dept Id (empty to stop): ')
-        
-    #     dep_ids_list.append(text) if text != '' else 0
-        
-    #     if text == '':
-    #         break
-        
-    # new_k = Kitchen.create_kitchen(input("Enter Kitchen Name: "), dep_ids_list)
-
-    # (new_k) 
-    
-    # k = KitchenGroup('2/7/2024')
-        
-    
-    # employee = Employee(1)
-    # employee.pass_to_department(k.get_department_by_name('Breakfast', 'Main Kitchen'), '6-12')
-    
-    # # employee2 = Employee.create_employee('Giorgos Kafantaris Junior', 'A Cook')
-    # employee2 = Employee(2)
-    # employee2.pass_to_department(k.get_department_by_name('Kitchen', 'Glass House Kitchen'), '6-12')
-    
-    # k.save_schedule()
-    
-    # (k)
-    
-    # User.register_user('Kafantaris', 'CEO', 'gjkafantaris@gmail.com', '1234', 1,1,-1)
+        match (f:=input('$ ')):
+            
+            case 'help':
+                with open('help.txt') as file:
+                    
+                    print(file.read())
+                
+                
+            case 'create_user':
+                User.register_user(
+                    input('Username: '),
+                    input('Role: '),
+                    input('Email: '),
+                    input('Password: '),
+                    input('Admin (0/1): '),
+                    input('Owner (0/1): '),
+                    input('Parent User Id (empty for same as id): '),
+                )
+            case 'edit_user':
+                print('edit_user')
+            case 'wipe_user_content':
+                print('wipe_user_content')
+            case 'delete_user':
+                print('delete')
+                
+            case '':
+                break
+            
+            case _:
+                print(F'`{f}` is not a recognised command. `help` for command list')
+                
+        print('\n\n')

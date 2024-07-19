@@ -19,12 +19,16 @@ app = Flask(__name__)
 
 app.config["SECRET_KEY"] = "very_secret_key_12351232"
 
+app.config.update(
+    SESSION_PERMANENT=True,
+    SESSION_TYPE='filesystem'
+)
+
 @app.before_request
 def before():
     
     if 'user_id' in session:
-        db.USER_ID = session['user_id']
-
+        db.USER_ID = session['parent_id']
 
 # Define a route and a view function
 @app.route("/")
@@ -37,6 +41,9 @@ def auth():
     if 'auth' in session: return session['auth']
     else: return False
 
+def admin():
+    if auth(): return session['user_admin']
+    else: return False
 
 def get_next_seven_days(start_date_str):
     start_date = datetime.strptime(start_date_str, "%d/%m/%Y")
@@ -68,8 +75,7 @@ def add_kitchen():
 
             flash("Created Kitchen Successfully!")
 
-            return redirect(url_for("add_kitchen"))
-
+            return redirect(url_for("edit_objects"))
 
 @app.route("/add_department", methods=["GET", "POST"])
 def add_dep():
@@ -85,8 +91,7 @@ def add_dep():
 
             flash("Created Department Successfully!")
 
-            return redirect(url_for("add_dep"))
-
+            return redirect(url_for("edit_objects"))
 
 @app.route("/add_title", methods=["GET", "POST"])
 def add_title():
@@ -101,8 +106,7 @@ def add_title():
 
             flash("Created Title Successfully!")
 
-            return redirect(url_for("add_title"))
-
+            return redirect(url_for("edit_objects"))
 
 @app.route("/save_schedule", methods=["POST"])
 def save_schedule():
@@ -121,7 +125,6 @@ def save_schedule():
         }
     )
 
-
 @app.route("/add_employee", methods=["GET", "POST"])
 def add_employee():
     if not auth() : return redirect(url_for('login_page'))
@@ -136,7 +139,7 @@ def add_employee():
             print(all_titles)
 
             return render_template(
-                "add_db.Employee.html", session=session,
+                "add_employee.html", session=session,
                 departments=all_departments,
                 programs=all_programs,
                 titles=all_titles,
@@ -153,8 +156,7 @@ def add_employee():
             db.Employee.create_employee(name, title, def_dep)
 
             flash("Added Employee Successfully!")
-            return redirect(url_for("add_employee"))
-
+            return redirect(url_for("edit_objects"))
 
 @app.route("/add_program", methods=["GET", "POST"])
 def create_program():
@@ -172,8 +174,7 @@ def create_program():
 
             flash("Program Created")
 
-            return redirect(url_for("create_program"))
-
+            return redirect(url_for("edit_objects"))
 
 @app.route("/edit_objects")
 def edit_objects():
@@ -200,7 +201,7 @@ def edit_kitchen(kitchen):
         case "GET":
             print(kitchen)
             return render_template(
-                "add_kitchen.html", session=session, departments=db.get_all_departments(),
+                "add_kitchen.html", session=session, departments = db.get_all_departments(),
                 edit=True, kitchen = db.Kitchen(db.Kitchen.get_id_from_name(kitchen))
             )
 
@@ -216,7 +217,7 @@ def edit_kitchen(kitchen):
             
             if k.name != name:
                 
-                db, c = db.connect()
+                db_obj, c = db.connect()
                 
                 c.execute('SELECT id, default_dep, name FROM employees')
                 
@@ -230,7 +231,7 @@ def edit_kitchen(kitchen):
                     
                     if emp_def_kitch == k.name:
                         c.execute('UPDATE employees SET default_dep=%s WHERE id=%s', [f'{name} - {emp_def_dep}', empid])
-                        db.commit()
+                        db_obj.commit()
                         
                         flash(f'Updated Employee `{empname}`')
             
@@ -256,7 +257,7 @@ def edit_department(dep):
 
             old_dep  = db.Department(db.Department.get_id_from_name(dep))
             
-            db,c = db.connect()
+            db_obj,c = db.connect()
             
             c.execute("SELECT id, default_dep,name FROM employees")
             
@@ -273,7 +274,7 @@ def edit_department(dep):
                 if old_dep.name == def_dep:
                     c.execute('UPDATE employees SET default_dep=%s WHERE id=%s', [f"{def_dep_kitch} - {name}", empid])
                     
-                    db.commit()
+                    db_obj.commit()
                     flash(f"Updated Department in Employee `{empname}`")
                 
             
@@ -290,7 +291,7 @@ def edit_demployee(emp):
         case "GET":
             
             return render_template(
-                "add_db.Employee.html", session=session, departments=db.Department.get_all_departments(),
+                "add_employee.html", session=session, departments=db.Department.get_all_departments(),
                 edit=True, employee = db.Employee(db.Employee.get_id_by_name(emp)), titles=db.get_all_titles(), programs=db.get_all_programs()
             )
 
@@ -310,13 +311,13 @@ def edit_demployee(emp):
 def delete_program(program):
     if not auth() : return redirect(url_for('login_page'))
     
-    db,c =db.connect()
+    db_obj,c =db.connect()
     
     program = db.remove_from_string(program)
     flash(f"`{program}` Deleted Successfully")
     
     c.execute("DELETE FROM programs WHERE name=%s ", [program])
-    db.commit()
+    db_obj.commit()
     
     return redirect(url_for('edit_objects'))
 
@@ -324,11 +325,11 @@ def delete_program(program):
 def delete_title(title):
     if not auth() : return redirect(url_for('login_page'))
     
-    db,c =db.connect()
+    db_obj,c =db.connect()
     title = db.remove_from_string(title)
     flash(f"`{title}` Deleted Successfully")
     c.execute("DELETE FROM titles WHERE name=%s ", [title])
-    db.commit()
+    db_obj.commit()
     
     return redirect(url_for('edit_objects'))
 
@@ -336,11 +337,11 @@ def delete_title(title):
 def delete_kitchen(kitchen):
     if not auth() : return redirect(url_for('login_page'))
     
-    db,c =db.connect()
+    db_obj,c =db.connect()
     kitchen = db.remove_from_string(kitchen)
     flash(f"`{kitchen}` Deleted Successfully. Make sure to edit Employees that were assigned to that kitchen!")
     c.execute("DELETE FROM big_kitchens WHERE name=%s ", [kitchen])
-    db.commit()
+    db_obj.commit()
     
     return redirect(url_for('edit_objects'))
 
@@ -348,11 +349,11 @@ def delete_kitchen(kitchen):
 def delete_department(department):
     if not auth() : return redirect(url_for('login_page'))
     
-    db,c =db.connect()
+    db_obj,c =db.connect()
     department = db.remove_from_string(department)
     flash(f"`{department}` Deleted Successfully. Make sure to edit Employees that were assigned to that department!")
     c.execute("DELETE FROM sub_department WHERE name=%s ", [department])
-    db.commit()
+    db_obj.commit()
     
     return redirect(url_for('edit_objects'))
 
@@ -360,10 +361,10 @@ def delete_department(department):
 def delete_employee(employee):
     if not auth() : return redirect(url_for('login_page'))
     
-    db,c =db.connect()
+    db_obj,c =db.connect()
     flash(f"`{db.remove_from_string(employee)}` Deleted Successfully")
     c.execute("DELETE FROM employees WHERE name=%s ", [db.remove_from_string(employee)])
-    db.commit()
+    db_obj.commit()
     
     return redirect(url_for('edit_objects'))
 
@@ -462,7 +463,13 @@ def login_page():
                 flash('Login Successful!')
                 session['auth'] = True
                 session['user_id'] = user.id
-            
+                session['user_name'] = user.name
+                session['user_email'] = user.email
+                session['user_role'] = user.role
+                session['user_admin'] = user.admin
+                session['user_owner'] = user.owner
+                session['parent_id'] = user.parent_id
+                            
                 return redirect(url_for('index'))
             
             else: flash(user); return redirect(url_for('login_page'))
@@ -470,6 +477,36 @@ def login_page():
         case 'GET':
             
             return render_template('login.html')
+        
+@app.route('/register', methods=['GET', 'POST'])
+def register_page():
+    if not admin() : return redirect(url_for('login_page'))
+    
+    match request.method:
+        
+        case 'GET':
+            
+            return render_template('register.html', session=session)
+    
+        case 'POST':
+            
+            name = request.form.get('name')
+            role = request.form.get('role')
+            email = request.form.get('email')
+            password = request.form.get('name')
+            is_admin = {True: 1, False: 2}[request.form.get('is_admin') == 'on']
+            
+            if not db.User.check_email_valid(email):
+                
+                flash('Email is not Valid or already in Use!')
+                return redirect(url_for('edit_objects'))
+            
+            db.User.register_user(name, role, email, password, is_admin, 0, session['user_id'])
+            
+            flash(f"User `{name}` Succesfully Created!")
+            
+            return redirect(url_for('edit_objects'))
+    
         
 @app.route('/logout')
 def logout():

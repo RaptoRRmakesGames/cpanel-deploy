@@ -148,24 +148,14 @@
 
                 <button onclick="splitEmployee(this)" style="margin-right: 1px;">Split</button> <br>
 
-                <select name="name">
-                    {% for empl in all_employees%}
-
-                    {% if empl.name == emp[0].name %}
-                    <option value="{{empl.name}}" selected>{{empl.name}}</option>
-                    {% else %}
-                    <option value="{{empl.name}}">{{empl.name}}</option>
-                    {% endif %}
-
-                    {% endfor %}
-                </select>
-                {% else %}
+                <input type="text" name="name" value="{{emp[0].name}}" id="" readonly>
+            </div>
+        </td> 
+        {% else %}
         <td>
-            <input type="text" name="name" value="{{emp[0].name}}" id="emp_name" readonly>
+            <input type="text" name="name" value="{{emp[0].name}}" id="emp_name" readonly readonly>
         </td>
 
-        </div>
-        </td>
         {% endif %}
         <td>
             <input type="text" name="title" value="{{emp[0].title}}" readonly name="" id="">
@@ -810,12 +800,14 @@
         new_tr = new_tr.cloneNode(true);
         new_tr.removeAttribute('id');
 
-        new_tr.childNodes[5].childNodes[1].value = button.parentElement.childNodes[5].value;
-        new_tr.childNodes[5].childNodes[1].readonly = true
-        console.log(button.parentElement.parentElement.parentElement.childNodes)
+        new_tr.childNodes[7].childNodes[1].value = button.parentElement.parentElement.parentElement.childNodes[7].childNodes[1].value;
+        new_tr.childNodes[7].childNodes[1].readonly = true
 
-        new_tr.childNodes[7].childNodes[1].value = button.parentElement.parentElement.parentElement.childNodes[6].childNodes[1].value;
-        new_tr.childNodes[7].childNodes[1].setAttribute('readonly', true)
+
+        new_tr.childNodes[5].childNodes[1].value = button.parentElement.parentElement.parentElement.childNodes[5].childNodes[1].childNodes[5].value;
+        new_tr.childNodes[5].childNodes[1].setAttribute('readonly', true)
+        console.log(button.parentElement.parentElement.parentElement.childNodes[5].childNodes[1].childNodes[5].value)
+
 
         new_tr.childNodes[1].childNodes[1].value = button.parentElement.parentElement.parentElement.childNodes[1].childNodes[1].value;
         new_tr.childNodes[3].childNodes[1].value = button.parentElement.parentElement.parentElement.childNodes[3].childNodes[1].value;

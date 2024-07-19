@@ -47,6 +47,7 @@
             {% endif %}
         {% endfor%}
     </select> <br>
+    {% if not edit%}
     <label for="">Work Schedule</label><br>
     <select name="" id="" >
         <option value=""></option>
@@ -54,6 +55,7 @@
         <option value="{{program}}">{{program}}</option>
         {% endfor%}
     </select> <br>
+    {% endif %}
 
     <input type="submit" name="" value="Add" id="">
 

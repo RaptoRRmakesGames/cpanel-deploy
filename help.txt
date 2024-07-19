@@ -1,0 +1,4 @@
+`create_user` - Create a new User Account
+`edit_user` - Edit a User Account.
+`wipe_user_content` - Wipes Users Account (DANGER)
+`delete_user` - Deletes User and Contents (DANGER)

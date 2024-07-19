@@ -28,18 +28,11 @@
     }
 </style>
 {% if session['auth']%}
+<h1>Hello {{session['user_name']}}! ({{session['user_role']}}) {% if session['user_admin']%} (Admin) {% endif %} {% if session['user_owner']%} (Owner) {% endif %} </h1>
 <header>
     <nav style="display: inline-block;">
         <li style=" margin-right: 28px"><a href="/">Home</a></li>
-        <h1 href="">Add <a href="#" onclick="toggle_open('add')"><span>&#8594;</span></a></h1>
-        <ul id="add" class="invisible">
-            <li><a href="/add_program" class="link">Add Program</a></li>
-            <li><a href="/add_employee" class="link">Add Employee</a></li>
-            <li><a href="/add_department" class="link">Add Department</a></li>
-            <li><a href="/add_kitchen" class="link">Add Kitchen</a></li>
-            <li><a href="/add_title" class="link">Add Title</a></li>
-        </ul>
-        <h1 href="">Edit <a href="#" onclick="toggle_open('edit')"><span>&#8594;</span></a></h1>
+        <h1 href="">Manage Objects <a href="#" onclick="toggle_open('edit')"><span>&#8594;</span></a></h1>
         <ul id="edit" class="invisible">
             <li><a href="/edit_objects"class="link">Edit Objects</a></li>
         </ul>
@@ -47,7 +40,14 @@
         <ul id="schedule" class="invisible">
             <li><a href="/table">Create Schedule</a></li>
         </ul>
+        {% if session['user_admin'] %}
+        <h1 href="">Admin Panel <a href="#" onclick="toggle_open('admin')"><span>&#8594;</span></a></h1>
+        <ul id="admin" class="invisible">
+            <li><a href="/register">Register a User</a></li>
+        </ul>
+        {% endif %}
         <li><a href="/logout">Logout</a></li>
+
     </nav>
 </header>
 {% endif%}

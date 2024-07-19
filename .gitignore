@@ -2,3 +2,4 @@ db_creds.json
 notes.txt
 /ignorefiles
 /__pycache__
+test.py

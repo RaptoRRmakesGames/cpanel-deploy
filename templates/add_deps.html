@@ -19,7 +19,11 @@
     <label for="name">Department Name</label><br>
     <input type="text" placeholder="Name" {% if edit %} value="{{department.name}}" {% endif %}required name="name" id=""><br>
 
+    {% if edit%}
     <input type="submit" name="" value="Edit" id="">
-
+    {% else%}
+    <input type="submit" name="" value="Add" id="">
+    
+    {% endif %}
 </form>
 {% endblock %}
