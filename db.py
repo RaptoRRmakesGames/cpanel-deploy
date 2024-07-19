@@ -690,7 +690,7 @@ class KitchenGroup:
                     emps_added.append(em.name)
                     self.remove_employee_from_current_department(em)
                     # em.pass_to_department(self.get_department_by_name(dept, kitchen), emp[1])
-                    print(dept, kitchen)
+                    print('fwaeh: ',dept, kitchen)
                     self.get_department_by_name(dept, kitchen).employees.append((em, emp[1]))
         return emps_added
 
