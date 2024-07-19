@@ -14,6 +14,8 @@ from datetime import timedelta, datetime
 
 import db
 
+import json 
+
 # Create an instance of the Flask class
 app = Flask(__name__)
 
@@ -276,6 +278,39 @@ def edit_department(dep):
                     
                     db_obj.commit()
                     flash(f"Updated Department in Employee `{empname}`")
+            
+            c.execute('SELECT id, week, schedule_json FROM schedules WHERE user_id=%s ', [session['parent_id']])
+            
+            f = c.fetchall()
+            
+            for sched in f:
+                
+                week_id = sched[0]
+                week_name = sched[1]
+                sched_json = json.loads(sched[2].replace("'", '"'))
+                new_js = {}
+                for kitchen_key in sched_json:
+                    new_js[kitchen_key] = {}
+                    for dep_key in sched_json[kitchen_key]:
+                        if dep_key == old_dep.name:
+                            
+                            print(dep_key, 'new')
+                            
+                            new_js[kitchen_key][name] = []
+                            
+                            for ls in sched_json[kitchen_key][dep_key]:
+                                new_js[kitchen_key][name].append(ls)        
+                            
+                        else:
+                            print(dep_key, 'old')
+                            new_js[kitchen_key][dep_key] = sched_json[kitchen_key][dep_key]
+                
+                print(new_js)
+                            
+                c.execute('UPDATE schedules SET schedule_json=%s WHERE id=%s', [str(new_js), week_id])   
+                db_obj.commit()       
+                
+                flash(f'Week `{week_name}` updated for department name change')
                 
             
             old_dep.update(name)
