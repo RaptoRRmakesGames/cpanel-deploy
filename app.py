@@ -217,9 +217,9 @@ def edit_kitchen(kitchen):
 
             k = db.Kitchen(db.Kitchen.get_id_from_name(kitchen))
             
+            db_obj, c = db.connect()
             if k.name != name:
                 
-                db_obj, c = db.connect()
                 
                 c.execute('SELECT id, default_dep, name FROM employees')
                 
