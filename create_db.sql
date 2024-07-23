@@ -49,12 +49,14 @@ CREATE TABLE IF NOT EXISTS `titles` (
     PRIMARY KEY (`id`)
 )
 
+
 CREATE TABLE IF NOT EXISTS `users` (
-    `id` INT NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(255) NOT NULL,
-    `role` VARCHAR(255) NOT NULL,
-    `admin` INT NOT NULL,
-    `owner` INT NOT NULL DEFAULT 0, 
-    `parent_id` INT NOT NULL DEFAULT 1,
-    PRIMARY KEY (`id`)
-)
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `role` varchar(255) NOT NULL,
+  `admin` int(11) NOT NULL,
+  `owner` int(11) NOT NULL DEFAULT 0,
+  `parent_id` int(11) NOT NULL DEFAULT 1,
+  `password` varchar(500) NOT NULL,
+  `email` varchar(255) NOT NULL
+);
