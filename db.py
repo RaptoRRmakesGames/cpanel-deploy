@@ -46,6 +46,7 @@ def create_database():
 
 def get_subdept(ide):
     
+    print(ide)
     db,c = connect(); c.execute('SELECT * FROM sub_department WHERE id=%s', [ide]); return Department(c.fetchall()[0][0])
     
 def create_title(name):
@@ -114,10 +115,10 @@ def get_all_departments(get_id=True):
     db,c = connect()
     
     c.execute('SELECT id, name FROM sub_department WHERE user_id=%s', [USER_ID])
-    
+    f = c.fetchall()
     if get_id:
-        return [(f[0], f[1]) for f in c.fetchall()]
-    return [f[1] for f in c.fetchall()]
+        return [(fe[0], fe[1]) for fe in f]
+    return [fe[1] for fe in f]
 
 def get_next_weeks(n=4):
     # Get today's date
@@ -203,7 +204,6 @@ class User:
         
         f = c.fetchall()
         
-        print(f)
         
         if len(f) == 0:
             return 'No user With this Email!'
@@ -298,7 +298,6 @@ class Employee:
         
         self.prefered_dep = self.raw['default_dep'].split(' - ')
         self.prefered_dep_str = self.raw['default_dep']
-        print(self.prefered_dep_str)
     
     def update(self, name, title, def_dep):
         
@@ -333,13 +332,12 @@ class Employee:
                 dic = json.loads(c.fetchall()[0][0].replace("'", '"'))
                 program = self.get_last_program(dic)
                 
-                # print(program)
+
                 
                 
             except IndexError as e:
                 program = get_random_program()
-                # print(e)
-            
+
             
         
         department.receive_employee(self, program)
@@ -367,6 +365,7 @@ class Department:
         departments = []
         
         kitchens = c.fetchall()
+        
         
         for tup in kitchens:
             kitchen, department_ids = tup 
@@ -648,8 +647,6 @@ class KitchenGroup:
                     
                     if prog[key][1] != '':
                         days.add(key.lower())
-                        print(prog[key][1])
-                    
                     
                         
         return list(days)
@@ -676,7 +673,6 @@ class KitchenGroup:
                 
                 for emp in schedule_dict[kitchen][dept]:
                     
-                    # print(emp[1])
                     if emp[0] == None:
                         continue
                     
@@ -690,7 +686,6 @@ class KitchenGroup:
                     emps_added.append(em.name)
                     self.remove_employee_from_current_department(em)
                     # em.pass_to_department(self.get_department_by_name(dept, kitchen), emp[1])
-                    print('fwaeh: ',dept, kitchen)
                     try:
                         self.get_department_by_name(dept, kitchen).employees.append((em, emp[1]))
                     except AttributeError:

@@ -1,0 +1,233 @@
+{% extends '/include_files/base.html' %}
+
+{% block title %}
+{{title}}
+{% endblock %}
+
+{% block content %}
+
+
+<main>
+
+    {% if page == '1'%}
+
+    <h1>Departments ({{page}}/5)</h1>
+
+    <form method="POST" style="display: flex; flex-direction: column; align-content: stretch; justify-content: space-around; align-items: baseline;">
+
+        <input type="text" required readonly name="add_type" value="{{object_name[page]}}" id="">
+        {% if edit %}
+        <label for="name">Department Id</label><br>
+        <input type="text" placeholder="Name" readonly value="{{department.id}}" required name="id" id=""><br>
+        {% endif %}
+    
+        <label for="name">Department Name</label><br>
+        <input type="text" placeholder="Name" {% if edit %} value="{{department.name}}" {% endif %}required name="name" id=""><br>
+    
+        {% if edit%}
+        <input type="submit" name="" value="Edit" id="">
+        {% else%}
+        <input type="submit" name="" value="Add" id="">
+        {% endif %}
+
+    </form>
+
+    <button onclick="redirect('/create_objects/2')">Next</button>
+    {% endif %}
+    {% if page == '2'%}
+
+    <h1>Kitchens ({{page}}/5)</h1>
+
+    <form method="POST" onsubmit="return false;" style="display: flex; flex-direction: column; align-content: stretch; justify-content: space-around; align-items: baseline;">
+        <input type="text" required readonly name="add_type" value="{{object_name[page]}}" id="">
+        {% if edit == True%}
+        <div >
+            <label for="name">Kitchen ID</label>  <br>
+            <input type="text" name="id" id="" value="{{kitchen.id}}" readonly required>
+        </div>
+        {% endif %}
+        <div >
+            <label for="name">Kitchen Name</label>  <br>
+            <input type="text" name="name" id="" required {% if edit  %}value="{{kitchen.name}}"{% endif %}>
+        </div>
+
+        <label for="">Departments: </label>
+        <div id="departments">
+
+            {% if edit %}
+
+            {% for dep in kitchen.sub_departments%}
+
+            <div class="repeater_field" style="margin: 0;">
+                {% if loop.index-1 != 0%}
+                <select name="department_{{loop.index-1}}" id="" placeholder="Department" required>
+                {% else %}
+                <select name="department" id="" placeholder="Department" required>
+                {% endif %}
+                    <option value=""></option>
+                    {% for department in departments%}
+                    
+                    {% if department[1] == dep.name%}
+                    <option value="{{department[0]}}" selected>{{department[1]}}</option>
+                    {% else %}
+                    <option value="{{department[0]}}">{{department[1]}}</option>
+                    {% endif %}
+                    
+                    {% endfor %}
+                </select>
+                {% if loop.index != 1%}
+                <button onclick="remove(this)">X</button>
+                {% endif %}
+            </div>
+
+            {%endfor %}
+
+            {%else %}
+            
+            <div class="repeater_field" style="margin: 0;">
+                <select name="department" id="" placeholder="Department" required>
+                    <option value=""></option>
+                    {% for department in departments%}
+                    <option value="{{department[0]}}">{{department[1]}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            {% endif %}
+        </div>
+        <button id='add_button' onclick="add_dep()">Add Department</button>
+
+
+        {% if edit%}
+        <input type="submit" name="" id="" onclick="submit('form')" value="Update">
+        {% else %}
+        <input type="submit" name="" id="" onclick="submit('form')" value="Create">
+        {% endif %}
+
+    </form>
+
+    <button onclick="redirect('/create_objects/3')">Next</button>
+    {% endif %}
+    {% if page == '3'%}
+
+    <h1>Programs ({{page}}/5)</h1>
+
+    <form method="POST" style="display: flex; flex-direction: column; align-content: stretch; justify-content: space-around; align-items: baseline;">
+        <input type="text" required readonly name="add_type" value="{{object_name[page]}}" id="">
+        <label for="name">Time</label><br>
+        <input type="text" placeholder="Time" required name="name" id=""><br>
+    
+        <input type="submit" name="" value="Add" id="">
+
+    </form>
+
+    <button onclick="redirect('/create_objects/4')">Next</button>
+    {% endif %}
+    {% if page == '4'%}
+
+    <h1>Titles ({{page}}/5)</h1>
+
+    <form method="POST" style="display: flex; flex-direction: column; align-content: stretch; justify-content: space-around; align-items: baseline;">
+        <input type="text" required readonly name="add_type" value="{{object_name[page]}}" id="">
+        <label for="name">Title</label><br>
+        <input type="text" placeholder="Title" required name="name" id=""><br>
+    
+        <input type="submit" name="" value="Add" id="">
+
+    </form>
+
+    <button onclick="redirect('/create_objects/5')">Next</button>
+    {% endif %}
+    {% if page == '5'%}
+
+    <h1>Employees ({{page}}/5)</h1>
+
+    <form method="POST" style="display: flex; flex-direction: column; align-content: stretch; justify-content: space-around; align-items: baseline;">
+        <input type="text" required readonly name="add_type" value="{{object_name[page]}}" id="">
+        {% if edit%}
+        <label for="name">ID</label><br>
+        <input type="text" placeholder="Name" required value="{{employee.id}}" name="id" id="" readonly>
+        <br>
+        {% endif %}
+    
+        <label for="name">Name</label><br>
+        <input type="text" placeholder="Name" {% if edit %} value="{{employee.name}}" {% endif %} required name="name" id="">
+        <br>
+        <label for="title">Title</label><br>
+        <select name="title" id="">
+            {% for title in titles%}
+                {% if edit and title == employee.title %}
+                <option value="{{title}}" selected>{{title}}</option>
+                {% else %}
+                <option value="{{title}}" >{{title}}</option>
+                {% endif %}
+            {% endfor %}
+            <option value="" ></option>
+        </select>
+        <br>
+        
+        <label for="def_dep">Default Department</label><br>
+        <select name="def_dep" id="" required>
+            <option value=""></option>
+            {% for department in employee_departments%}
+            
+                {% if edit and employee.prefered_dep_str == department%}
+                <option value="{{department}}" selected>{{department}}</option>
+                {% else %}
+                <option value="{{department}}" >{{department}}</option>
+                {% endif %}
+            {% endfor%}
+        </select> <br>
+        {% if not edit%}
+        <label for="">Work Schedule</label><br>
+        <select name="" id="" >
+            <option value=""></option>
+            {% for program in programs%}
+            <option value="{{program}}">{{program}}</option>
+            {% endfor%}
+        </select> <br>
+        {% endif %}
+    
+        <input type="submit" name="" value="Add" id="">
+
+    </form>
+
+    <button onclick="redirect('/edit_objects')">Done</button>
+    {% endif %}
+</main>
+
+<script>
+    function redirect(url) {
+
+        window.location.href = url
+    }
+
+
+    function submit(form_id){
+        document.getElementById(form_id).submit();
+    }
+
+    function add_dep(){
+        var form = document.getElementById('departments')
+
+        var new_div = document.getElementsByClassName('repeater_field')[0].cloneNode(true)
+        new_div.getElementsByTagName('select')[0].value= ''
+        new_div.getElementsByTagName('select')[0].name = 'department_'+document.getElementById('departments').childElementCount.toString();
+        console.log(document.getElementById('departments').childNodes.length.toString())
+        new_div.innerHTML += '<button onclick="remove(this)">X</button>'
+
+        //form.insertBefore(new_div,document.getElementById('add_button'))
+        form.appendChild(new_div)
+
+    }
+
+    function remove(button){
+
+        button.parentNode.remove();
+    }
+    
+
+</script>
+
+
+{% endblock %}

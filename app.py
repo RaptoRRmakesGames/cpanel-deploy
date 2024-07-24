@@ -26,6 +26,22 @@ app.config.update(
     SESSION_TYPE='filesystem'
 )
 
+def auth():
+    if 'auth' in session: return session['auth']
+    else: return False
+
+def admin():
+    
+    if auth(): return session['user_admin']
+    else: return False
+
+def get_next_seven_days(start_date_str):
+    start_date = datetime.strptime(start_date_str, "%d/%m/%Y")
+    next_seven_days = [
+        (start_date + timedelta(days=i)).strftime("%d/%m/%Y") for i in range(8)
+    ][0:7]
+    return next_seven_days
+
 @app.before_request
 def before():
     
@@ -38,21 +54,6 @@ def index():
     if not auth() : return redirect(url_for('login_page'))
     
     return render_template("index.html", session=session,)
-
-def auth():
-    if 'auth' in session: return session['auth']
-    else: return False
-
-def admin():
-    if auth(): return session['user_admin']
-    else: return False
-
-def get_next_seven_days(start_date_str):
-    start_date = datetime.strptime(start_date_str, "%d/%m/%Y")
-    next_seven_days = [
-        (start_date + timedelta(days=i)).strftime("%d/%m/%Y") for i in range(8)
-    ][0:7]
-    return next_seven_days
 
 @app.route("/add_kitchen", methods=["GET", "POST"])
 def add_kitchen():
@@ -138,8 +139,6 @@ def add_employee():
             all_programs = db.get_all_programs()
             all_titles = db.get_all_titles()
 
-            print(all_titles)
-
             return render_template(
                 "add_employee.html", session=session,
                 departments=all_departments,
@@ -201,7 +200,6 @@ def edit_kitchen(kitchen):
     if not auth() : return redirect(url_for('login_page'))
     match request.method:
         case "GET":
-            print(kitchen)
             return render_template(
                 "add_kitchen.html", session=session, departments = db.get_all_departments(),
                 edit=True, kitchen = db.Kitchen(db.Kitchen.get_id_from_name(kitchen))
@@ -255,8 +253,6 @@ def edit_kitchen(kitchen):
                         
                         new_js[kitchen_key] = sched_json[kitchen_key]
 
-                
-                print(new_js)
                             
                 c.execute('UPDATE schedules SET schedule_json=%s WHERE id=%s', [str(new_js), week_id])   
                 db_obj.commit()       
@@ -320,7 +316,6 @@ def edit_department(dep):
                     for dep_key in sched_json[kitchen_key]:
                         if dep_key == old_dep.name:
                             
-                            print(dep_key, 'new')
                             
                             new_js[kitchen_key][name] = []
                             
@@ -328,10 +323,9 @@ def edit_department(dep):
                                 new_js[kitchen_key][name].append(ls)        
                             
                         else:
-                            print(dep_key, 'old')
+
                             new_js[kitchen_key][dep_key] = sched_json[kitchen_key][dep_key]
-                
-                print(new_js)
+            
                             
                 c.execute('UPDATE schedules SET schedule_json=%s WHERE id=%s', [str(new_js), week_id])   
                 db_obj.commit()       
@@ -460,7 +454,6 @@ def table(week=None):
 
                 formated_week = f"({year_start}-{month_start}-{day_start} - {year_end}-{month_end}-{day_end})"
 
-                print(formated_week)
 
                 group = db.KitchenGroup(formated_week)
 
@@ -519,7 +512,6 @@ def login_page():
         
         case 'POST':
             user = db.User.login(request.form.get('email'), request.form.get('pass'))
-            print(user)
             if isinstance(user,  db.User):
                 flash('Login Successful!')
                 session['auth'] = True
@@ -568,7 +560,6 @@ def register_page():
             
             return redirect(url_for('edit_objects'))
     
-        
 @app.route('/logout')
 def logout():
     
@@ -577,6 +568,97 @@ def logout():
     flash("Successfully Logged Out!")
     
     return redirect(url_for('login_page'))
+
+@app.route('/create_objects/<page>', methods=['GET', 'POST'])
+def object_startup(page):
+    
+    match request.method:
+        
+        case 'GET':
+            all_departments = db.get_all_departments()
+            all_programs = db.get_all_programs()
+            all_titles = db.get_all_titles()
+            employee_departments  = db.Department.get_all_departments()
+            return render_template(
+                'object_startup.html',
+                session=session,
+                title='Startup Objects',
+                page=page,
+                object_name={
+                    '1' : 'department',
+                    '2' : 'kitchen',
+                    '3' : 'program',
+                    '4' : 'title',
+                    '5' : 'employee',
+                },
+                departments=all_departments,
+                programs=all_programs,
+                titles=all_titles,
+                employee_departments=employee_departments,
+                edit=False
+                
+            )
+        
+        case 'POST':
+            
+            match request.form.get('add_type'):
+                
+                case 'department':
+                    
+                    db.create_dept(request.form.get('name'))
+                    
+                    flash('Department Created Successfully!')
+                    
+                    return redirect(url_for('object_startup', page=page))
+                
+                case 'kitchen':
+                    
+                    name, deps = request.form.get("name"), []
+                    for key in request.form:
+                        if key == "name" or key == "submit" or key == 'add_type':
+                            continue
+                        deps.append(request.form.get(key))
+
+                    db.Kitchen.create_kitchen(name, deps)
+
+                    flash("Created Kitchen Successfully!")
+                    return redirect(url_for('object_startup', page=page))
+                
+                case 'program':
+                    
+                    db.add_program(request.form.get('name'))
+                    
+                    flash('Program Created Successfully!')
+                    return redirect(url_for('object_startup', page=page))
+                
+                case 'title':
+                    
+                    db.create_title(request.form.get('name'))
+                    
+                    flash('Title Created Successfully!')
+                    return redirect(url_for('object_startup', page=page))
+                
+                case 'employee':
+                    
+                    name, title, def_dep = (
+                        request.form.get("name"),
+                        request.form.get("title"),
+                        request.form.get("def_dep"),
+                    )
+
+                    db.Employee.create_employee(name, title, def_dep)
+                    
+                    flash('Employee Created Successfully!')
+                    return redirect(url_for('object_startup', page=page))
+                    
+                case _:
+                    
+                    flash(f'Page #{page} is not valid!')
+                    
+                    return redirect(url_for('object_startup', page=page))
+            
+    
+    
 
 # Run the application
 if __name__ == "__main__":
