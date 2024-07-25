@@ -180,8 +180,8 @@ def create_program():
 @app.route("/edit_objects")
 def edit_objects():
     if not auth() : return redirect(url_for('login_page'))
-    all_kitchens = db.Kitchen.get_all_kitchens()
-    all_departments = db.get_all_departments(False)
+    all_kitchens = db.Kitchen.get_all_kitchens(True)
+    all_departments = db.get_all_departments(True)
     all_employees = db.Employee.get_all_employees()
     all_programs = db.get_all_programs()
     all_titles = db.get_all_titles()
@@ -657,7 +657,45 @@ def object_startup(page):
                     
                     return redirect(url_for('object_startup', page=page))
             
+@app.route('/save_department', methods=['POST'])
+def save_department():
+    if not auth():
+        return redirect(url_for('login_page'))
     
+    data = request.json
+    print('Received data:', data)  # Debug statement to check received data
+    
+    try:
+        dbe, c = db.connect()
+        c.execute("UPDATE sub_department SET name=%s WHERE id=%s", [data["new_name"], data['id']])
+        dbe.commit()
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        print('Error:', e)  # Debug statement to check the error
+        return jsonify({'status': 'error', 'message': str(e)})
+    finally:
+        c.close()
+        dbe.close()
+        
+@app.route('/save_kitchen', methods=['POST'])
+def save_kitchen():
+    if not auth():
+        return redirect(url_for('login_page'))
+    
+    data = request.json
+    print('Received data:', data)  # Debug statement to check received data
+    
+    try:
+        dbe, c = db.connect()
+        c.execute("UPDATE big_kitchens SET name=%s WHERE id=%s", [data["new_name"], data['id']])
+        dbe.commit()
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        print('Error:', e)  # Debug statement to check the error
+        return jsonify({'status': 'error', 'message': str(e)})
+    finally:
+        c.close()
+        dbe.close()
     
 
 # Run the application

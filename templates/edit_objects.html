@@ -55,9 +55,9 @@
 
                 {% for dep in departments%}
                 <tr>
-                    <td>{{dep}}</td>
-                    <td><button onclick='redirect("/edit/department/{{dep}}")'>Edit</button></td>
-                    <td><button onclick='redirect("/delete/department/{{dep}}")'>Delete</button></td>
+                    <td><input type="text" class="department_name {{dep[0]}}" name="" id="" value="{{dep[1]}}"></td>
+                    <td><button onclick='redirect("/edit/department/{{dep[0]}}")'>Edit</button></td>
+                    <td><button onclick='redirect("/delete/department/{{dep[0]}}")'>Delete</button></td>
 
                 </tr>
                 {% endfor %}
@@ -79,9 +79,9 @@
 
                 {% for kitchen in kitchens%}
                 <tr>
-                    <td>{{kitchen}}</td>
-                    <td><button onclick='redirect("/edit/kitchen/{{kitchen}}")'>Edit</button></td>
-                    <td><button onclick='redirect("/delete/kitchen/{{kitchen}}")'>Delete</button></td>
+                    <td><input type="text" name="" id="" class="kitchen_name {{kitchen[0]}}" value="{{kitchen[1]}}"></td>
+                    <td><button onclick='redirect("/edit/kitchen/{{kitchen[1]}}")'>Edit</button></td>
+                    <td><button onclick='redirect("/delete/kitchen/{{kitchen[1]}}")'>Delete</button></td>
 
                 </tr>
                 {% endfor %}
@@ -168,6 +168,59 @@
 
         window.location.href = url
     }
+
+    Array.from(document.getElementsByClassName('department_name')).forEach(function(item){
+        console.log('fweah: ',item)
+        item.addEventListener('change', function(){
+            console.log(item.classList)
+            data = {
+                "id": item.classList[1],
+                "new_name" : item.value
+            }
+            fetch('/save_department', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Successfully Saved Department')
+                })
+                .catch((error) => {
+                    alert('Issue Saving Department: ' + error)
+                });
+
+        })
+    })
+
+    Array.from(document.getElementsByClassName('kitchen_name')).forEach(function(item){
+        item.addEventListener('change', function(){
+            console.log(item.classList)
+            data = {
+                "id": item.classList[1],
+                "new_name" : item.value
+            }
+            fetch('/save_kitchen', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Successfully Saved Kitchen')
+                })
+                .catch((error) => {
+                    alert('Issue Saving Kitchen: ' + error)
+                });
+
+        })
+    })
+
+
 </script>
 
 {% endblock %}

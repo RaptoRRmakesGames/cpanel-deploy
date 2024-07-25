@@ -458,13 +458,17 @@ class Kitchen:
         return Kitchen(c.fetchall()[0][0])
     
     @staticmethod
-    def get_all_kitchens():
+    def get_all_kitchens(get_id = False):
         
         db,c = connect()
         
-        c.execute("SELECT name FROM big_kitchens WHERE user_id=%s", [USER_ID])
         
-        return [f[0] for f in c.fetchall()]
+        c.execute("SELECT id, name FROM big_kitchens WHERE user_id=%s", [USER_ID])
+        
+        if get_id:
+            return [(f[0], f[1]) for f in c.fetchall()]
+            
+        return [f[1] for f in c.fetchall()]
     
     @staticmethod
     def get_id_from_name(name):
