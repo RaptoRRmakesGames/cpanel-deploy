@@ -59,11 +59,15 @@ def create_title(name):
     
     db.commit()
 
-def get_all_titles():
+def get_all_titles(get_id=False):
     
     db,c = connect()
     
     c.execute("SELECT * FROM titles WHERE user_id=%s", [USER_ID])
+    
+    if get_id:
+        return [(f[0],f[1]) for f in c.fetchall()]
+        
     
     return [f[1] for f in c.fetchall()]
 
@@ -148,11 +152,14 @@ def add_program(name:str):
     c.execute("INSERT INTO programs (name, user_id) VALUES (%s, %s)", [name, USER_ID])
     db.commit()
 
-def get_all_programs():
+def get_all_programs(get_id = False):
     db,c = connect()
     
     c.execute("SELECT * FROM programs WHERE user_id=%s", [USER_ID])
     
+    if get_id:
+        return [[f[0],f[1]] for f in c.fetchall()]
+        
     return [f[1] for f in c.fetchall()]
 
 def remove_from_string(stre, to_remove='%20'):
@@ -268,7 +275,9 @@ class Employee:
         
         c.execute("SELECT id FROM employees WHERE user_id=%s", [USER_ID])
         
-        return [Employee(id[0]) for id in c.fetchall()]
+        
+        
+        return [Employee(ide[0]) for ide in c.fetchall()]
     
     def __init__(self, idd) -> None:
         db,c = connect()

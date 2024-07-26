@@ -102,8 +102,8 @@
 
             {% for program in programs%}
             <tr>
-                <td>{{program}}</td>
-                <td><button onclick='redirect("/delete/program/{{program}}")'>Delete</button></td>
+                <td><input type="text" class="program_name {{program[0]}}" value="{{program[1]}}"></td>
+                <td><button onclick='redirect("/delete/program/{{program[1]}}")'>Delete</button></td>
 
             </tr>
             {% endfor %}
@@ -124,8 +124,8 @@
 
             {% for title in titles%}
             <tr>
-                <td>{{title}}</td>
-                <td><button onclick='redirect("/delete/title/{{title}}")'>Delete</button></td>
+                <td><input type="text" class="title_name {{title[0]}}" value="{{title[1]}}"></td>
+                <td><button onclick='redirect("/delete/title/{{title[1]}}")'>Delete</button></td>
 
             </tr>
             {% endfor %}
@@ -142,13 +142,42 @@
         <table border="1">
             <tr>
                 <th>Name</th>
+                <th>Title</th>
+                <th>Department</th>
                 <th>Edit</th>
                 <th>Delete</th>
             </tr>
 
             {% for employee in employees%}
             <tr>
-                <td>{{employee}}</td>
+                <td> <input type="text" class="employee_name {{employee.id}}" name="" id="" value="{{employee.name}}"></td>
+                <td>
+
+                    <select name="" class="employee_title {{employee.id}}" id="">
+                        {% for title in titles %}
+                            {% if title[1] == employee.title %}
+                                <option value="{{title[1]}}" selected >{{title[1]}}</option>
+                            {% else %}
+                                <option value="{{title[1]}}"  >{{title[1]}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+
+                </td>
+                <td>
+                    <select name="" id="" class="employee_department {{employee.id}}">
+                        {% for department in employee_departments%}
+
+                            {% if department == employee.prefered_dep_str%}
+                            <option value="{{department}}" selected>{{department}}</option>
+                            {% else %}
+                            <option value="{{department}}">{{department}}</option>
+                            {% endif %}
+
+                        {% endfor %}
+                    </select>
+                
+                </td>
                 <td><button onclick='redirect("/edit/employee/{{employee}}")'>Edit</button></td>
                 <td><button onclick='redirect("/delete/employee/{{employee}}")'>Delete</button></td>
 
@@ -215,6 +244,129 @@
                 })
                 .catch((error) => {
                     alert('Issue Saving Kitchen: ' + error)
+                });
+
+        })
+    })
+    
+    Array.from(document.getElementsByClassName('program_name')).forEach(function(item){
+        item.addEventListener('change', function(){
+            console.log(item.classList)
+            data = {
+                "id": item.classList[1],
+                "new_name" : item.value
+            }
+            fetch('/save_program', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Successfully Saved Program')
+                })
+                .catch((error) => {
+                    alert('Issue Saving Program: ' + error)
+                });
+
+        })
+    })
+    
+    Array.from(document.getElementsByClassName('title_name')).forEach(function(item){
+        item.addEventListener('change', function(){
+            console.log(item.classList)
+            data = {
+                "id": item.classList[1],
+                "new_name" : item.value
+            }
+            fetch('/save_title', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Successfully Saved Title')
+                })
+                .catch((error) => {
+                    alert('Issue Saving Title: ' + error)
+                });
+
+        })
+    })
+    
+    Array.from(document.getElementsByClassName('employee_name')).forEach(function(item){
+        item.addEventListener('change', function(){
+            console.log(item.classList)
+            data = {
+                "id": item.classList[1],
+                "new_name" : item.value
+            }
+            fetch('/save_emp_name', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Successfully Saved Employee')
+                })
+                .catch((error) => {
+                    alert('Issue Saving Employee: ' + error)
+                });
+
+        })
+    })
+    Array.from(document.getElementsByClassName('employee_title')).forEach(function(item){
+        item.addEventListener('change', function(){
+            console.log(item.classList)
+            data = {
+                "id": item.classList[1],
+                "new_name" : item.value
+            }
+            fetch('/save_emp_title', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Successfully Saved Employee')
+                })
+                .catch((error) => {
+                    alert('Issue Saving Employee: ' + error)
+                });
+
+        })
+    })
+    Array.from(document.getElementsByClassName('employee_department')).forEach(function(item){
+        item.addEventListener('change', function(){
+            console.log(item.classList)
+            data = {
+                "id": item.classList[1],
+                "new_name" : item.value
+            }
+            fetch('/save_emp_pref_dep', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Successfully Saved Employee')
+                })
+                .catch((error) => {
+                    alert('Issue Saving Employee: ' + error)
                 });
 
         })

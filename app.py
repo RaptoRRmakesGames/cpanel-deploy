@@ -182,9 +182,11 @@ def edit_objects():
     if not auth() : return redirect(url_for('login_page'))
     all_kitchens = db.Kitchen.get_all_kitchens(True)
     all_departments = db.get_all_departments(True)
+    
+    employee_departments = db.Department.get_all_departments()
     all_employees = db.Employee.get_all_employees()
-    all_programs = db.get_all_programs()
-    all_titles = db.get_all_titles()
+    all_programs = db.get_all_programs(True)
+    all_titles = db.get_all_titles(True)
 
     return render_template(
         "edit_objects.html", session=session,
@@ -193,7 +195,9 @@ def edit_objects():
         employees=all_employees,
         programs=all_programs,
         titles=all_titles,
+        employee_departments = db.Department.get_all_departments()
     )
+    
     
 @app.route('/edit/kitchen/<kitchen>', methods=['GET', 'POST'])
 def edit_kitchen(kitchen):
@@ -688,6 +692,107 @@ def save_kitchen():
     try:
         dbe, c = db.connect()
         c.execute("UPDATE big_kitchens SET name=%s WHERE id=%s", [data["new_name"], data['id']])
+        dbe.commit()
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        print('Error:', e)  # Debug statement to check the error
+        return jsonify({'status': 'error', 'message': str(e)})
+    finally:
+        c.close()
+        dbe.close()
+        
+@app.route('/save_program', methods=['POST'])
+def save_program():
+    if not auth():
+        return redirect(url_for('login_page'))
+    
+    data = request.json
+    print('Received data:', data)  # Debug statement to check received data
+    
+    try:
+        dbe, c = db.connect()
+        c.execute("UPDATE programs SET name=%s WHERE id=%s", [data["new_name"], data['id']])
+        dbe.commit()
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        print('Error:', e)  # Debug statement to check the error
+        return jsonify({'status': 'error', 'message': str(e)})
+    finally:
+        c.close()
+        dbe.close()
+        
+@app.route('/save_title', methods=['POST'])
+def save_title():
+    if not auth():
+        return redirect(url_for('login_page'))
+    
+    data = request.json
+    print('Received data:', data)  # Debug statement to check received data
+    
+    try:
+        dbe, c = db.connect()
+        c.execute("UPDATE titles SET name=%s WHERE id=%s", [data["new_name"], data['id']])
+        dbe.commit()
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        print('Error:', e)  # Debug statement to check the error
+        return jsonify({'status': 'error', 'message': str(e)})
+    finally:
+        c.close()
+        dbe.close()
+        
+@app.route('/save_emp_name', methods=['POST'])
+def save_emp_name():
+    if not auth():
+        return redirect(url_for('login_page'))
+    
+    data = request.json
+    print('Received data:', data)  # Debug statement to check received data
+    
+    try:
+        dbe, c = db.connect()
+        c.execute("UPDATE employees SET name=%s WHERE id=%s", [data["new_name"], data['id']])
+        dbe.commit()
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        print('Error:', e)  # Debug statement to check the error
+        return jsonify({'status': 'error', 'message': str(e)})
+    finally:
+        c.close()
+        dbe.close()
+        
+@app.route('/save_emp_title', methods=['POST'])
+def save_emp_title():
+    if not auth():
+        return redirect(url_for('login_page'))
+    
+    data = request.json
+    print('Received data:', data)  # Debug statement to check received data
+    
+    try:
+        dbe, c = db.connect()
+        c.execute("UPDATE employees SET title=%s WHERE id=%s", [data["new_name"], data['id']])
+        dbe.commit()
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        print('Error:', e)  # Debug statement to check the error
+        return jsonify({'status': 'error', 'message': str(e)})
+    finally:
+        c.close()
+        dbe.close()
+        
+        
+@app.route('/save_emp_pref_dep', methods=['POST'])
+def save_emp_pref_dep():
+    if not auth():
+        return redirect(url_for('login_page'))
+    
+    data = request.json
+    print('Received data:', data)  # Debug statement to check received data
+    
+    try:
+        dbe, c = db.connect()
+        c.execute("UPDATE employees SET default_dep=%s WHERE id=%s", [data["new_name"], data['id']])
         dbe.commit()
         return jsonify({'status': 'success'})
     except Exception as e:
