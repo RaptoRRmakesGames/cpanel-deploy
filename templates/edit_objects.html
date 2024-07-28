@@ -56,8 +56,8 @@
                 {% for dep in departments%}
                 <tr>
                     <td><input type="text" class="department_name {{dep[0]}}" name="" id="" value="{{dep[1]}}"></td>
-                    <td><button onclick='redirect("/edit/department/{{dep[0]}}")'>Edit</button></td>
-                    <td><button onclick='redirect("/delete/department/{{dep[0]}}")'>Delete</button></td>
+                    <td><button onclick='redirect("/edit/department/{{dep[1]}}")'>Edit</button></td>
+                    <td><button onclick='redirect("/delete/department/{{dep[1]}}")'>Delete</button></td>
 
                 </tr>
                 {% endfor %}
