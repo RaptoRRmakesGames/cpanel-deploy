@@ -47,7 +47,10 @@ def create_database():
 def get_subdept(ide):
     
     print(ide)
-    db,c = connect(); c.execute('SELECT * FROM sub_department WHERE id=%s', [ide]); return Department(c.fetchall()[0][0])
+    try:
+        db,c = connect(); c.execute('SELECT * FROM sub_department WHERE id=%s', [ide]); return Department(c.fetchall()[0][0])
+    except Exception as e:
+        print('Error: ' + e)
     
 def create_title(name):
     db,c = connect()
