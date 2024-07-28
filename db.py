@@ -618,6 +618,9 @@ class KitchenGroup:
             for dep in kitchen.sub_departments:
                 
                 for emp in all_emps:
+                    
+                    if dep == None:
+                        continue
                 
                     if emp in dep.employees:
                         all_emps.remove(emp)
