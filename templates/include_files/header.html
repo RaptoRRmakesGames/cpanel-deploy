@@ -30,13 +30,17 @@
 {% if session['auth']%}
 <h1>Hello {{session['user_name']}}! ({{session['user_role']}}) {% if session['user_admin']%} (Admin) {% endif %} {% if session['user_owner']%} (Owner) {% endif %} </h1>
 <header>
+    
     <nav style="display: inline-block;">
         <li style=" margin-right: 28px"><a href="/">Home</a></li>
         <h1 href="">Manage Objects <a href="#" onclick="toggle_open('edit')"><span>&#8594;</span></a></h1>
         <ul id="edit" class="invisible">
             <li><a href="/create_objects/1"class="link">Create Objects</a></li>
+            {% if session['hide_edit'] == False %}
             <li><a href="/edit_objects"class="link">Edit Objects</a></li>
+            {% endif %}
         </ul>
+        {% if session['hide_edit'] == False %}
         <h1 href="">Schedule <a href="#" onclick="toggle_open('schedule')"><span>&#8594;</span></a></h1>
         <ul id="schedule" class="invisible">
             <li><a href="/table">Create Schedule</a></li>
@@ -46,6 +50,7 @@
         <ul id="admin" class="invisible">
             <li><a href="/register">Register a User</a></li>
         </ul>
+        {% endif %}
         {% endif %}
         <li><a href="/logout">Logout</a></li>
 

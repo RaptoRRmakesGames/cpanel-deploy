@@ -46,7 +46,7 @@ def create_database():
 
 def get_subdept(ide):
     
-    print(ide)
+    # print(ide)
     try:
         db,c = connect(); c.execute('SELECT * FROM sub_department WHERE id=%s', [ide]); return Department(c.fetchall()[0][0])
     except Exception as e:
@@ -173,6 +173,17 @@ def remove_from_string(stre, to_remove='%20'):
         final_str += stri + ' '
         
     return final_str
+
+def get_random_program():
+    
+    dbe,c =connect()
+    
+    c.execute('SELECT * FROM programs WHERE user_id=%s', [USER_ID])
+    
+    try:
+        return c.fetchall()[0][1]
+    except IndexError:
+        return None
 
 class User:
     
@@ -344,14 +355,21 @@ class Employee:
                 dic = json.loads(c.fetchall()[0][0].replace("'", '"'))
                 program = self.get_last_program(dic)
                 
-
-                
-                
             except IndexError as e:
-                program = get_random_program()
+                
+                print(e)
+                program = [{
+                    'monday' : [get_random_program(), ''],
+                    'tuesday' : [get_random_program(), ''],
+                    'wednesday' : [get_random_program(), ''],
+                    'thursday' : [get_random_program(), ''],
+                    'friday' : [get_random_program(), ''],
+                    'saturday' : [get_random_program(), ''],
+                    'sunday' : [get_random_program(), ''],
+                }]
 
             
-        
+        print(program)
         department.receive_employee(self, program)
         
     def __repr__(self) -> str:
@@ -568,15 +586,20 @@ class KitchenGroup:
         c.execute('SELECT id FROM big_kitchens WHERE user_id=%s', [USER_ID])
         self.sub_kitchens = [Kitchen(id[0]) for id in c.fetchall()]
         
+        print('week : ',self.week)
+        
         if self.week != '':
             
             c.execute('SELECT * FROM schedules WHERE week=%s AND user_id=%s', [week, USER_ID])
             
+            
             if len((f := c.fetchall() )) > 0:
+                print('sched load')
                 self.load_schedule(f[0][2].replace("'", '"'))
                 self.saved = True
             else:
                 # self.set_employees_to_default()
+                print('load_last_sched')
                 self.load_last_schedule()
                 self.saved = False
             
@@ -596,6 +619,8 @@ class KitchenGroup:
         c.execute("SELECT schedule_json FROM schedules WHERE user_id=%s ORDER BY id DESC", [USER_ID])
         
         f = c.fetchall()
+        
+        print(f)
         if len(f) < 1:
             self.set_employees_to_default()
             return 
@@ -632,6 +657,7 @@ class KitchenGroup:
         employees = Employee.get_all_employees()
         
         for employee in employees:
+            print(employee)
             self.set_def_employee(employee)
         
     def set_def_employee(self,emp:Employee):
@@ -667,6 +693,7 @@ class KitchenGroup:
             for prog in program:
                 
                 for key in prog: 
+
                     
                     if prog[key][1] != '':
                         days.add(key.lower())

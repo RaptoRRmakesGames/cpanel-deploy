@@ -16,6 +16,8 @@ import db
 
 import json 
 
+import time
+
 # Create an instance of the Flask class
 app = Flask(__name__)
 
@@ -45,9 +47,43 @@ def get_next_seven_days(start_date_str):
 @app.before_request
 def before():
     
+    start = time.time()
+    
     if 'user_id' in session:
         db.USER_ID = session['parent_id']
-
+        
+    if 'auth' in session and session['auth']:
+        
+        dbe, c = db.connect()
+        stuff = []
+        c.execute("SELECT * FROM employees WHERE user_id = %s", [session['parent_id']])
+        stuff.append(c.fetchall())
+        c.execute("SELECT * FROM titles WHERE user_id = %s", [session['parent_id']])
+        stuff.append(c.fetchall())
+        c.execute("SELECT * FROM sub_department WHERE user_id = %s", [session['parent_id']])
+        stuff.append(c.fetchall())
+        c.execute("SELECT * FROM big_kitchens WHERE user_id = %s", [session['parent_id']])
+        stuff.append(c.fetchall())
+        c.execute("SELECT * FROM large_department WHERE user_id = %s", [session['parent_id']])
+        stuff.append(c.fetchall())
+        c.execute("SELECT * FROM programs WHERE user_id = %s", [session['parent_id']])
+        stuff.append(c.fetchall())
+        c.execute("SELECT * FROM titles WHERE user_id = %s", [session['parent_id']])
+        stuff.append(c.fetchall())
+        
+        # print(stuff)
+        
+        session['hide_edit'] = False
+        for thing in stuff: 
+            # print(len(thing))
+            if len(thing) > 0:
+                break
+            
+        else: 
+            session['hide_edit'] = True
+        
+    print(time.time() - start)
+        
 # Define a route and a view function
 @app.route("/")
 def index():
@@ -154,7 +190,51 @@ def add_employee():
                 request.form.get("def_dep"),
             )
 
-            db.Employee.create_employee(name, title, def_dep)
+            employee = db.Employee.create_employee(name, title, def_dep)
+            
+            dbe,c = db.connect()
+            
+            c.execute("SELECT * FROM schedules WHERE user_id=%s", [session['parent_id']])
+            kitch, dep = employee.prefered_dep
+            for sched in c.fetchall():
+                
+                ide = sched[0]
+                week = sched[1]
+                js = json.loads(sched[2].replace("'", '"'))
+                
+                program = db.get_random_program()
+                
+                for kitchen in js:
+                    
+                    if kitchen == kitch: 
+                    
+                        for department in js[kitchen]:
+                            
+                            if department == dep:
+                                
+                                js[kitchen][department].append(
+                                    [
+                                        employee.id, [
+                                            {
+                                            'monday' : [program, ''],
+                                            'tuesday' : [program, ''],
+                                            'wednesday' : [program, ''],
+                                            'thursday' : [program, ''],
+                                            'friday' : [program, ''],
+                                            'saturday' : [program, ''],
+                                            'sunday' : [program, ''],
+                                        }
+                                            
+                                        ]
+                                    ]
+                                )
+                
+                flash(f"Added into `{week}` Schedule")
+                c.execute('UPDATE schedules SET schedule_json =%s WHERE id=%s', [str(js), ide])
+                
+                dbe.commit()
+                
+                
 
             flash("Added Employee Successfully!")
             return redirect(url_for("edit_objects"))
@@ -757,7 +837,7 @@ def save_kitchen():
         db_obj, c = db.connect()
         if k.name != name:
             
-            c.execute('SELECT id, default_dep, name FROM employees WHERE user_id=%s', [session['user_id']])
+            c.execute('SELECT id, default_dep, name FROM employees WHERE user_id=%s', [session['parent_id']])
             
             emps = c.fetchall()
             
