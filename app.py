@@ -195,7 +195,7 @@ def edit_objects():
         employees=all_employees,
         programs=all_programs,
         titles=all_titles,
-        employee_departments = db.Department.get_all_departments()
+        employee_departments = employee_departments
     )
     
     

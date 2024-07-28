@@ -381,8 +381,8 @@ class Department:
             
             department_ids = json.loads(department_ids.replace("'", '"'))
             
-            for id in department_ids:
-                dep = get_subdept(id)
+            for ide in department_ids:
+                dep = get_subdept(ide)
                 
                 departments.append(f'{kitchen} - {dep.name}')
         
