@@ -291,7 +291,7 @@ class Employee:
         except IndexError:
             
             print("Employee Doesnt Exist")
-            return 
+            return None
         
         self.raw = {
             'id' : self.id,

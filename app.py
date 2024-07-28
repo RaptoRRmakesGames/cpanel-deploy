@@ -672,6 +672,63 @@ def save_department():
     try:
         dbe, c = db.connect()
         c.execute("UPDATE sub_department SET name=%s WHERE id=%s", [data["new_name"], data['id']])
+                
+        old_dep = db.Department(data['id'])
+        name = data["new_name"]
+        
+        c.execute("SELECT id, default_dep,name FROM employees")
+        
+        emps = c.fetchall()
+        
+        for emp in emps:
+            
+            empid = emp[0]
+            
+            empname=emp[2]
+            
+            def_dep_kitch,def_dep = emp[1].split(' - ')
+            
+            if old_dep.name == def_dep:
+                c.execute('UPDATE employees SET default_dep=%s WHERE id=%s', [f"{def_dep_kitch} - {name}", empid])
+                
+                dbe.commit()
+                flash(f"Updated Department in Employee `{empname}`")
+        
+        
+        
+        c.execute('SELECT id, week, schedule_json FROM schedules WHERE user_id=%s ', [session['parent_id']])
+            
+        f = c.fetchall()
+
+        
+        for sched in f:
+            
+            week_id = sched[0]
+            week_name = sched[1]
+            sched_json = json.loads(sched[2].replace("'", '"'))
+            new_js = {}
+            for kitchen_key in sched_json:
+                new_js[kitchen_key] = {}
+                for dep_key in sched_json[kitchen_key]:
+                    if dep_key == old_dep.name:
+                        
+                        
+                        new_js[kitchen_key][name] = []
+                        
+                        for ls in sched_json[kitchen_key][dep_key]:
+                            new_js[kitchen_key][name].append(ls)        
+                        
+                    else:
+                        new_js[kitchen_key][dep_key] = sched_json[kitchen_key][dep_key]
+        
+                        
+            c.execute('UPDATE schedules SET schedule_json=%s WHERE id=%s', [str(new_js), week_id])   
+            dbe.commit()       
+            
+            flash(f'Week `{week_name}` updated for department name change')
+        
+        
+        
         dbe.commit()
         return jsonify({'status': 'success'})
     except Exception as e:
@@ -692,7 +749,64 @@ def save_kitchen():
     try:
         dbe, c = db.connect()
         c.execute("UPDATE big_kitchens SET name=%s WHERE id=%s", [data["new_name"], data['id']])
+        
+        
+        name = data["new_name"]
+        k = db.Kitchen(data['id'])
+        
+        db_obj, c = db.connect()
+        if k.name != name:
+            
+            c.execute('SELECT id, default_dep, name FROM employees WHERE user_id=%s', [session['user_id']])
+            
+            emps = c.fetchall()
+            
+            for emp in emps:
+                
+                empid = emp[0]
+                emp_def_kitch, emp_def_dep = emp[1].split(" - ")
+                empname = emp[2]
+                
+                if emp_def_kitch == k.name:
+                    c.execute('UPDATE employees SET default_dep=%s WHERE id=%s', [f'{name} - {emp_def_dep}', empid])
+                    db_obj.commit()
+                    
+                    flash(f'Updated Employee `{empname}`')
+                    
+        c.execute('SELECT id, week, schedule_json FROM schedules WHERE user_id=%s ', [session['parent_id']])
+        
+        f = c.fetchall()
+        
+        for sched in f:
+            
+            week_id = sched[0]
+            week_name = sched[1]
+            sched_json = json.loads(sched[2].replace("'", '"'))
+            new_js = {}
+            for kitchen_key in sched_json:
+                
+                if kitchen_key == k.name:
+                    new_js[name] = sched_json[kitchen_key]
+                else:
+                    
+                    new_js[kitchen_key] = sched_json[kitchen_key]
+                        
+            c.execute('UPDATE schedules SET schedule_json=%s WHERE id=%s', [str(new_js), week_id])   
+            db_obj.commit()       
+            
+            flash(f'Week `{week_name}` updated for Kitchen name change')
+        
+        
+        
+        
         dbe.commit()
+        
+        
+        
+        
+        
+        
+        
         return jsonify({'status': 'success'})
     except Exception as e:
         print('Error:', e)  # Debug statement to check the error
@@ -780,8 +894,7 @@ def save_emp_title():
     finally:
         c.close()
         dbe.close()
-        
-        
+          
 @app.route('/save_emp_pref_dep', methods=['POST'])
 def save_emp_pref_dep():
     if not auth():
