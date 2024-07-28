@@ -382,9 +382,12 @@ class Department:
             department_ids = json.loads(department_ids.replace("'", '"'))
             
             for ide in department_ids:
-                dep = get_subdept(ide)
-                
-                departments.append(f'{kitchen} - {dep.name}')
+                try:
+                    dep = get_subdept(ide)
+                    
+                    departments.append(f'{kitchen} - {dep.name}')
+                except Exception as e:
+                    print('Error: ', e)
         
         return departments
                
