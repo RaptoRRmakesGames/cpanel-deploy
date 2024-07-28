@@ -529,7 +529,8 @@ class Kitchen:
 
         
         for ide in self._raw['dep_ids']:
-            self.sub_departments.append(get_subdept(ide))
+            if get_subdept(ide) != None:
+                self.sub_departments.append(get_subdept(ide))
             
     def update(self, new_name, departments):
         
