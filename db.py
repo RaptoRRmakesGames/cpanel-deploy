@@ -744,12 +744,13 @@ class KitchenGroup:
         
         for kitch in self.sub_kitchens:
             for dep in kitch.sub_departments:
-                try:
-                    
-                    if employee in dep.employees:
-                        dep.employees.remove(employee)
-                except Exception as e:
-                    print('Error:', e)
+                if dep == None:
+                    continue
+
+
+                if employee in dep.employees:
+                    dep.employees.remove(employee)
+
                     
     def remove_duplicates(self):
         
