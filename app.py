@@ -268,6 +268,36 @@ def edit_objects():
     all_employees = db.Employee.get_all_employees()
     all_programs = db.get_all_programs(True)
     all_titles = db.get_all_titles(True)
+    
+    dbe,c=db.connect()
+    
+    c.execute('SELECT * FROM schedules WHERE user_id=%s', [session['parent_id']])
+    all_schedules = []
+    
+    for thing in c.fetchall():
+        
+        week_name = thing[1]
+        
+        day_start = week_name.split('-')[2].strip()
+        day_end = week_name.split('-')[5].split(')')[0]
+        
+        month_start = week_name.split('-')[1]
+        month_end = week_name.split('-')[4]
+        
+        year_start = week_name.split('-')[0].split('(')[1]
+        year_end = week_name.split('-')[3].strip()
+        
+        
+        
+        url_time = f'{day_start}_{month_start}_{year_start}_{day_end}_{month_end}_{year_end}'
+        
+        
+        all_schedules.append([
+            thing[0],
+            thing[1],
+            thing[2],
+            url_time,
+        ])
 
     return render_template(
         "edit_objects.html", session=session,
@@ -276,8 +306,22 @@ def edit_objects():
         employees=all_employees,
         programs=all_programs,
         titles=all_titles,
-        employee_departments = employee_departments
+        employee_departments = employee_departments,
+        schedules=all_schedules
     )
+    
+@app.route('/delete/table/<ide>')
+def delete_table(ide):
+    
+    dbe,c = db.connect()
+    
+    c.execute('DELETE FROM schedules WHERE id=%s', [ide])
+    
+    dbe.commit()
+    
+    flash(F'Deleted Schedule ID-`{ide}`!')
+    
+    return redirect(url_for('edit_objects'))
     
 @app.route('/edit/kitchen/<kitchen>', methods=['GET', 'POST'])
 def edit_kitchen(kitchen):
@@ -997,6 +1041,4 @@ def save_emp_pref_dep():
         c.close()
         dbe.close()
     
-# Run the application
-if __name__ == "__main__":
-    app.run()
+if __name__ == "__main__": app.run()

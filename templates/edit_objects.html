@@ -190,6 +190,31 @@
     </div>
     </div>
 
+    <div class="schedules table table-container">
+        <h3>Schedules</h3>
+
+        <div class="insides">
+            <table border="1">
+
+                <tr>
+                    <th>Week</th>
+                    <th>Edit</th>
+                    <th>Delete</th>
+                </tr>
+                {% for schedule in schedules%}
+                <tr>
+                    <td>{{schedule[1]}}</td>
+                    <td><button onclick='redirect("/table/{{schedule[3]}}")'>Edit</button></td>
+                    <td><button onclick='redirect("/delete/table/{{schedule[0]}}")'>Delete</button></td>
+                </tr>
+                {% endfor %}
+            </table>
+
+
+        </div>
+
+    </div>
+
 </div>
 
 <script>
