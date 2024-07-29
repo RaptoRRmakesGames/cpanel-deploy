@@ -58,5 +58,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `owner` int(11) NOT NULL DEFAULT 0,
   `parent_id` int(11) NOT NULL DEFAULT 1,
   `password` varchar(500) NOT NULL,
-  `email` varchar(255) NOT NULL
+  `email` varchar(255) NOT NULL,
+PRIMARY KEY (`id`)
+
 );

@@ -857,6 +857,21 @@ if __name__ == '__main__':
                 print('wipe_user_content')
             case 'delete_user':
                 print('delete')
+            case 'create_db':
+                with open('create_db.sql') as f:
+                    text = f.read()
+                    
+                db,c= connect()
+                
+                try:
+                    
+                    c.execute(text, multi=True)
+                    
+                    db.commit()
+                    print('Successfully Created Database')
+                except Exception as e:
+                    print('Error Creating Database: \n'+str(e))
+                
                 
             case '':
                 break

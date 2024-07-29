@@ -45,9 +45,9 @@ def get_next_seven_days(start_date_str):
     return next_seven_days
 
 @app.before_request
-def before():
+def before_request_func():
     
-    start = time.time()
+    session['start'] = time.time()
     
     if 'user_id' in session:
         db.USER_ID = session['parent_id']
@@ -68,8 +68,6 @@ def before():
         stuff.append(c.fetchall())
         c.execute("SELECT * FROM programs WHERE user_id = %s", [session['parent_id']])
         stuff.append(c.fetchall())
-        c.execute("SELECT * FROM titles WHERE user_id = %s", [session['parent_id']])
-        stuff.append(c.fetchall())
         
         # print(stuff)
         
@@ -81,10 +79,13 @@ def before():
             
         else: 
             session['hide_edit'] = True
-        
-    print(time.time() - start)
-        
-# Define a route and a view function
+   
+@app.after_request
+def after_request_func(response):
+    
+    print(time.time() - session['start'])
+    return response
+
 @app.route("/")
 def index():
     if not auth() : return redirect(url_for('login_page'))
@@ -277,7 +278,6 @@ def edit_objects():
         titles=all_titles,
         employee_departments = employee_departments
     )
-    
     
 @app.route('/edit/kitchen/<kitchen>', methods=['GET', 'POST'])
 def edit_kitchen(kitchen):
@@ -649,6 +649,8 @@ def logout():
     
     session.clear()
     
+    session['start'] = time.time()
+    
     flash("Successfully Logged Out!")
     
     return redirect(url_for('login_page'))
@@ -995,7 +997,6 @@ def save_emp_pref_dep():
         c.close()
         dbe.close()
     
-
 # Run the application
 if __name__ == "__main__":
     app.run()
