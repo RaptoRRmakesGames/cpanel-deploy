@@ -516,7 +516,7 @@ def delete_title(title):
         
         if emp[2] == title:
             remove = False
-    
+      
     
     
     if remove:
