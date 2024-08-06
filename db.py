@@ -289,9 +289,14 @@ class Employee:
         
         c.execute("SELECT id FROM employees WHERE user_id=%s", [USER_ID])
         
+        employees = [Employee(ide[0]) for ide in c.fetchall()]
+        while True:
+            try:
+                employees.remove(None)
+            except ValueError:
+                break 
+        return employees
         
-        
-        return [Employee(ide[0]) for ide in c.fetchall()]
     
     def __init__(self, idd) -> None:
         db,c = connect()
@@ -732,6 +737,11 @@ class KitchenGroup:
                     else:
                         (emp[0], 'name')
                         em = Employee(Employee.get_id_by_name(emp[0]))
+                        
+                    try:
+                        print(em.name)
+                    except AttributeError:
+                        continue
                         
                     emps_added.append(em.name)
                     self.remove_employee_from_current_department(em)
