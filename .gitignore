@@ -3,3 +3,4 @@ notes.txt
 /ignorefiles
 /__pycache__
 test.py
+/venv
