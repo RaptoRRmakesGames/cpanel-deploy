@@ -498,11 +498,22 @@ def delete_program(program):
     db_obj,c =db.connect()
     
     program = db.remove_from_string(program)
-    flash(f"`{program}` Deleted Successfully")
     
-    c.execute("DELETE FROM programs WHERE name=%s ", [program])
-    db_obj.commit()
+    c.execute('SELECT schedule_json FROM schedules WHERE user_id=%s',[session['parent_id']])
+    remove = True
+    for schedule in c.fetchall():
+        
+        if program.strip() in schedule[0]:
+            remove= False
+            break
     
+    if remove:
+        flash(f"`{program}` Deleted Successfully")
+        
+        c.execute("DELETE FROM programs WHERE name=%s ", [program])
+        db_obj.commit()
+    else:
+        flash(f'`{program}` Could not be deleted because it is used in a Schedule!.')
     return redirect(url_for('edit_objects'))
 
 @app.route('/delete/title/<title>')
@@ -512,19 +523,20 @@ def delete_title(title):
     db_obj,c =db.connect()
     
     c.execute('SELECT id, name, title FROM employees WHERE user_id=%s', [session['parent_id']])
+    
     remove = True
-    print('before for loop ')
+    print('before for loop ', session['parent_id'])
     for emp in c.fetchall():
         
-        if emp[2] == db.remove_from_string(title):
-            print(title, emp[2])
-            remove = False
+        if remove == False: break
+        
+        remove = not emp[2].strip() == db.remove_from_string(title).strip()
       
     if remove:
         title = db.remove_from_string(title)
         flash(f"`{title}` Deleted Successfully")
         c.execute("DELETE FROM titles WHERE name=%s ", [title])
-        db_obj.commit()
+        # db_obj.commit()
     else:
         flash('Title couldnt be deleted because its used in an Employee!')
     
@@ -540,20 +552,22 @@ def delete_kitchen(kitchen):
     remove = True
     for emp in c.fetchall():
         
+        if not remove:
+            break
+        
         empl = db.Employee(emp[0])
         
-        if kitchen in empl.prefered_dep_str:
-            remove = False
+        remove = not db.remove_from_string(kitchen).strip() in  empl.prefered_dep_str
             
     if remove:
         db_obj,c =db.connect()
         kitchen = db.remove_from_string(kitchen)
-        flash(f"`{kitchen}` Deleted Successfully. Make sure to edit Employees that were assigned to that kitchen!")
+        flash(f"`{kitchen}` Deleted Successfully")
         c.execute("DELETE FROM big_kitchens WHERE name=%s ", [kitchen])
-        db_obj.commit()
+        # db_obj.commit()
         
     else:
-        flash('Kitchen could not be deleted because its used in an Employee!')
+        flash(f'`{kitchen}` could not be deleted because its used in an Employee!')
     
     return redirect(url_for('edit_objects'))
 
@@ -565,10 +579,11 @@ def delete_department(department):
     remove = True
     for emp in c.fetchall():
         
+        if not remove: break
+        
         empl = db.Employee(emp[0])
         
-        if department in empl.prefered_dep_str:
-            remove = False
+        remove = not department.strip() in empl.prefered_dep_str
     
     if remove:
             
@@ -576,10 +591,10 @@ def delete_department(department):
         department = db.remove_from_string(department)
         flash(f"`{department}` Deleted Successfully. Make sure to edit Employees that were assigned to that department!")
         c.execute("DELETE FROM sub_department WHERE name=%s ", [department])
-        db_obj.commit()
+        # db_obj.commit()
         
     else:
-        flash('Department could not be deleted because its used in an Employee!')
+        flash(f'`{department}` could not be deleted because its used in an Employee!')
         
     return redirect(url_for('edit_objects'))
 
