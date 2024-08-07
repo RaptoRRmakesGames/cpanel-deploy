@@ -538,7 +538,7 @@ def delete_title(title):
         c.execute("DELETE FROM titles WHERE name=%s ", [title])
         db_obj.commit()
     else:
-        flash('Title couldnt be deleted because its used in an Employee!')
+        flash(f'`{title}` couldnt be deleted because its used in an Employee!')
     
     return redirect(url_for('edit_objects'))
 
