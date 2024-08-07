@@ -522,6 +522,8 @@ def delete_title(title):
     
     db_obj,c =db.connect()
     
+    title = db.remove_from_string(title).strip()
+    
     c.execute('SELECT id, name, title FROM employees WHERE user_id=%s', [session['parent_id']])
     
     remove = True
@@ -545,6 +547,8 @@ def delete_title(title):
 @app.route('/delete/kitchen/<kitchen>')
 def delete_kitchen(kitchen):
     if not auth() : return redirect(url_for('login_page'))
+    
+    kitchen = db.remove_from_string(kitchen).strip
     
     dbe, c = db.connect()
     
@@ -575,6 +579,9 @@ def delete_kitchen(kitchen):
 def delete_department(department):
     if not auth() : return redirect(url_for('login_page'))
     dbe, c = db.connect()
+    
+    department = db.remove_from_string(department).strip()
+    
     c.execute('SELECT id FROM employees')
     remove = True
     for emp in c.fetchall():
@@ -601,6 +608,8 @@ def delete_department(department):
 @app.route('/delete/employee/<employee>')
 def delete_employee(employee):
     if not auth() : return redirect(url_for('login_page'))
+    
+    
     
     db_obj,c =db.connect()
     flash(f"`{db.remove_from_string(employee)}` Deleted Successfully")
