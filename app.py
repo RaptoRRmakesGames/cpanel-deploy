@@ -536,7 +536,7 @@ def delete_title(title):
         title = db.remove_from_string(title)
         flash(f"`{title}` Deleted Successfully")
         c.execute("DELETE FROM titles WHERE name=%s ", [title])
-        # db_obj.commit()
+        db_obj.commit()
     else:
         flash('Title couldnt be deleted because its used in an Employee!')
     
@@ -564,7 +564,7 @@ def delete_kitchen(kitchen):
         kitchen = db.remove_from_string(kitchen)
         flash(f"`{kitchen}` Deleted Successfully")
         c.execute("DELETE FROM big_kitchens WHERE name=%s ", [kitchen])
-        # db_obj.commit()
+        db_obj.commit()
         
     else:
         flash(f'`{kitchen}` could not be deleted because its used in an Employee!')
@@ -591,7 +591,7 @@ def delete_department(department):
         department = db.remove_from_string(department)
         flash(f"`{department}` Deleted Successfully. Make sure to edit Employees that were assigned to that department!")
         c.execute("DELETE FROM sub_department WHERE name=%s ", [department])
-        # db_obj.commit()
+        db_obj.commit()
         
     else:
         flash(f'`{department}` could not be deleted because its used in an Employee!')
