@@ -609,11 +609,21 @@ def delete_department(department):
 def delete_employee(employee):
     if not auth() : return redirect(url_for('login_page'))
     
-    
+    emp_name = db.remove_from_string(employee).strip()
     
     db_obj,c =db.connect()
-    flash(f"`{db.remove_from_string(employee)}` Deleted Successfully")
-    c.execute("DELETE FROM employees WHERE name=%s ", [db.remove_from_string(employee)])
+    
+    
+    empl = db.Employee(db.Employee.get_id_by_name(emp_name))
+    
+    if empl == None:
+        flash('Error Deleting Employee')
+        return redirect(url_for('edit_objects'))
+    
+    empl.copy_to_archive()
+    
+    c.execute("DELETE FROM employees WHERE id=%s ", [empl.id])
+    flash(f"`{emp_name}` Deleted Successfully")
     db_obj.commit()
     
     return redirect(url_for('edit_objects'))

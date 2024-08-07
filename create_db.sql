@@ -27,6 +27,16 @@ CREATE TABLE IF NOT EXISTS `employees` (
     PRIMARY KEY (`id`)
 );
 
+CREATE TABLE IF NOT EXISTS `employee_archive` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(255) NOT NULL,
+    `title` VARCHAR(255) NOT NULL,
+    `default_dep` VARCHAR(255) NOT NULL,
+    `user_id` INT NOT NULL,
+    PRIMARY KEY (`id`)
+
+);
+
 CREATE TABLE IF NOT EXISTS `schedules` (
     `id` INT NOT NULL AUTO_INCREMENT,
     `week` VARCHAR(255) NOT NULL,
@@ -59,6 +69,6 @@ CREATE TABLE IF NOT EXISTS `users` (
   `parent_id` int(11) NOT NULL DEFAULT 1,
   `password` varchar(500) NOT NULL,
   `email` varchar(255) NOT NULL,
-PRIMARY KEY (`id`)
+    PRIMARY KEY (`id`)
 
 );

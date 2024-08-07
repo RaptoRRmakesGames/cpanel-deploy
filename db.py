@@ -148,6 +148,31 @@ def get_next_weeks(n=4):
     
     return week_ranges
 
+def week_passed(date_range_str):
+    # Extract the start date from the range string
+    start_date_str = date_range_str.split(' - ')[0][1:]
+    
+    # Parse the start date string
+    start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+    
+    # Get the current date and time
+    current_date = datetime.now()
+    
+    # Calculate the week number and year for both dates
+    start_week = start_date.isocalendar()[1]
+    start_year = start_date.isocalendar()[0]
+    
+    current_week = current_date.isocalendar()[1]
+    current_year = current_date.isocalendar()[0]
+    
+    # Compare the week numbers along with the year to account for year boundaries
+    if start_year < current_year:
+        return True
+    elif start_year == current_year:
+        return start_week <= current_week
+    else:
+        return False
+
 def add_program(name:str):
     
     db,c = connect()
@@ -281,6 +306,21 @@ class Employee:
             c.execute("SELECT id FROM employees WHERE name =%s AND user_id=%s", [remove_from_string(name), USER_ID])
             
             return c.fetchall()[0][0]
+        
+    @staticmethod 
+    def get_id_by_name_archive(name):
+        
+        db,c = connect()
+        
+        c.execute("SELECT id FROM employee_archive WHERE name =%s AND user_id=%s", [name, USER_ID])
+        
+        try:
+            
+            return c.fetchall()[0][0]
+        except IndexError:
+            c.execute("SELECT id FROM employee_archive WHERE name =%s AND user_id=%s", [remove_from_string(name), USER_ID])
+            
+            return c.fetchall()[0][0]
             
     @staticmethod
     def get_all_employees():
@@ -296,9 +336,19 @@ class Employee:
             except ValueError:
                 break 
         return employees
+    
+    @staticmethod
+    def from_archive(idd:str):
+        
+        if idd.isnumeric():
+            final_id = idd
+        else:
+            final_id = Employee.get_id_by_name_archive(idd)
+        
+        return Employee(final_id, True)
         
     
-    def __init__(self, idd) -> None:
+    def __init__(self, idd, check_archive=False) -> None:
         db,c = connect()
         
         self.id = idd
@@ -309,9 +359,21 @@ class Employee:
             f = c.fetchall()[0]
         except IndexError:
             
-            print("Employee Doesnt Exist")
-            return None
-        
+            if check_archive:
+                print(self.id)
+                c.execute('SELECT * FROM employee_archive WHERE id=%s AND user_id=%s', [self.id, USER_ID])
+                f = c.fetchall()
+                if len(f) == 0:
+                    print("Employee Doesnt Exist (check_archive = True)")
+                    return None
+                f = f[0]
+                
+            else:
+                    
+                print("Employee Doesnt Exist (check_archive = False)")
+                return None
+            
+        print(f)
         self.raw = {
             'id' : self.id,
             'name' : f[1],
@@ -322,10 +384,24 @@ class Employee:
         
         self.title = self.raw['title']
         self.name = self.raw['name']
-        
+        self.user_id = f[4]
         
         self.prefered_dep = self.raw['default_dep'].split(' - ')
         self.prefered_dep_str = self.raw['default_dep']
+        
+    def copy_to_archive(self):
+        
+        dbe,c = connect()
+        
+        c.execute('SELECT * FROM employee_archive WHERE id=%s', [self.id])
+        if len(c.fetchall()) != 0:
+            return False
+        
+        c.execute('INSERT INTO employee_archive (id,name,title,default_dep,user_id) VALUES (%s,%s,%s,%s,%s)', [self.id, self.name, self.title, self.prefered_dep_str, self.user_id])
+    
+        dbe.commit()
+        
+        return True
     
     def update(self, name, title, def_dep):
         
@@ -591,9 +667,14 @@ class KitchenGroup:
         c.execute('SELECT id FROM big_kitchens WHERE user_id=%s', [USER_ID])
         self.sub_kitchens = [Kitchen(id[0]) for id in c.fetchall()]
         
+        
         print('week : ',self.week)
         
         if self.week != '':
+            
+            self.week_passed = week_passed(self.week)
+            
+            print(self.week_passed)
             
             c.execute('SELECT * FROM schedules WHERE week=%s AND user_id=%s', [week, USER_ID])
             
@@ -741,7 +822,12 @@ class KitchenGroup:
                     try:
                         print(em.name)
                     except AttributeError:
-                        continue
+                        if self.week_passed:
+                            em = Employee.from_archive(str(emp[0]))
+                            
+                            if not hasattr(em, 'name'):
+                                continue
+                        else: continue
                         
                     emps_added.append(em.name)
                     self.remove_employee_from_current_department(em)
