@@ -85,7 +85,7 @@ def after_request_func(response):
     
     if __name__ == '__main__':
         print(time.time() - session['start'])
-        return response
+    return response
 
 @app.route("/")
 def index():
