@@ -515,6 +515,7 @@ def delete_title(title):
     for emp in c.fetchall():
         
         if emp[2] == db.remove_from_string(title):
+            print(title, emp[2])
             remove = False
       
     if remove:
