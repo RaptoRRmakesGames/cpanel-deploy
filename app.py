@@ -513,6 +513,7 @@ def delete_title(title):
     
     c.execute('SELECT id, name, title FROM employees WHERE user_id=%s', [session['parent_id']])
     remove = True
+    print('before for loop ')
     for emp in c.fetchall():
         
         if emp[2] == db.remove_from_string(title):
