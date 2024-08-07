@@ -514,11 +514,9 @@ def delete_title(title):
     remove = True
     for emp in c.fetchall():
         
-        if emp[2] == title:
+        if emp[2] == db.remove_from_string(title):
             remove = False
       
-    
-    
     if remove:
         title = db.remove_from_string(title)
         flash(f"`{title}` Deleted Successfully")
