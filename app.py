@@ -83,8 +83,9 @@ def before_request_func():
 @app.after_request
 def after_request_func(response):
     
-    print(time.time() - session['start'])
-    return response
+    if __name__ == '__main__':
+        print(time.time() - session['start'])
+        return response
 
 @app.route("/")
 def index():
