@@ -14,7 +14,7 @@ from datetime import timedelta, datetime
 
 import db
 
-import json 
+import json
 
 import time
 
@@ -23,19 +23,23 @@ app = Flask(__name__)
 
 app.config["SECRET_KEY"] = "very_secret_key_12351232"
 
-app.config.update(
-    SESSION_PERMANENT=True,
-    SESSION_TYPE='filesystem'
-)
+app.config.update(SESSION_PERMANENT=True, SESSION_TYPE="filesystem")
+
 
 def auth():
-    if 'auth' in session: return session['auth']
-    else: return False
+    if "auth" in session:
+        return session["auth"]
+    else:
+        return False
+
 
 def admin():
-    
-    if auth(): return session['user_admin']
-    else: return False
+
+    if auth():
+        return session["user_admin"]
+    else:
+        return False
+
 
 def get_next_seven_days(start_date_str):
     start_date = datetime.strptime(start_date_str, "%d/%m/%Y")
@@ -44,64 +48,81 @@ def get_next_seven_days(start_date_str):
     ][0:7]
     return next_seven_days
 
+
 @app.before_request
 def before_request_func():
-    
-    session['start'] = time.time()
-    
-    if 'user_id' in session:
-        db.USER_ID = session['parent_id']
-        
-    if 'auth' in session and session['auth']:
-        
+
+    session["start"] = time.time()
+
+    if "user_id" in session:
+        db.USER_ID = session["parent_id"]
+
+    if "auth" in session and session["auth"]:
+
         dbe, c = db.connect()
         stuff = []
-        c.execute("SELECT * FROM employees WHERE user_id = %s", [session['parent_id']])
+        c.execute("SELECT * FROM employees WHERE user_id = %s", [session["parent_id"]])
         stuff.append(c.fetchall())
-        c.execute("SELECT * FROM titles WHERE user_id = %s", [session['parent_id']])
+        c.execute("SELECT * FROM titles WHERE user_id = %s", [session["parent_id"]])
         stuff.append(c.fetchall())
-        c.execute("SELECT * FROM sub_department WHERE user_id = %s", [session['parent_id']])
+        c.execute(
+            "SELECT * FROM sub_department WHERE user_id = %s", [session["parent_id"]]
+        )
         stuff.append(c.fetchall())
-        c.execute("SELECT * FROM big_kitchens WHERE user_id = %s", [session['parent_id']])
+        c.execute(
+            "SELECT * FROM big_kitchens WHERE user_id = %s", [session["parent_id"]]
+        )
         stuff.append(c.fetchall())
-        c.execute("SELECT * FROM large_department WHERE user_id = %s", [session['parent_id']])
+        c.execute(
+            "SELECT * FROM large_department WHERE user_id = %s", [session["parent_id"]]
+        )
         stuff.append(c.fetchall())
-        c.execute("SELECT * FROM programs WHERE user_id = %s", [session['parent_id']])
+        c.execute("SELECT * FROM programs WHERE user_id = %s", [session["parent_id"]])
         stuff.append(c.fetchall())
-        
+
         # print(stuff)
-        
-        session['hide_edit'] = False
-        for thing in stuff: 
+
+        session["hide_edit"] = False
+        for thing in stuff:
             # print(len(thing))
             if len(thing) > 0:
                 break
-            
-        else: 
-            session['hide_edit'] = True
-   
+
+        else:
+            session["hide_edit"] = True
+
+
 @app.after_request
 def after_request_func(response):
-    
-    if __name__ == '__main__':
-        print(time.time() - session['start'])
+
+    if __name__ == "__main__":
+        print(time.time() - session["start"])
     return response
+
 
 @app.route("/")
 def index():
-    if not auth() : return redirect(url_for('login_page'))
-    
-    return render_template("index.html", session=session,)
+    if not auth():
+        return redirect(url_for("login_page"))
+
+    return render_template(
+        "index.html",
+        session=session,
+    )
+
 
 @app.route("/add_kitchen", methods=["GET", "POST"])
 def add_kitchen():
 
-    if not auth() : return redirect(url_for('login_page'))
-    
+    if not auth():
+        return redirect(url_for("login_page"))
+
     match request.method:
         case "GET":
             return render_template(
-                "add_kitchen.html", session=session, departments=db.get_all_departments()
+                "add_kitchen.html",
+                session=session,
+                departments=db.get_all_departments(),
             )
 
         case "POST":
@@ -118,13 +139,18 @@ def add_kitchen():
 
             return redirect(url_for("edit_objects"))
 
+
 @app.route("/add_department", methods=["GET", "POST"])
 def add_dep():
 
-    if not auth() : return redirect(url_for('login_page'))
+    if not auth():
+        return redirect(url_for("login_page"))
     match request.method:
         case "GET":
-            return render_template("add_deps.html", session=session,)
+            return render_template(
+                "add_deps.html",
+                session=session,
+            )
 
         case "POST":
 
@@ -134,12 +160,17 @@ def add_dep():
 
             return redirect(url_for("edit_objects"))
 
+
 @app.route("/add_title", methods=["GET", "POST"])
 def add_title():
-    if not auth() : return redirect(url_for('login_page'))
+    if not auth():
+        return redirect(url_for("login_page"))
     match request.method:
         case "GET":
-            return render_template("add_title.html", session=session,)
+            return render_template(
+                "add_title.html",
+                session=session,
+            )
 
         case "POST":
 
@@ -149,9 +180,11 @@ def add_title():
 
             return redirect(url_for("edit_objects"))
 
+
 @app.route("/save_schedule", methods=["POST"])
 def save_schedule():
-    if not auth() : return redirect(url_for('login_page'))
+    if not auth():
+        return redirect(url_for("login_page"))
     data = request.json
 
     schedule = db.KitchenGroup(data["week"])
@@ -166,9 +199,11 @@ def save_schedule():
         }
     )
 
+
 @app.route("/add_employee", methods=["GET", "POST"])
 def add_employee():
-    if not auth() : return redirect(url_for('login_page'))
+    if not auth():
+        return redirect(url_for("login_page"))
     match request.method:
 
         case "GET":
@@ -178,7 +213,8 @@ def add_employee():
             all_titles = db.get_all_titles()
 
             return render_template(
-                "add_employee.html", session=session,
+                "add_employee.html",
+                session=session,
                 departments=all_departments,
                 programs=all_programs,
                 titles=all_titles,
@@ -193,61 +229,68 @@ def add_employee():
             )
 
             employee = db.Employee.create_employee(name, title, def_dep)
-            
-            dbe,c = db.connect()
-            
-            c.execute("SELECT * FROM schedules WHERE user_id=%s", [session['parent_id']])
+
+            dbe, c = db.connect()
+
+            c.execute(
+                "SELECT * FROM schedules WHERE user_id=%s", [session["parent_id"]]
+            )
             kitch, dep = employee.prefered_dep
             for sched in c.fetchall():
-                
+
                 ide = sched[0]
                 week = sched[1]
                 js = json.loads(sched[2].replace("'", '"'))
-                
+
                 program = db.get_random_program()
-                
+
                 for kitchen in js:
-                    
-                    if kitchen == kitch: 
-                    
+
+                    if kitchen == kitch:
+
                         for department in js[kitchen]:
-                            
+
                             if department == dep:
-                                
+
                                 js[kitchen][department].append(
                                     [
-                                        employee.id, [
+                                        employee.id,
+                                        [
                                             {
-                                            'monday' : [program, ''],
-                                            'tuesday' : [program, ''],
-                                            'wednesday' : [program, ''],
-                                            'thursday' : [program, ''],
-                                            'friday' : [program, ''],
-                                            'saturday' : [program, ''],
-                                            'sunday' : [program, ''],
-                                        }
-                                            
-                                        ]
+                                                "monday": [program, ""],
+                                                "tuesday": [program, ""],
+                                                "wednesday": [program, ""],
+                                                "thursday": [program, ""],
+                                                "friday": [program, ""],
+                                                "saturday": [program, ""],
+                                                "sunday": [program, ""],
+                                            }
+                                        ],
                                     ]
                                 )
-                
+
                 flash(f"Added into `{week}` Schedule")
-                c.execute('UPDATE schedules SET schedule_json =%s WHERE id=%s', [str(js), ide])
-                
+                c.execute(
+                    "UPDATE schedules SET schedule_json =%s WHERE id=%s", [str(js), ide]
+                )
+
                 dbe.commit()
-                
-                
 
             flash("Added Employee Successfully!")
             return redirect(url_for("edit_objects"))
 
+
 @app.route("/add_program", methods=["GET", "POST"])
 def create_program():
-    if not auth() : return redirect(url_for('login_page'))
+    if not auth():
+        return redirect(url_for("login_page"))
     match request.method:
         case "GET":
 
-            return render_template("add_program.html", session=session,)
+            return render_template(
+                "add_program.html",
+                session=session,
+            )
 
         case "POST":
 
@@ -259,183 +302,211 @@ def create_program():
 
             return redirect(url_for("edit_objects"))
 
+
 @app.route("/edit_objects")
 def edit_objects():
-    if not auth() : return redirect(url_for('login_page'))
+    if not auth():
+        return redirect(url_for("login_page"))
     all_kitchens = db.Kitchen.get_all_kitchens(True)
     all_departments = db.get_all_departments(True)
-    
+
     employee_departments = db.Department.get_all_departments()
     all_employees = db.Employee.get_all_employees()
     all_programs = db.get_all_programs(True)
     all_titles = db.get_all_titles(True)
-    
-    dbe,c=db.connect()
-    
-    c.execute('SELECT * FROM schedules WHERE user_id=%s', [session['parent_id']])
+
+    dbe, c = db.connect()
+
+    c.execute("SELECT * FROM schedules WHERE user_id=%s", [session["parent_id"]])
     all_schedules = []
-    
+
     for thing in c.fetchall():
-        
+
         week_name = thing[1]
-        
-        day_start = week_name.split('-')[2].strip()
-        day_end = week_name.split('-')[5].split(')')[0]
-        
-        month_start = week_name.split('-')[1]
-        month_end = week_name.split('-')[4]
-        
-        year_start = week_name.split('-')[0].split('(')[1]
-        year_end = week_name.split('-')[3].strip()
-        
-        
-        
-        url_time = f'{day_start}_{month_start}_{year_start}_{day_end}_{month_end}_{year_end}'
-        
-        
-        all_schedules.append([
-            thing[0],
-            thing[1],
-            thing[2],
-            url_time,
-        ])
+
+        day_start = week_name.split("-")[2].strip()
+        day_end = week_name.split("-")[5].split(")")[0]
+
+        month_start = week_name.split("-")[1]
+        month_end = week_name.split("-")[4]
+
+        year_start = week_name.split("-")[0].split("(")[1]
+        year_end = week_name.split("-")[3].strip()
+
+        url_time = (
+            f"{day_start}_{month_start}_{year_start}_{day_end}_{month_end}_{year_end}"
+        )
+
+        all_schedules.append(
+            [
+                thing[0],
+                thing[1],
+                thing[2],
+                url_time,
+            ]
+        )
 
     return render_template(
-        "edit_objects.html", session=session,
+        "edit_objects.html",
+        session=session,
         kitchens=all_kitchens,
         departments=all_departments,
         employees=all_employees,
         programs=all_programs,
         titles=all_titles,
-        employee_departments = employee_departments,
-        schedules=all_schedules
+        employee_departments=employee_departments,
+        schedules=all_schedules,
     )
-    
-@app.route('/delete/table/<ide>')
+
+
+@app.route("/delete/table/<ide>")
 def delete_table(ide):
-    
-    dbe,c = db.connect()
-    
-    c.execute('DELETE FROM schedules WHERE id=%s', [ide])
-    
+
+    dbe, c = db.connect()
+
+    c.execute("DELETE FROM schedules WHERE id=%s", [ide])
+
     dbe.commit()
-    
-    flash(F'Deleted Schedule ID-`{ide}`!')
-    
-    return redirect(url_for('edit_objects'))
-    
-@app.route('/edit/kitchen/<kitchen>', methods=['GET', 'POST'])
+
+    flash(f"Deleted Schedule ID-`{ide}`!")
+
+    return redirect(url_for("edit_objects"))
+
+
+@app.route("/edit/kitchen/<kitchen>", methods=["GET", "POST"])
 def edit_kitchen(kitchen):
-    if not auth() : return redirect(url_for('login_page'))
+    if not auth():
+        return redirect(url_for("login_page"))
     match request.method:
         case "GET":
             return render_template(
-                "add_kitchen.html", session=session, departments = db.get_all_departments(),
-                edit=True, kitchen = db.Kitchen(db.Kitchen.get_id_from_name(kitchen))
+                "add_kitchen.html",
+                session=session,
+                departments=db.get_all_departments(),
+                edit=True,
+                kitchen=db.Kitchen(db.Kitchen.get_id_from_name(kitchen)),
             )
 
         case "POST":
 
             name, deps = request.form.get("name"), []
             for key in request.form:
-                if key == "name" or key == "submit" or key == 'id':
+                if key == "name" or key == "submit" or key == "id":
                     continue
                 deps.append(request.form.get(key))
 
             k = db.Kitchen(db.Kitchen.get_id_from_name(kitchen))
-            
+
             db_obj, c = db.connect()
             if k.name != name:
-                
-                
-                c.execute('SELECT id, default_dep, name FROM employees')
-                
+
+                c.execute("SELECT id, default_dep, name FROM employees")
+
                 emps = c.fetchall()
-                
+
                 for emp in emps:
-                    
+
                     empid = emp[0]
                     emp_def_kitch, emp_def_dep = emp[1].split(" - ")
                     empname = emp[2]
-                    
+
                     if emp_def_kitch == k.name:
-                        c.execute('UPDATE employees SET default_dep=%s WHERE id=%s', [f'{name} - {emp_def_dep}', empid])
+                        c.execute(
+                            "UPDATE employees SET default_dep=%s WHERE id=%s",
+                            [f"{name} - {emp_def_dep}", empid],
+                        )
                         db_obj.commit()
-                        
-                        flash(f'Updated Employee `{empname}`')
-                        
-            c.execute('SELECT id, week, schedule_json FROM schedules WHERE user_id=%s ', [session['parent_id']])
-            
+
+                        flash(f"Updated Employee `{empname}`")
+
+            c.execute(
+                "SELECT id, week, schedule_json FROM schedules WHERE user_id=%s ",
+                [session["parent_id"]],
+            )
+
             f = c.fetchall()
-            
+
             for sched in f:
-                
+
                 week_id = sched[0]
                 week_name = sched[1]
                 sched_json = json.loads(sched[2].replace("'", '"'))
                 new_js = {}
                 for kitchen_key in sched_json:
-                    
+
                     if kitchen_key == k.name:
                         new_js[name] = sched_json[kitchen_key]
                     else:
-                        
+
                         new_js[kitchen_key] = sched_json[kitchen_key]
 
-                            
-                c.execute('UPDATE schedules SET schedule_json=%s WHERE id=%s', [str(new_js), week_id])   
-                db_obj.commit()       
-                
-                flash(f'Week `{week_name}` updated for Kitchen name change')
-            
+                c.execute(
+                    "UPDATE schedules SET schedule_json=%s WHERE id=%s",
+                    [str(new_js), week_id],
+                )
+                db_obj.commit()
+
+                flash(f"Week `{week_name}` updated for Kitchen name change")
+
             k.update(name, deps)
 
             flash("Updated Kitchen Successfully!")
 
             return redirect(url_for("edit_objects"))
-    
-@app.route('/edit/department/<dep>', methods=['GET', 'POST'])
+
+
+@app.route("/edit/department/<dep>", methods=["GET", "POST"])
 def edit_department(dep):
-    if not auth() : return redirect(url_for('login_page'))
+    if not auth():
+        return redirect(url_for("login_page"))
     match request.method:
         case "GET":
             return render_template(
-                "add_deps.html", session=session, departments=db.get_all_departments(),
-                edit=True, department = db.Department(db.Department.get_id_from_name(dep))
+                "add_deps.html",
+                session=session,
+                departments=db.get_all_departments(),
+                edit=True,
+                department=db.Department(db.Department.get_id_from_name(dep)),
             )
 
         case "POST":
 
             name = request.form.get("name")
 
-            old_dep  = db.Department(db.Department.get_id_from_name(dep))
-            
-            db_obj,c = db.connect()
-            
+            old_dep = db.Department(db.Department.get_id_from_name(dep))
+
+            db_obj, c = db.connect()
+
             c.execute("SELECT id, default_dep,name FROM employees")
-            
+
             emps = c.fetchall()
-            
+
             for emp in emps:
-                
+
                 empid = emp[0]
-                
-                empname=emp[2]
-                
-                def_dep_kitch,def_dep = emp[1].split(' - ')
-                
+
+                empname = emp[2]
+
+                def_dep_kitch, def_dep = emp[1].split(" - ")
+
                 if old_dep.name == def_dep:
-                    c.execute('UPDATE employees SET default_dep=%s WHERE id=%s', [f"{def_dep_kitch} - {name}", empid])
-                    
+                    c.execute(
+                        "UPDATE employees SET default_dep=%s WHERE id=%s",
+                        [f"{def_dep_kitch} - {name}", empid],
+                    )
+
                     db_obj.commit()
                     flash(f"Updated Department in Employee `{empname}`")
-            
-            c.execute('SELECT id, week, schedule_json FROM schedules WHERE user_id=%s ', [session['parent_id']])
-            
+
+            c.execute(
+                "SELECT id, week, schedule_json FROM schedules WHERE user_id=%s ",
+                [session["parent_id"]],
+            )
+
             f = c.fetchall()
-            
+
             for sched in f:
-                
+
                 week_id = sched[0]
                 week_name = sched[1]
                 sched_json = json.loads(sched[2].replace("'", '"'))
@@ -444,196 +515,221 @@ def edit_department(dep):
                     new_js[kitchen_key] = {}
                     for dep_key in sched_json[kitchen_key]:
                         if dep_key == old_dep.name:
-                            
-                            
+
                             new_js[kitchen_key][name] = []
-                            
+
                             for ls in sched_json[kitchen_key][dep_key]:
-                                new_js[kitchen_key][name].append(ls)        
-                            
+                                new_js[kitchen_key][name].append(ls)
+
                         else:
 
-                            new_js[kitchen_key][dep_key] = sched_json[kitchen_key][dep_key]
-            
-                            
-                c.execute('UPDATE schedules SET schedule_json=%s WHERE id=%s', [str(new_js), week_id])   
-                db_obj.commit()       
-                
-                flash(f'Week `{week_name}` updated for department name change')
-                
-            
+                            new_js[kitchen_key][dep_key] = sched_json[kitchen_key][
+                                dep_key
+                            ]
+
+                c.execute(
+                    "UPDATE schedules SET schedule_json=%s WHERE id=%s",
+                    [str(new_js), week_id],
+                )
+                db_obj.commit()
+
+                flash(f"Week `{week_name}` updated for department name change")
+
             old_dep.update(name)
 
             flash("Updated Department Successfully!")
 
             return redirect(url_for("edit_objects"))
-        
-@app.route('/edit/employee/<emp>', methods=['GET', 'POST'])
+
+
+@app.route("/edit/employee/<emp>", methods=["GET", "POST"])
 def edit_demployee(emp):
-    if not auth() : return redirect(url_for('login_page'))
+    if not auth():
+        return redirect(url_for("login_page"))
     match request.method:
         case "GET":
-            
+
             return render_template(
-                "add_employee.html", session=session, departments=db.Department.get_all_departments(),
-                edit=True, employee = db.Employee(db.Employee.get_id_by_name(emp)), titles=db.get_all_titles(), programs=db.get_all_programs()
+                "add_employee.html",
+                session=session,
+                departments=db.Department.get_all_departments(),
+                edit=True,
+                employee=db.Employee(db.Employee.get_id_by_name(emp)),
+                titles=db.get_all_titles(),
+                programs=db.get_all_programs(),
             )
 
         case "POST":
 
             name = request.form.get("name")
-            title = request.form.get('title')
-            pref_dep = request.form.get('def_dep')
+            title = request.form.get("title")
+            pref_dep = request.form.get("def_dep")
 
             db.Employee(db.Employee.get_id_by_name(emp)).update(name, title, pref_dep)
 
             flash("Updated Department Successfully!")
 
             return redirect(url_for("edit_objects"))
-        
-@app.route('/delete/program/<program>')
+
+
+@app.route("/delete/program/<program>")
 def delete_program(program):
-    if not auth() : return redirect(url_for('login_page'))
-    
-    db_obj,c =db.connect()
-    
+    if not auth():
+        return redirect(url_for("login_page"))
+
+    db_obj, c = db.connect()
+
     program = db.remove_from_string(program)
-    
-    c.execute('SELECT schedule_json FROM schedules WHERE user_id=%s',[session['parent_id']])
+
+    c.execute(
+        "SELECT schedule_json FROM schedules WHERE user_id=%s", [session["parent_id"]]
+    )
     remove = True
     for schedule in c.fetchall():
-        
+
         if program.strip() in schedule[0]:
-            remove= False
+            remove = False
             break
-    
+
     if remove:
         flash(f"`{program}` Deleted Successfully")
-        
+
         c.execute("DELETE FROM programs WHERE name=%s ", [program])
         db_obj.commit()
     else:
-        flash(f'`{program}` Could not be deleted because it is used in a Schedule!.')
-    return redirect(url_for('edit_objects'))
+        flash(f"`{program}` Could not be deleted because it is used in a Schedule!.")
+    return redirect(url_for("edit_objects"))
 
-@app.route('/delete/title/<title>')
+
+@app.route("/delete/title/<title>")
 def delete_title(title):
-    if not auth() : return redirect(url_for('login_page'))
-    
-    db_obj,c =db.connect()
-    
+    if not auth():
+        return redirect(url_for("login_page"))
+
+    db_obj, c = db.connect()
+
     title = db.remove_from_string(title).strip()
-    
-    c.execute('SELECT id, name, title FROM employees WHERE user_id=%s', [session['parent_id']])
-    
+
+    c.execute(
+        "SELECT id, name, title FROM employees WHERE user_id=%s", [session["parent_id"]]
+    )
+
     remove = True
-    print('before for loop ', session['parent_id'])
+    print("before for loop ", session["parent_id"])
     for emp in c.fetchall():
-        
-        if remove == False: break
-        
+
+        if remove == False:
+            break
+
         remove = not emp[2].strip() == db.remove_from_string(title).strip()
-      
+
     if remove:
         title = db.remove_from_string(title)
         flash(f"`{title}` Deleted Successfully")
         c.execute("DELETE FROM titles WHERE name=%s ", [title])
         db_obj.commit()
     else:
-        flash(f'`{title}` couldnt be deleted because its used in an Employee!')
-    
-    return redirect(url_for('edit_objects'))
+        flash(f"`{title}` couldnt be deleted because its used in an Employee!")
 
-@app.route('/delete/kitchen/<kitchen>')
+    return redirect(url_for("edit_objects"))
+
+
+@app.route("/delete/kitchen/<kitchen>")
 def delete_kitchen(kitchen):
-    if not auth() : return redirect(url_for('login_page'))
-    
+    if not auth():
+        return redirect(url_for("login_page"))
+
     kitchen = db.remove_from_string(kitchen).strip
-    
+
     dbe, c = db.connect()
-    
-    c.execute('SELECT id FROM employees')
+
+    c.execute("SELECT id FROM employees")
     remove = True
     for emp in c.fetchall():
-        
+
         if not remove:
             break
-        
+
         empl = db.Employee(emp[0])
-        
-        remove = not db.remove_from_string(kitchen).strip() in  empl.prefered_dep_str
-            
+
+        remove = not db.remove_from_string(kitchen).strip() in empl.prefered_dep_str
+
     if remove:
-        db_obj,c =db.connect()
+        db_obj, c = db.connect()
         kitchen = db.remove_from_string(kitchen)
         flash(f"`{kitchen}` Deleted Successfully")
         c.execute("DELETE FROM big_kitchens WHERE name=%s ", [kitchen])
         db_obj.commit()
-        
-    else:
-        flash(f'`{kitchen}` could not be deleted because its used in an Employee!')
-    
-    return redirect(url_for('edit_objects'))
 
-@app.route('/delete/department/<department>')
+    else:
+        flash(f"`{kitchen}` could not be deleted because its used in an Employee!")
+
+    return redirect(url_for("edit_objects"))
+
+
+@app.route("/delete/department/<department>")
 def delete_department(department):
-    if not auth() : return redirect(url_for('login_page'))
+    if not auth():
+        return redirect(url_for("login_page"))
     dbe, c = db.connect()
-    
+
     department = db.remove_from_string(department).strip()
-    
-    c.execute('SELECT id FROM employees')
+
+    c.execute("SELECT id FROM employees")
     remove = True
     for emp in c.fetchall():
-        
-        if not remove: break
-        
+
+        if not remove:
+            break
+
         empl = db.Employee(emp[0])
-        
+
         remove = not department.strip() in empl.prefered_dep_str
-    
+
     if remove:
-            
-        db_obj,c =db.connect()
+
+        db_obj, c = db.connect()
         department = db.remove_from_string(department)
-        flash(f"`{department}` Deleted Successfully. Make sure to edit Employees that were assigned to that department!")
+        flash(
+            f"`{department}` Deleted Successfully. Make sure to edit Employees that were assigned to that department!"
+        )
         c.execute("DELETE FROM sub_department WHERE name=%s ", [department])
         db_obj.commit()
-        
-    else:
-        flash(f'`{department}` could not be deleted because its used in an Employee!')
-        
-    return redirect(url_for('edit_objects'))
 
-@app.route('/delete/employee/<employee>')
+    else:
+        flash(f"`{department}` could not be deleted because its used in an Employee!")
+
+    return redirect(url_for("edit_objects"))
+
+
+@app.route("/delete/employee/<employee>")
 def delete_employee(employee):
-    if not auth() : return redirect(url_for('login_page'))
-    
+    if not auth():
+        return redirect(url_for("login_page"))
+
     emp_name = db.remove_from_string(employee).strip()
-    
-    db_obj,c =db.connect()
-    
-    
+
+    db_obj, c = db.connect()
+
     empl = db.Employee(db.Employee.get_id_by_name(emp_name))
-    
+
     if empl == None:
-        flash('Error Deleting Employee')
-        return redirect(url_for('edit_objects'))
-    
+        flash("Error Deleting Employee")
+        return redirect(url_for("edit_objects"))
+
     empl.copy_to_archive()
-    
     c.execute("DELETE FROM employees WHERE id=%s ", [empl.id])
     flash(f"`{emp_name}` Deleted Successfully")
     db_obj.commit()
-    
-    return redirect(url_for('edit_objects'))
+
+    return redirect(url_for("edit_objects"))
+
 
 @app.route("/table")
 @app.route("/table/<week>")
 def table(week=None):
-    if not auth() : return redirect(url_for('login_page'))
-    
-    
+    if not auth():
+        return redirect(url_for("login_page"))
 
     match request.method:
 
@@ -658,7 +754,6 @@ def table(week=None):
                 day_end = week.split("_")[3]
 
                 formated_week = f"({year_start}-{month_start}-{day_start} - {year_end}-{month_end}-{day_end})"
-
 
                 group = db.KitchenGroup(formated_week)
 
@@ -690,7 +785,8 @@ def table(week=None):
             )
 
             return render_template(
-                "table.html", session=session,
+                "table.html",
+                session=session,
                 group=group,
                 all_employees=all_employees,
                 all_programs=all_programs,
@@ -704,149 +800,159 @@ def table(week=None):
                 split_days=split_days,
             )
 
+
 @app.route("/see_week/<d_start>_<m_start>_<y_start>_<d_end>_<m_end>_<y_end>")
 def see_week(d_start, m_start, y_start, d_end, m_end, y_end):
-    if not auth() : return redirect(url_for('login_page'))
+    if not auth():
+        return redirect(url_for("login_page"))
 
     return f"{d_start}/{m_start}/{y_start} - {d_end}/{m_end}/{y_end}"
 
-@app.route('/login', methods=['GET', 'POST'])
-def login_page():
-    
-    match request.method:
-        
-        case 'POST':
-            user = db.User.login(request.form.get('email'), request.form.get('pass'))
-            if isinstance(user,  db.User):
-                flash('Login Successful!')
-                session['auth'] = True
-                session['user_id'] = user.id
-                session['user_name'] = user.name
-                session['user_email'] = user.email
-                session['user_role'] = user.role
-                session['user_admin'] = user.admin
-                session['user_owner'] = user.owner
-                session['parent_id'] = user.parent_id
-                            
-                return redirect(url_for('index'))
-            
-            else: flash(user); return redirect(url_for('login_page'))
-            
-        case 'GET':
-            
-            return render_template('login.html')
-        
-@app.route('/register', methods=['GET', 'POST'])
-def register_page():
-    if not admin() : return redirect(url_for('login_page'))
-    
-    match request.method:
-        
-        case 'GET':
-            
-            return render_template('register.html', session=session)
-    
-        case 'POST':
-            
-            name = request.form.get('name')
-            role = request.form.get('role')
-            email = request.form.get('email')
-            password = request.form.get('name')
-            is_admin = {True: 1, False: 2}[request.form.get('is_admin') == 'on']
-            
-            if not db.User.check_email_valid(email):
-                
-                flash('Email is not Valid or already in Use!')
-                return redirect(url_for('edit_objects'))
-            
-            db.User.register_user(name, role, email, password, is_admin, 0, session['user_id'])
-            
-            flash(f"User `{name}` Succesfully Created!")
-            
-            return redirect(url_for('edit_objects'))
-    
-@app.route('/logout')
-def logout():
-    
-    session.clear()
-    
-    session['start'] = time.time()
-    
-    flash("Successfully Logged Out!")
-    
-    return redirect(url_for('login_page'))
 
-@app.route('/create_objects/<page>', methods=['GET', 'POST'])
-def object_startup(page):
-    
+@app.route("/login", methods=["GET", "POST"])
+def login_page():
+
     match request.method:
-        
-        case 'GET':
+
+        case "POST":
+            user = db.User.login(request.form.get("email"), request.form.get("pass"))
+            if isinstance(user, db.User):
+                flash("Login Successful!")
+                session["auth"] = True
+                session["user_id"] = user.id
+                session["user_name"] = user.name
+                session["user_email"] = user.email
+                session["user_role"] = user.role
+                session["user_admin"] = user.admin
+                session["user_owner"] = user.owner
+                session["parent_id"] = user.parent_id
+
+                return redirect(url_for("index"))
+
+            else:
+                flash(user)
+                return redirect(url_for("login_page"))
+
+        case "GET":
+
+            return render_template("login.html")
+
+
+@app.route("/register", methods=["GET", "POST"])
+def register_page():
+    if not admin():
+        return redirect(url_for("login_page"))
+
+    match request.method:
+
+        case "GET":
+
+            return render_template("register.html", session=session)
+
+        case "POST":
+
+            name = request.form.get("name")
+            role = request.form.get("role")
+            email = request.form.get("email")
+            password = request.form.get("name")
+            is_admin = {True: 1, False: 2}[request.form.get("is_admin") == "on"]
+
+            if not db.User.check_email_valid(email):
+
+                flash("Email is not Valid or already in Use!")
+                return redirect(url_for("edit_objects"))
+
+            db.User.register_user(
+                name, role, email, password, is_admin, 0, session["user_id"]
+            )
+
+            flash(f"User `{name}` Succesfully Created!")
+
+            return redirect(url_for("edit_objects"))
+
+
+@app.route("/logout")
+def logout():
+
+    session.clear()
+
+    session["start"] = time.time()
+
+    flash("Successfully Logged Out!")
+
+    return redirect(url_for("login_page"))
+
+
+@app.route("/create_objects/<page>", methods=["GET", "POST"])
+def object_startup(page):
+
+    match request.method:
+
+        case "GET":
             all_departments = db.get_all_departments()
             all_programs = db.get_all_programs()
             all_titles = db.get_all_titles()
-            employee_departments  = db.Department.get_all_departments()
+            employee_departments = db.Department.get_all_departments()
             return render_template(
-                'object_startup.html',
+                "object_startup.html",
                 session=session,
-                title='Startup Objects',
+                title="Startup Objects",
                 page=page,
                 object_name={
-                    '1' : 'department',
-                    '2' : 'kitchen',
-                    '3' : 'program',
-                    '4' : 'title',
-                    '5' : 'employee',
+                    "1": "department",
+                    "2": "kitchen",
+                    "3": "program",
+                    "4": "title",
+                    "5": "employee",
                 },
                 departments=all_departments,
                 programs=all_programs,
                 titles=all_titles,
                 employee_departments=employee_departments,
-                edit=False
-                
+                edit=False,
             )
-        
-        case 'POST':
-            
-            match request.form.get('add_type'):
-                
-                case 'department':
-                    
-                    db.create_dept(request.form.get('name'))
-                    
-                    flash('Department Created Successfully!')
-                    
-                    return redirect(url_for('object_startup', page=page))
-                
-                case 'kitchen':
-                    
+
+        case "POST":
+
+            match request.form.get("add_type"):
+
+                case "department":
+
+                    db.create_dept(request.form.get("name"))
+
+                    flash("Department Created Successfully!")
+
+                    return redirect(url_for("object_startup", page=page))
+
+                case "kitchen":
+
                     name, deps = request.form.get("name"), []
                     for key in request.form:
-                        if key == "name" or key == "submit" or key == 'add_type':
+                        if key == "name" or key == "submit" or key == "add_type":
                             continue
                         deps.append(request.form.get(key))
 
                     db.Kitchen.create_kitchen(name, deps)
 
                     flash("Created Kitchen Successfully!")
-                    return redirect(url_for('object_startup', page=page))
-                
-                case 'program':
-                    
-                    db.add_program(request.form.get('name'))
-                    
-                    flash('Program Created Successfully!')
-                    return redirect(url_for('object_startup', page=page))
-                
-                case 'title':
-                    
-                    db.create_title(request.form.get('name'))
-                    
-                    flash('Title Created Successfully!')
-                    return redirect(url_for('object_startup', page=page))
-                
-                case 'employee':
-                    
+                    return redirect(url_for("object_startup", page=page))
+
+                case "program":
+
+                    db.add_program(request.form.get("name"))
+
+                    flash("Program Created Successfully!")
+                    return redirect(url_for("object_startup", page=page))
+
+                case "title":
+
+                    db.create_title(request.form.get("name"))
+
+                    flash("Title Created Successfully!")
+                    return redirect(url_for("object_startup", page=page))
+
+                case "employee":
+
                     name, title, def_dep = (
                         request.form.get("name"),
                         request.form.get("title"),
@@ -854,58 +960,65 @@ def object_startup(page):
                     )
 
                     db.Employee.create_employee(name, title, def_dep)
-                    
-                    flash('Employee Created Successfully!')
-                    return redirect(url_for('object_startup', page=page))
-                    
+
+                    flash("Employee Created Successfully!")
+                    return redirect(url_for("object_startup", page=page))
+
                 case _:
-                    
-                    flash(f'Page #{page} is not valid!')
-                    
-                    return redirect(url_for('object_startup', page=page))
-            
-@app.route('/save_department', methods=['POST'])
+
+                    flash(f"Page #{page} is not valid!")
+
+                    return redirect(url_for("object_startup", page=page))
+
+
+@app.route("/save_department", methods=["POST"])
 def save_department():
     if not auth():
-        return redirect(url_for('login_page'))
-    
+        return redirect(url_for("login_page"))
+
     data = request.json
-    print('Received data:', data)  # Debug statement to check received data
-    
+    print("Received data:", data)  # Debug statement to check received data
+
     try:
         dbe, c = db.connect()
-        c.execute("UPDATE sub_department SET name=%s WHERE id=%s", [data["new_name"], data['id']])
-                
-        old_dep = db.Department(data['id'])
+        c.execute(
+            "UPDATE sub_department SET name=%s WHERE id=%s",
+            [data["new_name"], data["id"]],
+        )
+
+        old_dep = db.Department(data["id"])
         name = data["new_name"]
-        
+
         c.execute("SELECT id, default_dep,name FROM employees")
-        
+
         emps = c.fetchall()
-        
+
         for emp in emps:
-            
+
             empid = emp[0]
-            
-            empname=emp[2]
-            
-            def_dep_kitch,def_dep = emp[1].split(' - ')
-            
+
+            empname = emp[2]
+
+            def_dep_kitch, def_dep = emp[1].split(" - ")
+
             if old_dep.name == def_dep:
-                c.execute('UPDATE employees SET default_dep=%s WHERE id=%s', [f"{def_dep_kitch} - {name}", empid])
-                
+                c.execute(
+                    "UPDATE employees SET default_dep=%s WHERE id=%s",
+                    [f"{def_dep_kitch} - {name}", empid],
+                )
+
                 dbe.commit()
                 flash(f"Updated Department in Employee `{empname}`")
-        
-        
-        
-        c.execute('SELECT id, week, schedule_json FROM schedules WHERE user_id=%s ', [session['parent_id']])
-            
+
+        c.execute(
+            "SELECT id, week, schedule_json FROM schedules WHERE user_id=%s ",
+            [session["parent_id"]],
+        )
+
         f = c.fetchall()
 
-        
         for sched in f:
-            
+
             week_id = sched[0]
             week_name = sched[1]
             sched_json = json.loads(sched[2].replace("'", '"'))
@@ -914,208 +1027,231 @@ def save_department():
                 new_js[kitchen_key] = {}
                 for dep_key in sched_json[kitchen_key]:
                     if dep_key == old_dep.name:
-                        
-                        
+
                         new_js[kitchen_key][name] = []
-                        
+
                         for ls in sched_json[kitchen_key][dep_key]:
-                            new_js[kitchen_key][name].append(ls)        
-                        
+                            new_js[kitchen_key][name].append(ls)
+
                     else:
                         new_js[kitchen_key][dep_key] = sched_json[kitchen_key][dep_key]
-        
-                        
-            c.execute('UPDATE schedules SET schedule_json=%s WHERE id=%s', [str(new_js), week_id])   
-            dbe.commit()       
-            
-            flash(f'Week `{week_name}` updated for department name change')
-        
-        
-        
+
+            c.execute(
+                "UPDATE schedules SET schedule_json=%s WHERE id=%s",
+                [str(new_js), week_id],
+            )
+            dbe.commit()
+
+            flash(f"Week `{week_name}` updated for department name change")
+
         dbe.commit()
-        return jsonify({'status': 'success'})
+        return jsonify({"status": "success"})
     except Exception as e:
-        print('Error:', e)  # Debug statement to check the error
-        return jsonify({'status': 'error', 'message': str(e)})
+        print("Error:", e)  # Debug statement to check the error
+        return jsonify({"status": "error", "message": str(e)})
     finally:
         c.close()
         dbe.close()
-        
-@app.route('/save_kitchen', methods=['POST'])
+
+
+@app.route("/save_kitchen", methods=["POST"])
 def save_kitchen():
     if not auth():
-        return redirect(url_for('login_page'))
-    
+        return redirect(url_for("login_page"))
+
     data = request.json
-    print('Received data:', data)  # Debug statement to check received data
-    
+    print("Received data:", data)  # Debug statement to check received data
+
     try:
         dbe, c = db.connect()
-        c.execute("UPDATE big_kitchens SET name=%s WHERE id=%s", [data["new_name"], data['id']])
-        
-        
+        c.execute(
+            "UPDATE big_kitchens SET name=%s WHERE id=%s",
+            [data["new_name"], data["id"]],
+        )
+
         name = data["new_name"]
-        k = db.Kitchen(data['id'])
-        
+        k = db.Kitchen(data["id"])
+
         db_obj, c = db.connect()
         if k.name != name:
-            
-            c.execute('SELECT id, default_dep, name FROM employees WHERE user_id=%s', [session['parent_id']])
-            
+
+            c.execute(
+                "SELECT id, default_dep, name FROM employees WHERE user_id=%s",
+                [session["parent_id"]],
+            )
+
             emps = c.fetchall()
-            
+
             for emp in emps:
-                
+
                 empid = emp[0]
                 emp_def_kitch, emp_def_dep = emp[1].split(" - ")
                 empname = emp[2]
-                
+
                 if emp_def_kitch == k.name:
-                    c.execute('UPDATE employees SET default_dep=%s WHERE id=%s', [f'{name} - {emp_def_dep}', empid])
+                    c.execute(
+                        "UPDATE employees SET default_dep=%s WHERE id=%s",
+                        [f"{name} - {emp_def_dep}", empid],
+                    )
                     db_obj.commit()
-                    
-                    flash(f'Updated Employee `{empname}`')
-                    
-        c.execute('SELECT id, week, schedule_json FROM schedules WHERE user_id=%s ', [session['parent_id']])
-        
+
+                    flash(f"Updated Employee `{empname}`")
+
+        c.execute(
+            "SELECT id, week, schedule_json FROM schedules WHERE user_id=%s ",
+            [session["parent_id"]],
+        )
+
         f = c.fetchall()
-        
+
         for sched in f:
-            
+
             week_id = sched[0]
             week_name = sched[1]
             sched_json = json.loads(sched[2].replace("'", '"'))
             new_js = {}
             for kitchen_key in sched_json:
-                
+
                 if kitchen_key == k.name:
                     new_js[name] = sched_json[kitchen_key]
                 else:
-                    
+
                     new_js[kitchen_key] = sched_json[kitchen_key]
-                        
-            c.execute('UPDATE schedules SET schedule_json=%s WHERE id=%s', [str(new_js), week_id])   
-            db_obj.commit()       
-            
-            flash(f'Week `{week_name}` updated for Kitchen name change')
-        
-        
-        
-        
+
+            c.execute(
+                "UPDATE schedules SET schedule_json=%s WHERE id=%s",
+                [str(new_js), week_id],
+            )
+            db_obj.commit()
+
+            flash(f"Week `{week_name}` updated for Kitchen name change")
+
         dbe.commit()
-        
-        
-        
-        
-        
-        
-        
-        return jsonify({'status': 'success'})
+
+        return jsonify({"status": "success"})
     except Exception as e:
-        print('Error:', e)  # Debug statement to check the error
-        return jsonify({'status': 'error', 'message': str(e)})
+        print("Error:", e)  # Debug statement to check the error
+        return jsonify({"status": "error", "message": str(e)})
     finally:
         c.close()
         dbe.close()
-        
-@app.route('/save_program', methods=['POST'])
+
+
+@app.route("/save_program", methods=["POST"])
 def save_program():
     if not auth():
-        return redirect(url_for('login_page'))
-    
+        return redirect(url_for("login_page"))
+
     data = request.json
-    print('Received data:', data)  # Debug statement to check received data
-    
+    print("Received data:", data)  # Debug statement to check received data
+
     try:
         dbe, c = db.connect()
-        c.execute("UPDATE programs SET name=%s WHERE id=%s", [data["new_name"], data['id']])
+        c.execute(
+            "UPDATE programs SET name=%s WHERE id=%s", [data["new_name"], data["id"]]
+        )
         dbe.commit()
-        return jsonify({'status': 'success'})
+        return jsonify({"status": "success"})
     except Exception as e:
-        print('Error:', e)  # Debug statement to check the error
-        return jsonify({'status': 'error', 'message': str(e)})
+        print("Error:", e)  # Debug statement to check the error
+        return jsonify({"status": "error", "message": str(e)})
     finally:
         c.close()
         dbe.close()
-        
-@app.route('/save_title', methods=['POST'])
+
+
+@app.route("/save_title", methods=["POST"])
 def save_title():
     if not auth():
-        return redirect(url_for('login_page'))
-    
+        return redirect(url_for("login_page"))
+
     data = request.json
-    print('Received data:', data)  # Debug statement to check received data
-    
+    print("Received data:", data)  # Debug statement to check received data
+
     try:
         dbe, c = db.connect()
-        c.execute("UPDATE titles SET name=%s WHERE id=%s", [data["new_name"], data['id']])
+        c.execute(
+            "UPDATE titles SET name=%s WHERE id=%s", [data["new_name"], data["id"]]
+        )
         dbe.commit()
-        return jsonify({'status': 'success'})
+        return jsonify({"status": "success"})
     except Exception as e:
-        print('Error:', e)  # Debug statement to check the error
-        return jsonify({'status': 'error', 'message': str(e)})
+        print("Error:", e)  # Debug statement to check the error
+        return jsonify({"status": "error", "message": str(e)})
     finally:
         c.close()
         dbe.close()
-        
-@app.route('/save_emp_name', methods=['POST'])
+
+
+@app.route("/save_emp_name", methods=["POST"])
 def save_emp_name():
     if not auth():
-        return redirect(url_for('login_page'))
-    
+        return redirect(url_for("login_page"))
+
     data = request.json
-    print('Received data:', data)  # Debug statement to check received data
-    
+    print("Received data:", data)  # Debug statement to check received data
+
     try:
         dbe, c = db.connect()
-        c.execute("UPDATE employees SET name=%s WHERE id=%s", [data["new_name"], data['id']])
+        c.execute(
+            "UPDATE employees SET name=%s WHERE id=%s", [data["new_name"], data["id"]]
+        )
         dbe.commit()
-        return jsonify({'status': 'success'})
+        return jsonify({"status": "success"})
     except Exception as e:
-        print('Error:', e)  # Debug statement to check the error
-        return jsonify({'status': 'error', 'message': str(e)})
+        print("Error:", e)  # Debug statement to check the error
+        return jsonify({"status": "error", "message": str(e)})
     finally:
         c.close()
         dbe.close()
-        
-@app.route('/save_emp_title', methods=['POST'])
+
+
+@app.route("/save_emp_title", methods=["POST"])
 def save_emp_title():
     if not auth():
-        return redirect(url_for('login_page'))
-    
+        return redirect(url_for("login_page"))
+
     data = request.json
-    print('Received data:', data)  # Debug statement to check received data
-    
+    print("Received data:", data)  # Debug statement to check received data
+
     try:
         dbe, c = db.connect()
-        c.execute("UPDATE employees SET title=%s WHERE id=%s", [data["new_name"], data['id']])
+        c.execute(
+            "UPDATE employees SET title=%s WHERE id=%s", [data["new_name"], data["id"]]
+        )
         dbe.commit()
-        return jsonify({'status': 'success'})
+        return jsonify({"status": "success"})
     except Exception as e:
-        print('Error:', e)  # Debug statement to check the error
-        return jsonify({'status': 'error', 'message': str(e)})
+        print("Error:", e)  # Debug statement to check the error
+        return jsonify({"status": "error", "message": str(e)})
     finally:
         c.close()
         dbe.close()
-          
-@app.route('/save_emp_pref_dep', methods=['POST'])
+
+
+@app.route("/save_emp_pref_dep", methods=["POST"])
 def save_emp_pref_dep():
     if not auth():
-        return redirect(url_for('login_page'))
-    
+        return redirect(url_for("login_page"))
+
     data = request.json
-    print('Received data:', data)  # Debug statement to check received data
-    
+    print("Received data:", data)  # Debug statement to check received data
+
     try:
         dbe, c = db.connect()
-        c.execute("UPDATE employees SET default_dep=%s WHERE id=%s", [data["new_name"], data['id']])
+        c.execute(
+            "UPDATE employees SET default_dep=%s WHERE id=%s",
+            [data["new_name"], data["id"]],
+        )
         dbe.commit()
-        return jsonify({'status': 'success'})
+        return jsonify({"status": "success"})
     except Exception as e:
-        print('Error:', e)  # Debug statement to check the error
-        return jsonify({'status': 'error', 'message': str(e)})
+        print("Error:", e)  # Debug statement to check the error
+        return jsonify({"status": "error", "message": str(e)})
     finally:
         c.close()
         dbe.close()
-    
-if __name__ == "__main__": app.run()
+
+
+if __name__ == "__main__":
+    app.run()
