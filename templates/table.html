@@ -218,6 +218,7 @@
 </table>
 
 <button onclick="postTable()">Save</button>
+<button onclick="postTableExcel()">Save Excel</button>
 
 <div style="display: none;">
     <table>
@@ -650,6 +651,120 @@
             .catch((error) => {
                 alert('Issue Saving Program: ' + error)
             });
+
+
+
+
+
+    }
+    function postTableExcel() {
+
+        data = {
+            'week': document.getElementById('week').value,
+        }
+
+
+        trs = document.getElementsByClassName('employeeTrs')
+        var department = document.querySelectorAll('[name="dep_name"]')
+
+        Array.from(trs).forEach(function (item) {
+            if (item.id == 'sample_employee_split_tr' || item.id == 'date_inputs') {
+                console.log('skip: ', item.id)
+                return;
+            }
+
+            var name = getName(item, 'name');
+            var title = getName(item, 'title');
+            var monday = getName(item, 'monday');
+            var tuesday = getName(item, 'tuesday');
+            var wednesday = getName(item, 'wednesday');
+            var thursday = getName(item, 'thursday');
+            var friday = getName(item, 'friday');
+            var saturday = getName(item, 'saturday');
+            var sunday = getName(item, 'sunday');
+            var department = getName(item, 'department');
+            var kitchen = getName(item, 'kitchen');
+
+            var monday_change = getName(item, 'change_monday')
+            var tuesday_change = getName(item, 'change_tuesday')
+            var wednesday_change = getName(item, 'change_wednesday')
+            var thursday_change = getName(item, 'change_thursday')
+            var friday_change = getName(item, 'change_friday')
+            var saturday_change = getName(item, 'change_saturday')
+            var sunday_change = getName(item, 'change_sunday')
+
+            if (!(kitchen in data)) {
+                data[kitchen] = {};
+            }
+
+            if (!(department in data[kitchen])) {
+                data[kitchen][department] = [];
+            }
+
+            let found = false;
+            for (let i = 0; i < data[kitchen][department].length; i++) {
+                if (data[kitchen][department][i][0] == name) {
+                    data[kitchen][department][i][1].push({
+                        "monday": [monday, monday_change],
+                        "tuesday": [tuesday, tuesday_change],
+                        "wednesday": [wednesday, wednesday_change],
+                        "thursday": [thursday, thursday_change],
+                        "friday": [friday, friday_change],
+                        "saturday": [saturday, saturday_change],
+                        "sunday": [sunday, sunday_change],
+                    });
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                data[kitchen][department].push([
+                    name,
+                    [{
+                        "monday": [monday, monday_change],
+                        "tuesday": [tuesday, tuesday_change],
+                        "wednesday": [wednesday, wednesday_change],
+                        "thursday": [thursday, thursday_change],
+                        "friday": [friday, friday_change],
+                        "saturday": [saturday, saturday_change],
+                        "sunday": [sunday, sunday_change],
+                    }]
+                ]);
+            }
+        });
+
+        fetch('/save_table_excel', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.blob())  // Convert the response to a Blob
+        .then(blob => {
+            // Create a link element
+            const link = document.createElement('a');
+            
+            // Create a URL for the blob
+            const url = window.URL.createObjectURL(blob);
+            link.href = url;
+        
+            // Set the download attribute to suggest a filename
+            link.download = data['week'].replace('(', '').replace(')', '') + '.xlsx';
+            
+            // Append the link to the body (necessary for Firefox)
+            document.body.appendChild(link);
+            
+            // Programmatically click the link to trigger the download
+            link.click();
+            
+            // Clean up the URL object and remove the link element
+            setTimeout(() => {
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(link);
+            }, 0);
+        })
 
 
 

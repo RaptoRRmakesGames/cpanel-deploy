@@ -9,6 +9,8 @@ from flask import (
     redirect,
     url_for,
     jsonify,
+    make_response,
+    send_file,
 )
 from datetime import timedelta, datetime
 
@@ -17,6 +19,10 @@ import db
 import json
 
 import time
+
+import pandas as pd
+
+import io 
 
 # Create an instance of the Flask class
 app = Flask(__name__)
@@ -1251,6 +1257,65 @@ def save_emp_pref_dep():
     finally:
         c.close()
         dbe.close()
+        
+@app.route('/save_table_excel', methods=['GET', 'POST'])
+def save_table_excel():
+    if not auth():
+        return redirect(url_for("login_page"))
+    
+    data = dict(request.json)
+    print(data.items())
+    rows = []
+    week_name= ''
+    for location, events in data.items():
+        if location == 'week':
+            week_name = events.replace('(', '').replace(')', '')
+            continue
+        print(location)
+        rows.append({'Name' : location})
+        for event, details in events.items():
+            rows.append({'Name' : event})
+            if details:  # Check if the event has details
+                employee_name = details[0][0]
+
+                for i, days_info in enumerate(details[0][1]):
+                    row = {
+                        "Name": f"{employee_name if i == 0 else f'Split {i}'}",
+                        "Monday": days_info.get("monday", ["", ""])[0],
+                        "Change M": days_info.get("monday", ["", ""])[1],
+                        "Tuesday": days_info.get("tuesday", ["", ""])[0],
+                        "Change T": days_info.get("tuesday", ["", ""])[1],
+                        "Wednesday": days_info.get("wednesday", ["", ""])[0],
+                        "Change W": days_info.get("wednesday", ["", ""])[1],
+                        "Thursday": days_info.get("thursday", ["", ""])[0],
+                        "Change Tu": days_info.get("thursday", ["", ""])[1],
+                        "Friday": days_info.get("friday", ["", ""])[0],
+                        "Change F": days_info.get("friday", ["", ""])[1],
+                        "Saturday": days_info.get("saturday", ["", ""])[0],
+                        "Change Sa": days_info.get("saturday", ["", ""])[1],
+                        "Sunday": days_info.get("sunday", ["", ""])[0],
+                        "Change Su": days_info.get("sunday", ["", ""])[1]
+                }
+                    rows.append(row)
+
+    # Create DataFrame
+    df = pd.DataFrame(rows)
+    
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False)
+    output.seek(0)
+    
+    return send_file(
+        output,
+        as_attachment=True,
+        attachment_filename =f"{week_name}.xlsx",
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    
+    # print(df.head(12))
+    
+    # df.to_excel('fwaeh.xlsx', index=False)
 
 
 if __name__ == "__main__":
