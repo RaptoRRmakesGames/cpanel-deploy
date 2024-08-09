@@ -577,7 +577,9 @@ class Kitchen:
         db,c = connect()
         
         
-        c.execute("SELECT id, name FROM big_kitchens WHERE user_id=%s", [USER_ID])
+        c.execute("SELECT id, name FROM big_kitchens WHERE user_id=%s ORDER BY row ASC", [USER_ID])
+        
+        
         
         if get_id:
             return [(f[0], f[1]) for f in c.fetchall()]
@@ -664,7 +666,7 @@ class KitchenGroup:
         
         self.week = week 
         
-        c.execute('SELECT id FROM big_kitchens WHERE user_id=%s', [USER_ID])
+        c.execute('SELECT id FROM big_kitchens WHERE user_id=%s ORDER BY row ASC', [USER_ID])
         self.sub_kitchens = [Kitchen(id[0]) for id in c.fetchall()]
         
         
@@ -679,6 +681,7 @@ class KitchenGroup:
             c.execute('SELECT * FROM schedules WHERE week=%s AND user_id=%s', [week, USER_ID])
             
             
+            
             if len((f := c.fetchall() )) > 0:
                 print('sched load')
                 self.load_schedule(f[0][2].replace("'", '"'))
@@ -688,6 +691,10 @@ class KitchenGroup:
                 print('load_last_sched')
                 self.load_last_schedule()
                 self.saved = False
+            try:
+                self.id = f[0][0]
+            except IndexError:
+                pass
             
             # ('empty')
             

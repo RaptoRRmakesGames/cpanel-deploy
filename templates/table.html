@@ -6,6 +6,12 @@
 
 {% block content %}
 
+<style>
+    .invisible{
+        display:none  !important;
+    }
+</style>
+
 <div id="week_div" style="display: flex; flex-direction: row; justify-content: space-evenly;">
     <div style="display: flex;
         flex-direction: column;
@@ -217,8 +223,12 @@
 
 </table>
 
+<div id="action_buttons">
 <button onclick="postTable()">Save</button>
 <button onclick="postTableExcel()">Save Excel</button>
+<button class="invisible" id="delete_week" onclick="delete_week()">Delete Week</button>
+</div>
+
 
 <div style="display: none;">
     <table>
@@ -540,6 +550,9 @@
         <td id="sample_remove_button">
             <button onclick="removeEmployee(this)">Remove</button>
         </td>
+
+        <input type="text" name="" id="week_id" value="{{group.id}}">
+        <input type="text" name="" id="week_saved" value="{{group.saved|string}}">
     </table>
 
 
@@ -547,6 +560,27 @@
 </div>
 
 <script>
+
+    function delete_week(){
+        console.log(document.getElementById('week_id'))
+        redirect('/delete/table/'+document.getElementById('week_id').value)
+    }
+
+    function addDeleteButton(){
+        console.log(document.getElementById('week_saved').value)
+
+        if (document.getElementById('week_saved').value == 'True'){
+
+
+            document.getElementById('delete_week').classList.remove('invisible')
+        }
+    }
+    addDeleteButton()
+
+    function redirect(url) {
+
+        window.location.href = url
+    }
 
     function getName(item, name) {
         //console.log(item, name)

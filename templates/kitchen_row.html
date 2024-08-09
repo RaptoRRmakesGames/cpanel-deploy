@@ -1,0 +1,49 @@
+{% extends '/include_files/base.html' %}
+
+{% block title %}
+{{title}}
+{% endblock %}
+
+{% block content %}
+
+
+<main style="display: flex; align-items: flex-start; flex-wrap: nowrap; flex-direction: column-reverse;">
+
+    <form method="POST">
+    
+    {% for kitchen1 in kitchens %}
+    
+    <div style="display: flex;">
+
+        <p style="margin-right: 15px; transform: translate(0, -11px);">{{loop.index}}</p>
+
+        {% set skibidi = loop.index%}
+    
+        <select name="{{skibidi}}" id="" style="margin-bottom: 25px;">
+
+            {% for kitchen2 in kitchens %}
+            {% if kitchen1[1] == kitchen2[1] %}
+            <option value="{{kitchen2[0]}}" selected>{{kitchen2[1]}}</option>
+            {% else %}
+            <option value="{{kitchen2[0]}}">{{kitchen2[1]}}</option>
+            {% endif%}
+            {% endfor %}
+
+        </select>
+
+
+
+    </div>
+
+
+
+    {% endfor %}
+
+    <input type="submit" value="Save" name="" id="">
+
+    </form>
+
+</main>
+
+
+{% endblock %}

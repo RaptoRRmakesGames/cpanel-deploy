@@ -1313,9 +1313,29 @@ def save_table_excel():
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
     
-    # print(df.head(12))
+@app.route('/change_kitchen_row', methods=['GET', 'POST'])
+def save_kitchen_row():
+    if not auth():
+        return redirect(url_for("login_page"))
     
-    # df.to_excel('fwaeh.xlsx', index=False)
+    match request.method:
+        
+        case 'GET':
+            return render_template('kitchen_row.html', kitchens = db.Kitchen.get_all_kitchens(True))
+        
+        case 'POST':
+            
+            dbe,c = db.connect()
+            
+            for kitchen_id in request.form:
+                
+                row = request.form.get(kitchen_id)
+                
+                c.execute('UPDATE big_kitchens SET row=%s WHERE id=%s', [kitchen_id, row])
+                
+            dbe.commit()
+            
+            return redirect(url_for('save_kitchen_row'))
 
 
 if __name__ == "__main__":
