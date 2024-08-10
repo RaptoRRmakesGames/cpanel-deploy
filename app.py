@@ -1302,12 +1302,14 @@ def save_table_excel():
         df.to_excel(writer, index=False)
     output.seek(0)
     
+    df.to_excel('fwaeh.xlsx')
+    
     print(df.head(150))
     
     return send_file(
         output,
         as_attachment=True,
-        attachment_filename =f"{week_name}.xlsb",
+        attachment_filename =f"{week_name}.xlsx",
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
     
