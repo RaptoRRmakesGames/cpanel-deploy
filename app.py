@@ -1309,7 +1309,7 @@ def save_table_excel():
     return send_file(
         output,
         as_attachment=True,
-        attachment_filename =f"{week_name}.xlsx",
+        download_name  =f"{week_name}.xlsx",
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
     
