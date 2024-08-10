@@ -9,8 +9,4 @@ mysql-connector==2.2.9  # Consider upgrading to the latest version
 Werkzeug==3.0.1
 Flask-Bcrypt==1.0.1
 pandas==2.0.1
-python-dateutil==2.8.2
-pytz==2020.1
-tzdata==2022.1
-numpy==1.22.0  # Updated numpy version to resolve conflicts
-six==1.16.0
+
