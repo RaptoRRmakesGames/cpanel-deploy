@@ -775,7 +775,12 @@
             },
             body: JSON.stringify(data)
         })
-        .then(response => response.blob())  // Convert the response to a Blob
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.blob();  // Convert the response to a Blob
+        })
         .then(blob => {
             // Create a link element
             const link = document.createElement('a');
@@ -783,7 +788,7 @@
             // Create a URL for the blob
             const url = window.URL.createObjectURL(blob);
             link.href = url;
-        
+            
             // Set the download attribute to suggest a filename
             link.download = data['week'].replace('(', '').replace(')', '') + '.xlsx';
             
@@ -799,6 +804,10 @@
                 document.body.removeChild(link);
             }, 0);
         })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        });
+        
 
 
 
