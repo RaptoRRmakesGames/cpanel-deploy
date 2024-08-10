@@ -86,11 +86,10 @@ def before_request_func():
         c.execute("SELECT * FROM programs WHERE user_id = %s", [session["parent_id"]])
         stuff.append(c.fetchall())
 
-        # print(stuff)
+
 
         session["hide_edit"] = False
         for thing in stuff:
-            # print(len(thing))
             if len(thing) > 0:
                 break
 
@@ -621,7 +620,6 @@ def delete_title(title):
     )
 
     remove = True
-    print("before for loop ", session["parent_id"])
     for emp in c.fetchall():
 
         if remove == False:
@@ -1264,14 +1262,12 @@ def save_table_excel():
         return redirect(url_for("login_page"))
     
     data = dict(request.json)
-    print(data.items())
     rows = []
     week_name= ''
     for location, events in data.items():
         if location == 'week':
             week_name = events.replace('(', '').replace(')', '')
             continue
-        print(location)
         rows.append({'Name' : location})
         for event, details in events.items():
             rows.append({'Name' : event})
@@ -1306,6 +1302,8 @@ def save_table_excel():
         df.to_excel(writer, index=False)
     output.seek(0)
     
+    print(df.head(150))
+    
     return send_file(
         output,
         as_attachment=True,
@@ -1321,6 +1319,7 @@ def save_kitchen_row():
     match request.method:
         
         case 'GET':
+            
             return render_template('kitchen_row.html', kitchens = db.Kitchen.get_all_kitchens(True))
         
         case 'POST':
