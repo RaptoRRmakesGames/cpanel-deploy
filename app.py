@@ -643,7 +643,7 @@ def delete_kitchen(kitchen):
     if not auth():
         return redirect(url_for("login_page"))
 
-    kitchen = db.remove_from_string(kitchen).strip
+    kitchen = db.remove_from_string(kitchen).strip()
 
     dbe, c = db.connect()
 
