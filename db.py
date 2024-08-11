@@ -563,8 +563,13 @@ class Kitchen:
         
         db,c = connect()
         
-        c.execute('INSERT INTO big_kitchens (name, dep_ids, user_id) VALUES (%s,%s, %s)', [name, str(dept_ids), USER_ID])
+        c.execute('INSERT INTO big_kitchens (name, dep_ids, user_id, row) VALUES (%s,%s, %s, %s)', [name, str(dept_ids), USER_ID, -1])
         
+        
+        
+        db.commit()
+        
+        c.execute('UPDATE big_kitchens SET row=id WHERE row=-1')
         db.commit()
         
         c.execute('SELECT id FROM big_kitchens WHERE name=%s AND user_id=%s', [name, USER_ID])
