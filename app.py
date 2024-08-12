@@ -1272,27 +1272,31 @@ def save_table_excel():
         for event, details in events.items():
             rows.append({'Name' : event})
             if details:  # Check if the event has details
-                employee_name = details[0][0]
+                
+                for detail in details:
+                
+                    print(details)
+                    employee_name = detail[0]
 
-                for i, days_info in enumerate(details[0][1]):
-                    row = {
-                        "Name": f"{employee_name if i == 0 else f'Split {i}'}",
-                        "Monday": days_info.get("monday", ["", ""])[0],
-                        "Change M": days_info.get("monday", ["", ""])[1],
-                        "Tuesday": days_info.get("tuesday", ["", ""])[0],
-                        "Change T": days_info.get("tuesday", ["", ""])[1],
-                        "Wednesday": days_info.get("wednesday", ["", ""])[0],
-                        "Change W": days_info.get("wednesday", ["", ""])[1],
-                        "Thursday": days_info.get("thursday", ["", ""])[0],
-                        "Change Tu": days_info.get("thursday", ["", ""])[1],
-                        "Friday": days_info.get("friday", ["", ""])[0],
-                        "Change F": days_info.get("friday", ["", ""])[1],
-                        "Saturday": days_info.get("saturday", ["", ""])[0],
-                        "Change Sa": days_info.get("saturday", ["", ""])[1],
-                        "Sunday": days_info.get("sunday", ["", ""])[0],
-                        "Change Su": days_info.get("sunday", ["", ""])[1]
-                }
-                    rows.append(row)
+                    for i, days_info in enumerate(detail[1]):
+                        row = {
+                            "Name": f"{employee_name if i == 0 else f'Split {i}'}",
+                            "Monday": days_info.get("monday", ["", ""])[0],
+                            "Change M": days_info.get("monday", ["", ""])[1],
+                            "Tuesday": days_info.get("tuesday", ["", ""])[0],
+                            "Change T": days_info.get("tuesday", ["", ""])[1],
+                            "Wednesday": days_info.get("wednesday", ["", ""])[0],
+                            "Change W": days_info.get("wednesday", ["", ""])[1],
+                            "Thursday": days_info.get("thursday", ["", ""])[0],
+                            "Change Tu": days_info.get("thursday", ["", ""])[1],
+                            "Friday": days_info.get("friday", ["", ""])[0],
+                            "Change F": days_info.get("friday", ["", ""])[1],
+                            "Saturday": days_info.get("saturday", ["", ""])[0],
+                            "Change Sa": days_info.get("saturday", ["", ""])[1],
+                            "Sunday": days_info.get("sunday", ["", ""])[0],
+                            "Change Su": days_info.get("sunday", ["", ""])[1]
+                    }
+                        rows.append(row)
 
     # Create DataFrame
     df = pd.DataFrame(rows)
