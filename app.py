@@ -22,7 +22,7 @@ import time
 
 import pandas as pd
 
-import io 
+from io import BytesIO
 
 # Create an instance of the Flask class
 app = Flask(__name__)
@@ -1297,21 +1297,37 @@ def save_table_excel():
     # Create DataFrame
     df = pd.DataFrame(rows)
     
-    output = io.BytesIO()
-    with pd.ExcelWriter(output, engine='openpyxl') as writer:
-        df.to_excel(writer, index=False)
-    output.seek(0)
+    excel_buffer = BytesIO()
+    df.to_excel(excel_buffer, index=False)
+
+    # Get the binary content of the file
+    excel_buffer.seek(0)
+    excel_data = excel_buffer.read()
     
-    df.to_excel('fwaeh.xlsx')
+    response = make_response(excel_data)
+    response.headers['Content-Disposition'] = 'attachment; filename=report.xlsx'
+    response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     
-    print(df.head(150))
+    return response
     
-    return send_file(
-        output,
-        as_attachment=True,
-        download_name  =f"{week_name}.xlsx",
-        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    )
+    
+    
+    
+    # output = io.BytesIO()
+    # with pd.ExcelWriter(output, engine='openpyxl') as writer:
+    #     df.to_excel(writer, index=False)
+    # output.seek(0)
+    
+    # df.to_excel('fwaeh.xlsx')
+    
+    # print(df.head(150))
+    
+    # return send_file(
+    #     output,
+    #     as_attachment=True,
+    #     download_name  =f"{week_name}.xlsx",
+    #     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    # )
     
 @app.route('/change_kitchen_row', methods=['GET', 'POST'])
 def save_kitchen_row():

@@ -775,38 +775,18 @@
             },
             body: JSON.stringify(data)
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.blob();  // Convert the response to a Blob
-        })
+        .then(response => response.blob())
         .then(blob => {
-            // Create a link element
-            const link = document.createElement('a');
-            
-            // Create a URL for the blob
             const url = window.URL.createObjectURL(blob);
-            link.href = url;
-            
-            // Set the download attribute to suggest a filename
-            link.download = data['week'].replace('(', '').replace(')', '') + '.xlsx';
-            
-            // Append the link to the body (necessary for Firefox)
-            document.body.appendChild(link);
-            
-            // Programmatically click the link to trigger the download
-            link.click();
-            
-            // Clean up the URL object and remove the link element
-            setTimeout(() => {
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(link);
-            }, 0);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'report.xlsx';  // the file name
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
         })
-        .catch(error => {
-            console.error('There was a problem with the fetch operation:', error);
-        });
+        .catch(error => console.error('Error downloading the file:', error));
         
 
 
