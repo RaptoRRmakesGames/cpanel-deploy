@@ -28,6 +28,7 @@ from io import BytesIO
 app = Flask(__name__)
 
 app.config["SECRET_KEY"] = "very_secret_key_12351232"
+app.config['debug'] = True
 
 app.config.update(SESSION_PERMANENT=True, SESSION_TYPE="filesystem")
 
