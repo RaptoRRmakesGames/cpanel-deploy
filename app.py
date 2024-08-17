@@ -1359,6 +1359,13 @@ def save_kitchen_row():
             
             return redirect(url_for('save_kitchen_row'))
 
+@app.errorhandler(500)
+def internal_error(error):
+    return "500 error: " + str(error), 500
+
+@app.errorhandler(Exception)
+def unhandled_exception(e):
+    return "An error occurred: " + str(e), 500
 
 if __name__ == "__main__":
     app.run()
