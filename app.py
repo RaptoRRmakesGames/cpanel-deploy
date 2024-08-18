@@ -20,6 +20,13 @@ import json
 
 import time
 
+from openpyxl import Workbook
+from openpyxl.worksheet.datavalidation import DataValidation
+
+from io import BytesIO
+
+import pandas as pd 
+
 # import pandas as pd
 
 # from io import BytesIO
@@ -27,11 +34,10 @@ import time
 # Create an instance of the Flask class
 app = Flask(__name__)
 
+
 app.config["SECRET_KEY"] = "very_secret_key_12351232"
 app.config['debug'] = True
-
 app.config.update(SESSION_PERMANENT=True, SESSION_TYPE="filesystem")
-
 
 def auth():
     if "auth" in session:
@@ -1315,24 +1321,41 @@ def save_table_excel():
     
     return response
     
+
+def create_excel_employee():
+
+    wb = Workbook()
+    ws = wb.active
+
+    # set text
+    ws['A1'] = 'Department'
+
+    # set dropdown
+    dropdown_options = db.Department.get_all_departments()
+    dv = DataValidation(type="list", formula1=f'"{",".join(dropdown_options)}"')
+    ws.add_data_validation(dv)
+    dv.add(ws["A2"])
     
+    excel_buffer = BytesIO()
+    wb.save(excel_buffer)
     
+    excel_buffer.seek(0)
     
-    # output = io.BytesIO()
-    # with pd.ExcelWriter(output, engine='openpyxl') as writer:
-    #     df.to_excel(writer, index=False)
-    # output.seek(0)
+    excel_data = excel_buffer.read()
     
-    # df.to_excel('fwaeh.xlsx')
+    response = make_response(excel_data)
+    response.headers['Content-Disposition'] = 'attachment; filename=report.xlsx'
+    response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     
-    # print(df.head(150))
-    
-    # return send_file(
-    #     output,
-    #     as_attachment=True,
-    #     download_name  =f"{week_name}.xlsx",
-    #     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    # )
+    return response
+
+@app.route('/get_excel_add_employee', methods=['POST'])
+def get_excel_add_employee():
+    try:
+        fwahe = create_excel_employee()
+        return fwahe
+    except Exception as e:
+        return str(e)
     
 @app.route('/change_kitchen_row', methods=['GET', 'POST'])
 def save_kitchen_row():
