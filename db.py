@@ -803,7 +803,7 @@ class KitchenGroup:
                     except TypeError as e:
                         print(f'TypeError: {e}')
                     
-        print(list(days))
+        print('fwaeh',list(days))
         return list(days)
           
     def load_schedule(self, schedule_json):
