@@ -33,43 +33,47 @@
 </main>
 <script>
     function get_excel_add_employee() {
-        const data = {
-            "fwaeh": "fwaeh"
-        };
-    
         // Hide the download button and show the spinner
-        document.getElementById('download_button').classList.add('invisible');
-        document.getElementById('download_spinner').classList.remove('invisible');
+        const downloadButton = document.getElementById('download_button');
+        const downloadSpinner = document.getElementById('download_spinner');
+    
+        if (downloadButton && downloadSpinner) {
+            downloadButton.classList.add('invisible');
+            downloadSpinner.classList.remove('invisible');
+        }
     
         fetch('/get_excel_add_employee', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify({})  // Sending an empty object if no data is required
         })
-        .then(response => response.blob())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.blob();
+        })
         .then(blob => {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.style.display = 'none';
             a.href = url;
-            a.download = 'add_employee.xlsx';  // the file name
+            a.download = 'add_employee.xlsx';  // Set the desired file name
             document.body.appendChild(a);
-            console.log('fwaeh');
             a.click();
             window.URL.revokeObjectURL(url);
-    
-            // After the download, revert the spinner and button visibility
-            document.getElementById('download_button').classList.remove('invisible');
-            document.getElementById('download_spinner').classList.add('invisible');
         })
         .catch(error => {
             console.error('Error downloading the file:', error);
-    
-            // In case of an error, also revert the spinner and button visibility
-            document.getElementById('download_button').classList.remove('invisible');
-            document.getElementById('download_spinner').classList.add('invisible');
+        })
+        .finally(() => {
+            // Ensure the spinner and button visibility are reset
+            if (downloadButton && downloadSpinner) {
+                downloadButton.classList.remove('invisible');
+                downloadSpinner.classList.add('invisible');
+            }
         });
     }
     

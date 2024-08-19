@@ -1334,13 +1334,13 @@ def create_excel_employee():
     ws['B1'] = 'Title'
     ws['C1'] = 'Department'
     # set dropdown
+    dropdown_options1 = db.Department.get_all_departments()
+    dropdown_options2 = db.get_all_titles()
     for i in range(50):
-        dropdown_options = db.Department.get_all_departments()
-        dv = DataValidation(type="list", formula1=f'"{",".join(dropdown_options)}"')
+        dv = DataValidation(type="list", formula1=f'"{",".join(dropdown_options1)}"')
         ws.add_data_validation(dv)
         dv.add(ws[f"C{1+i}"])
-        dropdown_options = db.get_all_titles()
-        dv = DataValidation(type="list", formula1=f'"{",".join(dropdown_options)}"')
+        dv = DataValidation(type="list", formula1=f'"{",".join(dropdown_options2)}"')
         ws.add_data_validation(dv)
         dv.add(ws[f"B{1+i}"])
     
@@ -1360,8 +1360,7 @@ def create_excel_employee():
 @app.route('/get_excel_add_employee', methods=['POST'])
 def get_excel_add_employee():
     try:
-        fwahe = create_excel_employee()
-        return fwahe
+        return create_excel_employee()
     except Exception as e:
         return str(e)
     
