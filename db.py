@@ -797,8 +797,11 @@ class KitchenGroup:
                 for key in prog: 
 
                     print(f"prog: {prog}, key: {key}")
-                    if prog[key][1] != '':
-                        days.add(key.lower())
+                    try:
+                        if prog[key][1] != '':
+                            days.add(key.lower())
+                    except TypeError as e:
+                        print(f'TypeError: {e}')
                     
                         
         return list(days)
