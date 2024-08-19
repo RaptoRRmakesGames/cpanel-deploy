@@ -796,7 +796,7 @@ class KitchenGroup:
                 
                 for key in prog: 
 
-                    
+                    print(f"prog: {prog}, key: {key}")
                     if prog[key][1] != '':
                         days.add(key.lower())
                     
