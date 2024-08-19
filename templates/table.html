@@ -226,7 +226,6 @@
 <div id="action_buttons">
 <button onclick="postTable()">Save</button>
 <button onclick="postTableExcel()">Save Excel</button>
-<button onclick="get_excel_add_employee()">Excel Add Employee</button>
 <button class="invisible" id="delete_week" onclick="delete_week()">Delete Week</button>
 </div>
 
@@ -561,32 +560,6 @@
 </div>
 
 <script>
-
-    function get_excel_add_employee(){
-
-        data = {
-            "fwaeh" : "fwaeh"
-        }
-        fetch('/get_excel_add_employee', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => response.blob())
-        .then(blob => {
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = 'report.xlsx';  // the file name
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-        })
-        .catch(error => console.error('Error downloading the file:', error));
-    }
 
 
     function delete_week(){

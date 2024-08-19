@@ -285,6 +285,10 @@ class Employee:
         
         db,c = connect()
         
+        c.execute('SELECT id FROM employees WHERE name=%s and user_id=%s', [name, USER_ID])
+        if len(c.fetchall()) > 0:
+            return False
+        
         c.execute("INSERT INTO employees (name, title, default_dep, user_id) VALUES (%s,%s,%s,%s)", [name, title, def_dep, USER_ID])
         db.commit()
         

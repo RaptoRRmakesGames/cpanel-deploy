@@ -185,7 +185,10 @@
             {% endfor %}
         </table>
         <tr class="last_row">
-            <button onclick="redirect('/add_employee')">Add</button>
+            <div style="display: flex; justify-content: space-evenly;">
+                <button style="width: 100%;" onclick="redirect('/add_employee')">Add</button>
+                <button style="width: 100%;" onclick="redirect('/add_from_excel')">Add From Excel</button>
+            </div>
         </tr>
     </div>
     </div>
@@ -222,6 +225,7 @@
 
         window.location.href = url
     }
+
 
     Array.from(document.getElementsByClassName('department_name')).forEach(function(item){
         console.log('fweah: ',item)

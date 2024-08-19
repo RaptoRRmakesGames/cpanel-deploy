@@ -1323,18 +1323,27 @@ def save_table_excel():
     
 
 def create_excel_employee():
-
+    # set text
     wb = Workbook()
     ws = wb.active
-
+    ws.column_dimensions['A'].width = 20
+    ws.column_dimensions['B'].width = 20
+    ws.column_dimensions['C'].width = 20
     # set text
-    ws['A1'] = 'Department'
-
+    ws['A1'] = 'Name'
+    ws['B1'] = 'Title'
+    ws['C1'] = 'Department'
+    db.USER_ID = 1
     # set dropdown
-    dropdown_options = db.Department.get_all_departments()
-    dv = DataValidation(type="list", formula1=f'"{",".join(dropdown_options)}"')
-    ws.add_data_validation(dv)
-    dv.add(ws["A2"])
+    for i in range(50):
+        dropdown_options = db.Department.get_all_departments()
+        dv = DataValidation(type="list", formula1=f'"{",".join(dropdown_options)}"')
+        ws.add_data_validation(dv)
+        dv.add(ws[f"C{1+i}"])
+        dropdown_options = db.get_all_titles()
+        dv = DataValidation(type="list", formula1=f'"{",".join(dropdown_options)}"')
+        ws.add_data_validation(dv)
+        dv.add(ws[f"B{1+i}"])
     
     excel_buffer = BytesIO()
     wb.save(excel_buffer)
@@ -1381,6 +1390,60 @@ def save_kitchen_row():
             dbe.commit()
             
             return redirect(url_for('save_kitchen_row'))
+
+@app.route('/add_from_excel', methods=['GET', 'POST'])
+def add_from_excel():
+    
+    match request.method:
+        
+        case 'GET':
+            return render_template('add_from_excel.html')
+        
+        case 'POST':
+            
+            if 'file' not in request.files:
+                flash('Please Choose a File')
+                return redirect(url_for('add_from_excel'))
+            
+            fil = request.files['file']
+            
+            if fil.filename == '':
+                flash('Please Choose a File')
+                return redirect(url_for('add_from_excel'))
+            try:
+                df = pd.read_excel(fil)
+                processed_data = []
+
+                # Iterate over each row in the DataFrame
+                for index, row in df.iterrows():
+                    name = row['Name']
+                    title = row['Title']
+                    department = row['Department']
+                    
+                    # Check if the 'Name' field is not empty
+                    if pd.notna(name) and name.strip() != "":
+                        # Perform your logic here
+                        # For demonstration, let's assume we are simply logging the row
+                        # and creating a processed data structure
+                        processed_row = {
+                            "Name": name,
+                            "Title": title,
+                            "Department": department
+                        }
+                        processed_data.append(processed_row)
+                        
+                    for row in processed_data:
+                        if db.Employee.create_employee(row['Name'], row['Title'], row['Department']) != False:  
+                            flash('`' + row['Name'] +  '` Created!')
+                        else:
+                            flash(f'Name { row["Name"]} Already Exists')
+                        
+            except Exception as e:
+                flash(f'Error: {e}')
+                return redirect(url_for('add_from_excel'))
+            
+            flash('Successfully Created All Employees!')
+            return redirect(url_for('add_from_excel'))
 
 @app.errorhandler(500)
 def internal_error(error):
