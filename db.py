@@ -795,6 +795,9 @@ class KitchenGroup:
             for prog in program:
                 
                 for key in prog: 
+                    
+                    if isinstance(prog, int):
+                        continue
 
                     print(f"prog: {prog}, key: {key}")
                     try:
