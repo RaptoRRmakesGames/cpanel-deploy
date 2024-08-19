@@ -679,25 +679,25 @@ class KitchenGroup:
         self.sub_kitchens = [Kitchen(id[0]) for id in c.fetchall()]
         
         
-        print('week : ',self.week)
+        # print('week : ',self.week)
         
         if self.week != '':
             
             self.week_passed = week_passed(self.week)
             
-            print(self.week_passed)
+            # print(self.week_passed)
             
             c.execute('SELECT * FROM schedules WHERE week=%s AND user_id=%s', [week, USER_ID])
             
             
             
             if len((f := c.fetchall() )) > 0:
-                print('sched load')
+                # print('sched load')
                 self.load_schedule(f[0][2].replace("'", '"'))
                 self.saved = True
             else:
                 # self.set_employees_to_default()
-                print('load_last_sched')
+                # print('load_last_sched')
                 self.load_last_schedule()
                 self.saved = False
             try:
@@ -722,7 +722,7 @@ class KitchenGroup:
         
         f = c.fetchall()
         
-        print(f)
+        # print(f)
         if len(f) < 1:
             self.set_employees_to_default()
             return 
@@ -759,7 +759,7 @@ class KitchenGroup:
         employees = Employee.get_all_employees()
         
         for employee in employees:
-            print(employee)
+            # print(employee)
             self.set_def_employee(employee)
         
     def set_def_employee(self,emp:Employee):
@@ -777,6 +777,8 @@ class KitchenGroup:
     def set_week(self, week):
         
         self.week = week 
+        
+        dbe,c= connect()
         c.execute('SELECT * FROM schedules WHERE week=%s AND user_id=%s', [week, USER_ID])
         
         if len((f := c.fetchall() )) > 0:
@@ -806,7 +808,7 @@ class KitchenGroup:
                     except TypeError as e:
                         print(f'TypeError: {e}')
                     
-        print('fwaeh',list(days))
+        # print('fwaeh',list(days))
         return list(days)
           
     def load_schedule(self, schedule_json):
