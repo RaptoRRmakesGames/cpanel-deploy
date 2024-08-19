@@ -784,6 +784,8 @@ def table(week=None):
             todays_week = db.get_current_week()
 
             split_days = group.get_split_days()
+            
+            print(split_days)
 
             new_week_message = (
                 ""
