@@ -1333,7 +1333,6 @@ def create_excel_employee():
     ws['A1'] = 'Name'
     ws['B1'] = 'Title'
     ws['C1'] = 'Department'
-    db.USER_ID = 1
     # set dropdown
     for i in range(50):
         dropdown_options = db.Department.get_all_departments()
