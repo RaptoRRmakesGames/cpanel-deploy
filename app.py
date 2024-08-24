@@ -36,7 +36,7 @@ app = Flask(__name__)
 
 
 app.config["SECRET_KEY"] = "very_secret_key_12351232"
-app.config['debug'] = True
+
 app.config.update(SESSION_PERMANENT=True, SESSION_TYPE="filesystem")
 
 def auth():
@@ -1445,6 +1445,65 @@ def add_from_excel():
             flash('Successfully Created All Employees!')
             return redirect(url_for('add_from_excel'))
 
+@app.route('/owner/add_user', methods=['GET', 'POST'])
+def add_user():
+    
+    match request.method:
+        
+        case 'GET':
+            
+            return render_template('add_user_owner.html')
+        
+        case 'POST':
+            
+            name = request.form.get("name")
+            role = request.form.get("role")
+            email = request.form.get("email")
+            password = request.form.get("name")
+            is_admin = {True: 1, False: 0}[request.form.get("is_admin") == "on"]
+
+            if not db.User.check_email_valid(email):
+
+                flash("Email is not Valid or already in Use!")
+                return redirect(url_for("edit_objects"))
+
+            db.User.register_user(
+                name, role, email, password, is_admin, 0, ''
+            )
+
+            
+            return redirect(url_for('add_user'))
+
+@app.route('/owner/manage_users')
+def manage_users():
+    
+    dbe, c = db.connect()
+    
+    c.execute('SELECT id FROM users WHERE id=parent_id')
+    
+    parent_users = [db.User(ide[0]) for ide in c.fetchall()]
+    user_dict = []
+    
+    for parent in parent_users:
+        
+        c.execute('SELECT * FROM users WHERE id!=parent_id AND parent_id=%s', [parent.id])
+        
+        user_dict.append((parent, [db.User(ide[0]) for ide in c.fetchall()]))
+    
+    print(user_dict)
+    
+    return render_template('manage_users_owner.html', users=user_dict)
+
+@app.route('/owner/delete_user/<ide>')
+def delete_user(ide):
+    
+    dbe,c= db.connect()
+    
+    c.execute('DELETE FROM users WHERE id=%s', [ide])
+    
+    dbe.commit()
+    
+    return redirect(url_for('manage_users'))
 # if __name__ == '__main__':
 #     @app.errorhandler(500)
 #     def internal_error(error):

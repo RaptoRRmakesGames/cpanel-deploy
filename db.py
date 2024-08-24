@@ -239,7 +239,7 @@ class User:
         
         c.execute('SELECT * FROM users WHERE email=%s', [email])
         
-        return len(c.fetchall()) != 0
+        return len(c.fetchall()) == 0
         
     @staticmethod
     def login(email, password):

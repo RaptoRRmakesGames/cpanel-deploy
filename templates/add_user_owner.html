@@ -1,0 +1,30 @@
+{% extends '/include_files/base.html' %}
+
+{% block title %}
+{{title}}
+{% endblock %}
+
+{% block content %}
+
+
+<main>
+
+    <h1>Login</h1>
+
+    <form method="POST" style="display: flex; flex-direction: column; align-content: stretch; justify-content: space-around; align-items: baseline;">
+
+        <input type="text" name="name" placeholder="Name" id="">
+        <input type="text" name="role" placeholder="Role" id="">
+        <input type="email" name="email" placeholder="Email" id="">
+        <input type="password" name="pass" placeholder="Password" id="">
+        <div display="flex">
+            <label for="admin">Is Admin?</label>
+            <input type="checkbox" name="admin" id="">
+        </div>
+        <input type="submit" value="Register" name="" id="">
+
+    </form>
+</main>
+
+
+{% endblock %}

@@ -53,6 +53,13 @@
             <li><a href="/register">Register a User</a></li>
         </ul>
         {% endif %}
+        {% if session['user_owner'] %}
+        <h1 href="">Owner Panel <a href="#" onclick="toggle_open('owner')"><span>&#8594;</span></a></h1>
+        <ul id="owner" class="invisible">
+            <li><a href="/owner/add_user">Register a User</a></li>
+            <li><a href="/owner/manage_users">Manage Users</a></li>
+        </ul>
+        {% endif %}
         {% endif %}
         <li><a href="/logout">Logout</a></li>
 

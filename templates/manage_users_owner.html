@@ -1,0 +1,51 @@
+{% extends '/include_files/base.html' %}
+
+{% block title %}
+{{title}}
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .user-bunch{
+        border: 5px solid black;
+        margin-bottom: 15px;
+        display: flex;
+        flex-direction: column;
+        width: 30%;
+        padding: 10px;
+
+    }
+</style>
+
+
+<main>
+
+    {% for user in users %}
+
+    <div class="user-bunch">
+        <h1>{{loop.index}} - {{user[0].name}}</h1>
+        <ul>
+            {% for usr in user[1]%}
+            <li style="display: flex;">
+                <h5>{{loop.index}} - {{usr.name}} | <button onclick="redirect('/owner/delete_user/{{usr.id}}')">Delete</button></h5>
+            </li>
+            {% endfor %}
+            {% if user[1]|length == 0%}
+            <li> <h5>----------------</h5></li>
+            {% endif %}
+        </ul>
+    </div>
+
+    {% endfor %}
+</main>
+
+<script>
+function redirect(url) {
+
+    window.location.href = url
+}
+</script>
+
+
+{% endblock %}
