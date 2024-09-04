@@ -7,7 +7,7 @@
 {% block content %}
 
 <style>
-    .user-bunch {
+    .user-bunch{
         border: 5px solid black;
         margin-bottom: 15px;
         display: flex;
@@ -28,16 +28,11 @@
         <ul>
             {% for usr in user[1]%}
             <li style="display: flex;">
-                <h5>
-                    {{loop.index}} - {{usr.name}} |
-                    <button onclick="redirect('/owner/delete_user/{{usr.id}}')">Delete</button><button onclick="redirect('/login_as/{{usr.id}}')">Login As</button></h5>
-                </h5>
+                <h5>{{loop.index}} - {{usr.name}} | <button onclick="redirect('/owner/delete_user/{{usr.id}}')">Delete</button></h5>
             </li>
             {% endfor %}
             {% if user[1]|length == 0%}
-            <li>
-                <h5>----------------</h5>
-            </li>
+            <li> <h5>----------------</h5></li>
             {% endif %}
         </ul>
     </div>
@@ -46,10 +41,10 @@
 </main>
 
 <script>
-    function redirect(url) {
+function redirect(url) {
 
-        window.location.href = url
-    }
+    window.location.href = url
+}
 </script>
 
 

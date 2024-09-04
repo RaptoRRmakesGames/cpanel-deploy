@@ -68,29 +68,29 @@ def before_request_func():
     session["start"] = time.time()
 
     if "user_id" in session:
-        db.USER_ID = session["parent_id"]
+        db.USER_ID = session["user_id"]
 
     if "auth" in session and session["auth"]:
 
         dbe, c = db.connect()
         stuff = []
-        c.execute("SELECT * FROM employees WHERE user_id = %s", [session["parent_id"]])
+        c.execute("SELECT * FROM employees WHERE user_id = %s", [session["user_id"]])
         stuff.append(c.fetchall())
-        c.execute("SELECT * FROM titles WHERE user_id = %s", [session["parent_id"]])
+        c.execute("SELECT * FROM titles WHERE user_id = %s", [session["user_id"]])
         stuff.append(c.fetchall())
         c.execute(
-            "SELECT * FROM sub_department WHERE user_id = %s", [session["parent_id"]]
+            "SELECT * FROM sub_department WHERE user_id = %s", [session["user_id"]]
         )
         stuff.append(c.fetchall())
         c.execute(
-            "SELECT * FROM big_kitchens WHERE user_id = %s", [session["parent_id"]]
+            "SELECT * FROM big_kitchens WHERE user_id = %s", [session["user_id"]]
         )
         stuff.append(c.fetchall())
         c.execute(
-            "SELECT * FROM large_department WHERE user_id = %s", [session["parent_id"]]
+            "SELECT * FROM large_department WHERE user_id = %s", [session["user_id"]]
         )
         stuff.append(c.fetchall())
-        c.execute("SELECT * FROM programs WHERE user_id = %s", [session["parent_id"]])
+        c.execute("SELECT * FROM programs WHERE user_id = %s", [session["user_id"]])
         stuff.append(c.fetchall())
 
 
@@ -109,6 +109,7 @@ def after_request_func(response):
 
     if __name__ == "__main__":
         print(time.time() - session["start"])
+        
     return response
 
 
@@ -245,7 +246,7 @@ def add_employee():
             dbe, c = db.connect()
 
             c.execute(
-                "SELECT * FROM schedules WHERE user_id=%s", [session["parent_id"]]
+                "SELECT * FROM schedules WHERE user_id=%s", [session["user_id"]]
             )
             kitch, dep = employee.prefered_dep
             for sched in c.fetchall():
@@ -290,6 +291,41 @@ def add_employee():
 
             flash("Added Employee Successfully!")
             return redirect(url_for("edit_objects"))
+        
+@app.route('/login_as/<ide>')
+def login_as(ide):
+    
+    user = db.User(ide)
+    
+    if user.parent_id != session['user_id'] :
+        
+        if user.hotel_owner and session['user_preview_mode']:
+            pass
+        else:
+            
+            print(session['user_id'], user.parent_id)
+            flash('Cant Login As A User That Isnt Yours!')
+            return redirect(url_for('index'))
+    
+    flash("Login Successful!")
+    session["auth"] = True
+    session["user_id"] = user.id
+    session["user_name"] = user.name
+    session["user_email"] = user.email
+    session["user_role"] = user.role
+    session["user_admin"] = user.admin
+    session["user_owner"] = user.owner
+    session["user_hotel_owner"] = user.hotel_owner
+    session["parent_id"] = user.parent_id
+    if user.hotel_owner and session['user_preview_mode']:
+        session['user_preview_mode'] = False
+    else:
+        session['user_preview_mode'] = True
+    
+    print(session["user_preview_mode"])
+    return redirect(url_for("index"))
+    
+    
 
 
 @app.route("/add_program", methods=["GET", "POST"])
@@ -319,6 +355,8 @@ def create_program():
 def edit_objects():
     if not auth():
         return redirect(url_for("login_page"))
+    if session['user_hotel_owner']:
+        return redirect(url_for('index'))
     all_kitchens = db.Kitchen.get_all_kitchens(True)
     all_departments = db.get_all_departments(True)
 
@@ -329,7 +367,7 @@ def edit_objects():
 
     dbe, c = db.connect()
 
-    c.execute("SELECT * FROM schedules WHERE user_id=%s", [session["parent_id"]])
+    c.execute("SELECT * FROM schedules WHERE user_id=%s", [session["user_id"]])
     all_schedules = []
 
     for thing in c.fetchall():
@@ -433,7 +471,7 @@ def edit_kitchen(kitchen):
 
             c.execute(
                 "SELECT id, week, schedule_json FROM schedules WHERE user_id=%s ",
-                [session["parent_id"]],
+                [session["user_id"]],
             )
 
             f = c.fetchall()
@@ -512,7 +550,7 @@ def edit_department(dep):
 
             c.execute(
                 "SELECT id, week, schedule_json FROM schedules WHERE user_id=%s ",
-                [session["parent_id"]],
+                [session["user_id"]],
             )
 
             f = c.fetchall()
@@ -594,7 +632,7 @@ def delete_program(program):
     program = db.remove_from_string(program)
 
     c.execute(
-        "SELECT schedule_json FROM schedules WHERE user_id=%s", [session["parent_id"]]
+        "SELECT schedule_json FROM schedules WHERE user_id=%s", [session["user_id"]]
     )
     remove = True
     for schedule in c.fetchall():
@@ -623,7 +661,7 @@ def delete_title(title):
     title = db.remove_from_string(title).strip()
 
     c.execute(
-        "SELECT id, name, title FROM employees WHERE user_id=%s", [session["parent_id"]]
+        "SELECT id, name, title FROM employees WHERE user_id=%s", [session["user_id"]]
     )
 
     remove = True
@@ -838,7 +876,11 @@ def login_page():
                 session["user_role"] = user.role
                 session["user_admin"] = user.admin
                 session["user_owner"] = user.owner
+                session["user_hotel_owner"] = user.hotel_owner
                 session["parent_id"] = user.parent_id
+                session['user_preview_mode'] = False
+                
+                print(session["user_hotel_owner"])
 
                 return redirect(url_for("index"))
 
@@ -868,7 +910,7 @@ def register_page():
             role = request.form.get("role")
             email = request.form.get("email")
             password = request.form.get("name")
-            is_admin = {True: 1, False: 2}[request.form.get("is_admin") == "on"]
+            is_admin = {True: 1, False: 0}[request.form.get("is_admin") == "on"]
 
             if not db.User.check_email_valid(email):
 
@@ -876,7 +918,7 @@ def register_page():
                 return redirect(url_for("edit_objects"))
 
             db.User.register_user(
-                name, role, email, password, is_admin, 0, session["user_id"]
+                name, role, email, password, is_admin,0 ,0, session["user_id"]
             )
 
             flash(f"User `{name}` Succesfully Created!")
@@ -1025,7 +1067,7 @@ def save_department():
 
         c.execute(
             "SELECT id, week, schedule_json FROM schedules WHERE user_id=%s ",
-            [session["parent_id"]],
+            [session["user_id"]],
         )
 
         f = c.fetchall()
@@ -1090,7 +1132,7 @@ def save_kitchen():
 
             c.execute(
                 "SELECT id, default_dep, name FROM employees WHERE user_id=%s",
-                [session["parent_id"]],
+                [session["user_id"]],
             )
 
             emps = c.fetchall()
@@ -1112,7 +1154,7 @@ def save_kitchen():
 
         c.execute(
             "SELECT id, week, schedule_json FROM schedules WHERE user_id=%s ",
-            [session["parent_id"]],
+            [session["user_id"]],
         )
 
         f = c.fetchall()
@@ -1461,6 +1503,7 @@ def add_user():
             email = request.form.get("email")
             password = request.form.get("name")
             is_admin = {True: 1, False: 0}[request.form.get("is_admin") == "on"]
+            is_hotel_owner = {True: 1, False: 0}[request.form.get("is_hotel_admin") == "on"]
 
             if not db.User.check_email_valid(email):
 
@@ -1468,7 +1511,7 @@ def add_user():
                 return redirect(url_for("edit_objects"))
 
             db.User.register_user(
-                name, role, email, password, is_admin, 0, ''
+                name, role, email, password, is_admin, is_hotel_owner, 0, ''
             )
 
             
@@ -1480,6 +1523,26 @@ def manage_users():
     dbe, c = db.connect()
     
     c.execute('SELECT id FROM users WHERE id=parent_id')
+    
+    parent_users = [db.User(ide[0]) for ide in c.fetchall()]
+    user_dict = []
+    
+    for parent in parent_users:
+        
+        c.execute('SELECT * FROM users WHERE id!=parent_id AND parent_id=%s', [parent.id])
+        
+        user_dict.append((parent, [db.User(ide[0]) for ide in c.fetchall()]))
+    
+    print(user_dict)
+    
+    return render_template('manage_users_owner.html', users=user_dict)
+
+@app.route('/admin/manage_users')
+def manage_users_admin():
+    
+    dbe, c = db.connect()
+    
+    c.execute('SELECT id FROM users WHERE parent_id=%s AND id=parent_id', [session['parent_id']])
     
     parent_users = [db.User(ide[0]) for ide in c.fetchall()]
     user_dict = []

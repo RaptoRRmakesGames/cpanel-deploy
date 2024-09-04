@@ -213,7 +213,7 @@ def get_random_program():
 class User:
     
     @staticmethod 
-    def register_user(username,role, email, password, admin, owner, parent_id):
+    def register_user(username,role, email, password, admin,is_hotel_admin, owner, parent_id):
         
         db,c = connect()
         
@@ -223,8 +223,8 @@ class User:
             parent_id = -1
         
         c.execute(
-        "INSERT INTO users (name, role, admin, owner, parent_id, password, email) VALUES (%s,%s,%s,%s,%s,%s,%s)",
-        [username,role, admin, owner, parent_id, password, email]
+        "INSERT INTO users (name, role, admin, owner, parent_id, password, email, hotel_owner) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
+        [username,role, admin, owner, parent_id, password, email, is_hotel_admin,]
         )
         
         if parent_id == -1:
@@ -276,6 +276,7 @@ class User:
         self.owner = bool(f[4])
         self.parent_id = f[5]
         self.email = f[6]
+        self.hotel_owner = bool(f[8])
         
 
 class Employee:

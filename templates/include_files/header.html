@@ -29,38 +29,50 @@
 </style>
 {% if session['auth']%}
 <!-- <h1>den doulevei to excel tha to ftiaxw</h1> -->
-<h1>Hello {{session['user_name']}}! ({{session['user_role']}}) {% if session['user_admin']%} (Admin) {% endif %} {% if session['user_owner']%} (Owner) {% endif %} </h1>
+<h1>Hello {{session['user_id']}} | {{session['user_name']}}! ({{session['user_role']}}) {% if session['user_admin']%} (Admin) {% endif %} {% if session['user_owner']%} (Owner) {% endif %} </h1>
+{% if session['user_preview_mode']%}
+<button onclick="login_as_hotel_owner()">Login As Owner</button>
+{% endif %}
 <header>
     
     <nav style="display: inline-block;">
         <li style=" margin-right: 28px"><a href="/">Home</a></li>
-        <h1 href="">Manage Objects <a href="#" onclick="toggle_open('edit')"><span>&#8594;</span></a></h1>
-        <ul id="edit" class="invisible">
-            <li><a href="/create_objects/1"class="link">Create Objects</a></li>
+        {% if not session['user_hotel_owner']%}
+            <h1 href="">Manage Objects <a href="#" onclick="toggle_open('edit')"><span>&#8594;</span></a></h1>
+            <ul id="edit" class="invisible">
+                <li><a href="/create_objects/1"class="link">Create Objects</a></li>
+                {% if session['hide_edit'] == False %}
+                <li><a href="/edit_objects" class="link">Edit Objects</a></li>
+                <li><a href="/change_kitchen_row" class="link">Change Kitchen Row</a></li>
+                {% endif %}
+            </ul>
             {% if session['hide_edit'] == False %}
-            <li><a href="/edit_objects" class="link">Edit Objects</a></li>
-            <li><a href="/change_kitchen_row" class="link">Change Kitchen Row</a></li>
+            <h1 href="">Schedule <a href="#" onclick="toggle_open('schedule')"><span>&#8594;</span></a></h1>
+            <ul id="schedule" class="invisible">
+                <li><a href="/table">Create Schedule</a></li>
+            </ul>
+            {% if session['user_admin'] %}
+            <h1 href="">Admin Panel <a href="#" onclick="toggle_open('admin')"><span>&#8594;</span></a></h1>
+            <ul id="admin" class="invisible">
+                <li><a href="/register">Register a User</a></li>
+            </ul>
             {% endif %}
-        </ul>
-        {% if session['hide_edit'] == False %}
-        <h1 href="">Schedule <a href="#" onclick="toggle_open('schedule')"><span>&#8594;</span></a></h1>
-        <ul id="schedule" class="invisible">
-            <li><a href="/table">Create Schedule</a></li>
-        </ul>
-        {% if session['user_admin'] %}
-        <h1 href="">Admin Panel <a href="#" onclick="toggle_open('admin')"><span>&#8594;</span></a></h1>
-        <ul id="admin" class="invisible">
-            <li><a href="/register">Register a User</a></li>
-        </ul>
+            {% if session['user_owner'] %}
+            <h1 href="">Owner Panel <a href="#" onclick="toggle_open('owner')"><span>&#8594;</span></a></h1>
+            <ul id="owner" class="invisible">
+                <li><a href="/owner/add_user">Register a User</a></li>
+                <li><a href="/owner/manage_users">Manage Users</a></li>
+            </ul>
+            {% endif %}
+            {% endif %}
+        {% else %}
+            <h1 href="">Hotel Owner Panel <a href="#" onclick="toggle_open('hotel_owner')"><span>&#8594;</span></a></h1>
+            <ul id="hotel_owner" class="invisible">
+                <li><a href="/register">Register a User</a></li>
+                <li><a href="/admin/manage_users">Manage Users</a></li>
+            </ul>
         {% endif %}
-        {% if session['user_owner'] %}
-        <h1 href="">Owner Panel <a href="#" onclick="toggle_open('owner')"><span>&#8594;</span></a></h1>
-        <ul id="owner" class="invisible">
-            <li><a href="/owner/add_user">Register a User</a></li>
-            <li><a href="/owner/manage_users">Manage Users</a></li>
-        </ul>
-        {% endif %}
-        {% endif %}
+
         <li><a href="/logout">Logout</a></li>
 
     </nav>
@@ -83,6 +95,15 @@
     function toggle_open(id){
 
         document.getElementById(id).classList.toggle('invisible')
+    }
+    function login_as_hotel_owner() {
+
+        window.location.href = '/login_as/{{session["parent_id"]}}'
+    }
+    
+    function redirect(url) {
+
+        window.location.href = url
     }
     
     

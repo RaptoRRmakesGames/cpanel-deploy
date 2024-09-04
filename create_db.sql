@@ -71,5 +71,6 @@ CREATE TABLE IF NOT EXISTS `users` (
     `parent_id` INT(11) NOT NULL DEFAULT 1,
     `password` VARCHAR(500) NOT NULL,
     `email` VARCHAR(255) NOT NULL,
+    `hotel_owner` INT(11) NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`)
 );
