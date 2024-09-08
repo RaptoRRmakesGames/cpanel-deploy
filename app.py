@@ -102,6 +102,8 @@ def before_request_func():
 
         else:
             session["hide_edit"] = True
+            
+    print(session['user_preview_mode'], session['user_id'])
 
 
 @app.after_request
@@ -297,15 +299,23 @@ def login_as(ide):
     
     user = db.User(ide)
     
-    if user.parent_id != session['user_id'] :
-        
-        if user.hotel_owner and session['user_preview_mode']:
-            pass
-        else:
-            
-            print(session['user_id'], user.parent_id)
-            flash('Cant Login As A User That Isnt Yours!')
-            return redirect(url_for('index'))
+    if user.hotel_owner and session['user_preview_mode']:
+        session["auth"] = True
+        session["user_id"] = user.id
+        session["user_name"] = user.name
+        session["user_email"] = user.email
+        session["user_role"] = user.role
+        session["user_admin"] = user.admin
+        session["user_owner"] = user.owner
+        session["user_hotel_owner"] = user.hotel_owner
+        session["parent_id"] = user.parent_id
+        session['user_preview_mode'] = False
+        return redirect(url_for("index"))
+    
+    if str(user.parent_id) != str(session['user_id']) :
+        print(user.parent_id, type(user.parent_id), type(session['user_id']))
+        flash('Cant Login As A User That Isnt Yours!')
+        return redirect(url_for('index'))
     
     flash("Login Successful!")
     session["auth"] = True
@@ -317,10 +327,8 @@ def login_as(ide):
     session["user_owner"] = user.owner
     session["user_hotel_owner"] = user.hotel_owner
     session["parent_id"] = user.parent_id
-    if user.hotel_owner and session['user_preview_mode']:
-        session['user_preview_mode'] = False
-    else:
-        session['user_preview_mode'] = True
+
+    session['user_preview_mode'] = True
     
     print(session["user_preview_mode"])
     return redirect(url_for("index"))
