@@ -988,7 +988,10 @@ def execute(query:str, params:list):
     c.close()
     dbe.close()
     # print(f)
-    return f
+    try:
+        return f
+    except UnboundLocalError:
+        return None
         
 def get_dep_id(name):
     # print(name)
