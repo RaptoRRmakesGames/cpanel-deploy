@@ -2,6 +2,7 @@ import mysql.connector, json, random
 from datetime import datetime, timedelta
 import bcrypt
 from flask import flash, session
+import mysql.connector.errors
 
 USER_ID = None
 
@@ -977,7 +978,10 @@ def execute(query:str, params:list):
     
     c.execute(query, params)
     
-    f = c.fetchall()
+    try:
+        f = c.fetchall()
+    except mysql.connector.errors.InterfaceError:
+        pass
     
     dbe.commit()
     
