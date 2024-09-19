@@ -51,12 +51,12 @@
             <ul id="schedule" class="invisible">
                 <li><a href="/table">Create Schedule</a></li>
             </ul>
-            {% if session['user_admin'] %}
+            <!-- {% if session['user_admin'] %}
             <h1 href="">Admin Panel <a href="#" onclick="toggle_open('admin')"><span>&#8594;</span></a></h1>
             <ul id="admin" class="invisible">
                 <li><a href="/register">Register a User</a></li>
             </ul>
-            {% endif %}
+            {% endif %} -->
             {% if session['user_owner'] %}
             <h1 href="">Owner Panel <a href="#" onclick="toggle_open('owner')"><span>&#8594;</span></a></h1>
             <ul id="owner" class="invisible">

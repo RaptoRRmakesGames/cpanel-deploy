@@ -278,6 +278,24 @@ class User:
         self.email = f[6]
         self.hotel_owner = bool(f[8])
         
+    def get_all_departments(self):
+        
+        kitchens = execute('SELECT name, dep_ids FROM big_kitchens WHERE user_id=%s', [self.id, ])
+        import ast 
+        deps = []
+        for kitchen in kitchens:
+            name = kitchen[0]
+            ids = ast.literal_eval(kitchen[1])
+            
+            for n in ids:
+                nme = execute('SELECT name FROM sub_department WHERE id=%s', [n])[0][0]
+                deps.append(f'{name} - {nme}')
+        print('deps: ', deps)
+        return deps
+            
+            
+        
+        
 
 class Employee:
     
@@ -946,11 +964,39 @@ class KitchenGroup:
         
         db.commit()
         
-if __name__ == '__main__':
+def random_string(l=16) -> str:
+    import random, string; return ''.join(random.choices(string.ascii_letters + string.digits, k=l))
+     
+
+def execute(query:str, params:list):
     
+    params = [None if param is None else param for param in params]
+    dbe,c = connect()
+    
+    print(query, params)
+    
+    c.execute(query, params)
+    
+    f = c.fetchall()
+    
+    dbe.commit()
+    
+    c.close()
+    dbe.close()
+    # print(f)
+    return f
+        
+def get_dep_id(name):
+    # print(name)
+    return execute('SELECT id FROM sub_department WHERE name=%s', [name])[0][0]
+    
+    
+        
+if __name__ == '__main__':
+
     db,c = connect()
     
-    ('Connected to db')
+    print('Connection to Database Successful!')
     
     while True:
         
@@ -975,7 +1021,17 @@ if __name__ == '__main__':
             case 'edit_user':
                 print('edit_user')
             case 'wipe_user_content':
-                print('wipe_user_content')
+                tables = ['big_kitchens', 'sub_department', 'employee_archive', 'programs', 'schedules', 'titles', 'employees']
+                user_id = int(input('Enter User Id'))
+                    
+                execute('DELETE FROM big_kitchens WHERE user_id=%s', [user_id,])
+                execute('DELETE FROM sub_department WHERE user_id=%s', [user_id,])
+                execute('DELETE FROM employee_archive WHERE user_id=%s', [user_id,])
+                execute('DELETE FROM programs WHERE user_id=%s', [user_id,])
+                execute('DELETE FROM schedules WHERE user_id=%s', [user_id,])
+                execute('DELETE FROM titles WHERE user_id=%s', [user_id,])
+                execute('DELETE FROM employees WHERE user_id=%s', [user_id,])
+                
             case 'delete_user':
                 print('delete')
             case 'create_db':
@@ -992,6 +1048,51 @@ if __name__ == '__main__':
                     print('Successfully Created Database')
                 except Exception as e:
                     print('Error Creating Database: \n'+str(e))
+                
+            case 'spam_db':
+                
+                user_id = str(input('User Id: '))
+                names = []
+            
+                for i in range(K := int(input('Amount of Departments: '))):
+                    rand =random_string(12)
+                    names.append(rand)
+                    execute('INSERT INTO sub_department (name, user_id) VALUES (%s,%s)', [rand, user_id])
+                    print('Departments Done!')
+                    
+                names = [int(get_dep_id(name)) for name in names]
+                
+                
+                for name in names: names.remove(name) if not str(name).isdigit() else 0
+             
+                for i in range(int(input('How Many Kitchens? '))):
+                    
+                    execute('INSERT INTO big_kitchens (name, dep_ids, user_id, row) VALUES (%s,%s,%s,%s)', [rand, str(random.choices(names, k=random.randint(1,K))), user_id, 0])
+                    print('Kitchens Done!')
+             
+                for i in range(int(input('How Many Time Programs? '))):
+                    
+                    execute('INSERT INTO programs (name, user_id) VALUES (%s, %s)', [random_string(8), user_id])
+                    print('Programs Done!')
+                    
+                titles = []
+                for i in range(int(input('How Many Titles? '))):
+                    f = random_string(6)
+                    titles.append(f)
+                    execute('INSERT INTO titles (name, user_id) VALUES (%s, %s)', [f, user_id])
+                    print('Titles Done!')
+                    
+                all_deps = User(user_id).get_all_departments()
+                    
+                for i in range(int(input('How Many Employees? '))):
+                    
+                    execute('INSERT INTO employees (name,title,default_dep, user_id) VALUES (%s,%s,%s,%s)', [random_string(12),random.choice(titles),random.choice(User(user_id).get_all_departments()) ,user_id])
+                    
+                    print('Employees Done!')
+                print('All Done!')
+                
+                    
+                    
                 
                 
             case '':
