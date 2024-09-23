@@ -24,9 +24,13 @@ import time
 from openpyxl import Workbook
 from openpyxl.worksheet.datavalidation import DataValidation
 
+from openpyxl import load_workbook
+from openpyxl.styles import Border, Side, Alignment, PatternFill
+
 from io import BytesIO
 
-import pandas as pd 
+import pandas as pd
+
 
 @app.route("/table")
 @app.route("/table/<week>")
@@ -76,7 +80,7 @@ def table(week=None):
             todays_week = db.get_current_week()
 
             split_days = group.get_split_days()
-            
+
             print(split_days)
 
             new_week_message = (
@@ -113,28 +117,25 @@ def see_week(d_start, m_start, y_start, d_end, m_end, y_end):
 
     return f"{d_start}/{m_start}/{y_start} - {d_end}/{m_end}/{y_end}"
 
-@app.route('/save_table_excel', methods=['GET', 'POST'])
+
+@app.route("/save_table_excel", methods=["GET", "POST"])
 def save_table_excel():
     if not auth():
         return redirect(url_for("login_page"))
-    
+
     data = dict(request.json)
     rows = []
-    week_name= ''
+    week_name = ""
     for location, events in data.items():
-        if location == 'week':
-            week_name = events.replace('(', '').replace(')', '')
+        if location == "week":
+            week_name = events.replace("(", "").replace(")", "")
             continue
-        rows.append({'Name' : location})
+        rows.append({"Name": location})
         for event, details in events.items():
-            rows.append({'Name' : event})
+            rows.append({"Name": event})
             if details:  # Check if the event has details
-                
                 for detail in details:
-                
-                    print(details)
                     employee_name = detail[0]
-
                     for i, days_info in enumerate(detail[1]):
                         row = {
                             "Name": f"{employee_name if i == 0 else f'Split {i}'}",
@@ -151,22 +152,94 @@ def save_table_excel():
                             "Saturday": days_info.get("saturday", ["", ""])[0],
                             "Change Sa": days_info.get("saturday", ["", ""])[1],
                             "Sunday": days_info.get("sunday", ["", ""])[0],
-                            "Change Su": days_info.get("sunday", ["", ""])[1]
-                    }
+                            "Change Su": days_info.get("sunday", ["", ""])[1],
+                        }
                         rows.append(row)
 
     # Create DataFrame
     df = pd.DataFrame(rows)
-    
-    excel_buffer = BytesIO()
-    df.to_excel(excel_buffer, index=False)
 
-    # Get the binary content of the file
+    # Save to an Excel buffer with openpyxl engine for styling
+    excel_buffer = BytesIO()
+    with pd.ExcelWriter(excel_buffer, engine="openpyxl") as writer:
+        df.to_excel(writer, index=False)
+
+    # Load the workbook and the first sheet for styling
     excel_buffer.seek(0)
-    excel_data = excel_buffer.read()
-    
-    response = make_response(excel_data)
-    response.headers['Content-Disposition'] = 'attachment; filename=report.xlsx'
-    response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    
+    wb = load_workbook(excel_buffer)
+    ws = wb.active
+
+    # Query department and kitchen names from the database
+    department_names = db.execute(
+        "SELECT name FROM sub_department WHERE user_id=%s", [session["user_id"]]
+    )
+    kitchens_names = db.execute(
+        "SELECT name FROM big_kitchens WHERE user_id=%s", [session["user_id"]]
+    )
+    day_names = [
+        "Name",
+        "Monday", "Change M",
+        "Tuesday", "Change T",
+        "Wednesday", "Change W",
+        "Thursday", "Change Tu",
+        "Friday", "Change F",
+        "Saturday", "Change Sa",
+        "Sunday", "Change Su"
+    ]
+
+    department_names = [f[0] for f in department_names]
+    kitchens_names = [f[0] for f in kitchens_names]
+
+    print(department_names, kitchens_names)
+
+    # Define thicker borders
+    thick_border = Border(
+        left=Side(style="thick"),
+        right=Side(style="thick"),
+        top=Side(style="thick"),
+        bottom=Side(style="thick"),
+    )
+
+    # Define fill colors for departments, kitchens, and days
+    department_fill = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")  # Green
+    kitchen_fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")    # Yellow
+    day_fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")        # Red
+
+    # Apply thicker borders, center alignment, and conditional formatting to all cells
+    for row in ws.iter_rows(min_row=1, max_row=ws.max_row, min_col=1, max_col=ws.max_column):
+        for cell in row:
+            cell.border = thick_border
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            
+            # Apply color fill based on cell value
+            if cell.value in department_names:
+                cell.fill = department_fill
+            elif cell.value in kitchens_names:
+                cell.fill = kitchen_fill
+            elif cell.value in day_names:
+                cell.fill = day_fill
+
+    # Adjust column width for better visibility
+    for col in ws.columns:
+        max_length = 0
+        col_letter = col[0].column_letter  # Get the letter of the column
+        for cell in col:
+            if cell.value:
+                max_length = max(max_length, len(str(cell.value)))
+        ws.column_dimensions[col_letter].width = max_length + 2  # Add some padding
+
+    # Save the styled Excel to a new buffer
+    styled_excel_buffer = BytesIO()
+    wb.save(styled_excel_buffer)
+    styled_excel_buffer.seek(0)
+
+    # Send the response with styled Excel
+    response = make_response(styled_excel_buffer.read())
+    response.headers["Content-Disposition"] = (
+        f"attachment; filename=report_{week_name}.xlsx"
+    )
+    response.headers["Content-Type"] = (
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
     return response
