@@ -1064,6 +1064,8 @@ def create_excel_employee():
     excel_data = excel_buffer.read()
     
     response = make_response(excel_data)
+    response.headers['Cache-Control'] = 'no-store'
+    response.headers['Pragma'] = 'no-cache'
     response.headers['Content-Disposition'] = 'attachment; filename=report.xlsx'
     response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     
