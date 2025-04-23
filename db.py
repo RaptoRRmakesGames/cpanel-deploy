@@ -15,7 +15,7 @@ def hash_password(password: str) -> str:
 
 def verify_password(stored_password: str, provided_password: str) -> bool:
     # Compare the provided password with the stored hashed password
-    return bcrypt.checkpw(provided_password.encode(), stored_password.encode())
+    return bcrypt.checkpw(provided_password.encode(), stored_password)
 
 def connect():
     
