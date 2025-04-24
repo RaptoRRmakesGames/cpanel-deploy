@@ -525,7 +525,7 @@ def edit_demployee(emp):
                 
             )
 
-            db.Employee(db.Employee.get_id_by_name(emp)).update(name, title, pref_dep, days_per_week, salary, salary13, salary14, leave, gesy, pro_fund, guild)
+            db.Employee(db.Employee.get_id_by_name(emp)).update(name, title, pref_dep, salary, days_per_week, salary13, salary14, leave, gesy, pro_fund, guild)
 
             flash("Updated Department Successfully!")
 
