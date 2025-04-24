@@ -292,15 +292,17 @@ class User:
 class Employee:
     
     @staticmethod
-    def create_employee(name, title, def_dep):
+    def create_employee(name, title, def_dep, salary, working_days, salary13, salary14, gesy, provident_fund, guild, leave):
         
         db,c = connect()
         
         c.execute('SELECT id FROM employees WHERE name=%s and user_id=%s', [name, USER_ID])
-        if len(c.fetchall()) > 0:
+        if len(f:=c.fetchall()) > 0:
+            print('yeah', f)
             return False
-        
-        c.execute("INSERT INTO employees (name, title, default_dep, user_id) VALUES (%s,%s,%s,%s)", [name, title, def_dep, USER_ID])
+        print(salary13, salary14, leave)
+        c.execute("INSERT INTO employees (name, title, default_dep, user_id, salary, working_days, 13_salary, 14_salary,ann_leave, gesy, provident_fund, guild) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            [name, title, def_dep, USER_ID, salary, working_days, salary13, salary14,leave,  gesy,provident_fund, guild  ])
         db.commit()
         
         c.execute('SELECT * FROM employees WHERE name=%s', [name])
@@ -393,7 +395,15 @@ class Employee:
             'id' : self.id,
             'name' : f[1],
             'title' : f[2],
-            'default_dep' : f[3]
+            'default_dep' : f[3],
+            'salary' : f[5],
+            'working_days' : f[6],
+            'salary13' : f[7],
+            'salary14' : f[8],
+            'ann_leave' : f[9],
+            'gesy' : f[10],
+            'prov_fund' : f[11],
+            'guild' : f[12],
         }
         
         
@@ -403,6 +413,15 @@ class Employee:
         
         self.prefered_dep = self.raw['default_dep'].split(' - ')
         self.prefered_dep_str = self.raw['default_dep']
+        
+        self.salary = self.raw['salary']
+        self.working_days = self.raw['working_days']
+        self.salary13 = self.raw['salary13']
+        self.salary14 = self.raw['salary14']
+        self.ann_leave = self.raw['ann_leave']
+        self.gesy = self.raw['gesy']
+        self.prov_fund = self.raw['prov_fund']
+        self.guild = self.raw['guild']
         
     def copy_to_archive(self):
         
@@ -418,11 +437,12 @@ class Employee:
         
         return True
     
-    def update(self, name, title, def_dep):
+    def update(self, name, title, def_dep, salary, working_days, salary13, salary14, gesy, provident_fund, guild, leave):
         
         db,c = connect()
         
-        c.execute("UPDATE employees SET name=%s, title=%s, default_dep=%s WHERE id=%s", [name, title, def_dep, self.id])
+        c.execute("UPDATE employees SET name=%s, title=%s, default_dep=%s, salary=%s, working_days=%s, 13_salary=%s, 14_salary=%s, ann_leave=%s, gesy=%s, provident_fund=%s, guild=%s WHERE id=%s",
+                  [name, title, def_dep,salary, working_days, salary13, salary14, gesy, provident_fund, guild, leave, self.id])
         
         db.commit()
         

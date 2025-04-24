@@ -152,19 +152,30 @@ def add_employee():
 
         case "POST":
 
-            name, title, def_dep = (
+            name, title, def_dep, days_per_week,salary, salary13, salary14, leave, gesy, pro_fund, guild= (
                 request.form.get("name"),
                 request.form.get("title"),
                 request.form.get("def_dep"),
+                request.form.get("days_per_week"),
+                request.form.get("salary"),
+                0 if request.form.get("13salary") is None else 1 ,
+                0 if request.form.get("14salary")is None else 1 ,
+                0 if request.form.get("leave")is None else 1 ,
+                request.form.get("gesy"),
+                request.form.get("provident_fund"),
+                request.form.get("guild"),
+                
             )
 
-            employee = db.Employee.create_employee(name, title, def_dep)
+            employee = db.Employee.create_employee(
+                name, title, def_dep, salary, days_per_week, salary13, salary14, gesy, pro_fund, guild, leave )
 
             dbe, c = db.connect()
 
             c.execute(
                 "SELECT * FROM schedules WHERE user_id=%s", [session["user_id"]]
             )
+            print(employee)
             kitch, dep = employee.prefered_dep
             for sched in c.fetchall():
 
@@ -499,8 +510,22 @@ def edit_demployee(emp):
             name = request.form.get("name")
             title = request.form.get("title")
             pref_dep = request.form.get("def_dep")
+            name, title, def_dep, days_per_week,salary, salary13, salary14, leave, gesy, pro_fund, guild= (
+                request.form.get("name"),
+                request.form.get("title"),
+                request.form.get("def_dep"),
+                request.form.get("days_per_week"),
+                request.form.get("salary"),
+                0 if request.form.get("13salary") is None else 1 ,
+                0 if request.form.get("14salary")is None else 1 ,
+                0 if request.form.get("leave")is None else 1 ,
+                request.form.get("gesy"),
+                request.form.get("provident_fund"),
+                request.form.get("guild"),
+                
+            )
 
-            db.Employee(db.Employee.get_id_by_name(emp)).update(name, title, pref_dep)
+            db.Employee(db.Employee.get_id_by_name(emp)).update(name, title, pref_dep, days_per_week, salary, salary13, salary14, leave, gesy, pro_fund, guild)
 
             flash("Updated Department Successfully!")
 

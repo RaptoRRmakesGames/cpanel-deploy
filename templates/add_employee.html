@@ -13,6 +13,8 @@
 <h1>Add An Employee</h1>
 {% endif %}
 <form method="POST">
+    <fieldset>
+    <legend>Employee</legend>
 
     {% if edit%}
     <label for="name">ID</label><br>
@@ -21,35 +23,36 @@
     {% endif %}
 
     <label for="name">Name</label><br>
-    <input type="text" placeholder="Name" {% if edit %} value="{{employee.name}}" {% endif %} required name="name" id="">
+    <input type="text" placeholder="Name" {% if edit %} value="{{employee.name}}" {% endif %} required name="name"
+        id="">
     <br>
     <label for="title">Title</label><br>
     <select name="title" id="">
         {% for title in titles%}
-            {% if edit and title == employee.title %}
-            <option value="{{title}}" selected>{{title}}</option>
-            {% else %}
-            <option value="{{title}}" >{{title}}</option>
-            {% endif %}
+        {% if edit and title == employee.title %}
+        <option value="{{title}}" selected>{{title}}</option>
+        {% else %}
+        <option value="{{title}}">{{title}}</option>
+        {% endif %}
         {% endfor %}
     </select>
     <br>
-    
+
     <label for="def_dep">Default Department</label><br>
     <select name="def_dep" id="" required>
         <option value=""></option>
         {% for department in departments%}
-        
-            {% if edit and employee.prefered_dep_str == department%}
-            <option value="{{department}}" selected>{{department}}</option>
-            {% else %}
-            <option value="{{department}}" >{{department}}</option>
-            {% endif %}
+
+        {% if edit and employee.prefered_dep_str == department%}
+        <option value="{{department}}" selected>{{department}}</option>
+        {% else %}
+        <option value="{{department}}">{{department}}</option>
+        {% endif %}
         {% endfor%}
     </select> <br>
     {% if not edit%}
     <label for="">Work Schedule</label><br>
-    <select name="" id="" >
+    <select name="" id="">
         <option value=""></option>
         {% for program in programs%}
         <option value="{{program}}">{{program}}</option>
@@ -57,7 +60,42 @@
     </select> <br>
     {% endif %}
 
-    <input type="submit" name="" value="Add" id="">
 
+
+    
+    <label for="salary">Salary:</label><br>
+    <input {% if edit %} value="{{employee.salary}}" {% endif %} type="number" id="salary" name="salary" step="0.01" required><br>
+    <input {% if employee.working_days == 5 %}checked{%endif%} type="radio" id="five_days" name="days_per_week" value="5" required>
+    <label for="five_days">5 Days</label>
+    
+    <input {% if employee.working_days == 6 %}checked{%endif%} type="radio" id="six_days" name="days_per_week" value="6">
+    <label for="six_days">6 Days</label><br><br>
+    
+    
+    
+    <input {% if employee.salary13 == 1 %} checked {%endif %} type="checkbox" id="salary13" name="13salary" value="13th Salary">
+    <label for="salary13">13th Salary</label><br>
+    
+    <input {% if employee.salary14 == 1 %} checked {%endif %} type="checkbox" id="salary14" name="14salary" value="14th Salary">
+    <label for="salary14">14th Salary</label><br>
+    
+    <input {% if employee.ann_leave == 1 %} checked {%endif %} type="checkbox" id="actual_leave" name="leave" value="Actual Leave">
+    <label for="actual_leave">Actual Leave</label><br><br>
+    
+    
+    <label   for="gesy">Gesy (%):</label> <br>
+    
+    <input {% if edit %} value="{{employee.gesy}}" {% endif %} type="number" id="gesy" name="gesy" step="0.01"> <br><br>
+    
+    <label for="provident_fund">Provident Fund:</label> <br>
+    <input {% if edit %} value="{{employee.prov_fund}}" {% endif %} type="number" id="provident_fund" name="provident_fund" step="0.01"> <br><br>
+    
+    <label for="guild">Guild:</label> <br>
+    <input {% if edit %} value="{{employee.guild}}" {% endif %} type="number" id="guild" name="guild" step="0.01">&nbsp&nbsp&nbsp&nbsp
+
+    <br><input type="submit" name="" value="Add" id="">
+    </fieldset>
 </form>
+
+
 {% endblock %}
