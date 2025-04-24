@@ -1,21 +1,12 @@
 import mysql.connector, json, random
 from datetime import datetime, timedelta
-import bcrypt
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask import flash, session
 import mysql.connector.errors
 
 USER_ID = None
 
-def hash_password(password: str) -> str:
-    # Generate a salt
-    salt = bcrypt.gensalt()
-    # Hash the password with the salt
-    hashed_password = bcrypt.hashpw(password.encode(), salt)
-    return hashed_password.decode()
 
-def verify_password(stored_password: str, provided_password: str) -> bool:
-    # Compare the provided password with the stored hashed password
-    return bcrypt.checkpw(provided_password.encode(), stored_password)
 
 def connect():
     
@@ -218,7 +209,7 @@ class User:
         
         db,c = connect()
         
-        password = hash_password(password)
+        password = generate_password_hash(password)
         
         if parent_id == '' or parent_id == None:
             parent_id = -1
@@ -255,12 +246,12 @@ class User:
         if len(f) == 0:
             return 'No user With this Email!'
 
-        f = f[0]        
-        if not verify_password(f[6], password):
+        f = f[0]    
+        print(f[6])    
+        if not check_password_hash(f[6], password):
             return 'Wrong Password'
         
         return User(f[0])
-    
     def __init__(self, ide) -> None:
         self.id = ide
         
