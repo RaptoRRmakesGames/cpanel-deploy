@@ -65,21 +65,21 @@
     
     <label for="salary">Salary:</label><br>
     <input {% if edit %} value="{{employee.salary}}" {% endif %} type="number" id="salary" name="salary" step="0.01" required><br>
-    <input {% if employee.working_days == 5 %}checked{%endif%} type="radio" id="five_days" name="days_per_week" value="5" required>
+    <input {% if edit and  employee.working_days  == 5 %}checked{%endif%} type="radio" id="five_days" name="days_per_week" value="5" required>
     <label for="five_days">5 Days</label>
     
-    <input {% if employee.working_days == 6 %}checked{%endif%} type="radio" id="six_days" name="days_per_week" value="6">
+    <input {% if edit and  employee.working_days == 6 %}checked{%endif%} type="radio" id="six_days" name="days_per_week" value="6">
     <label for="six_days">6 Days</label><br><br>
     
     
     
-    <input {% if employee.salary13 == 1 %} checked {%endif %} type="checkbox" id="salary13" name="13salary" value="13th Salary">
+    <input {% if edit and  employee.salary13 == 1 %} checked {%endif %} type="checkbox" id="salary13" name="13salary" value="13th Salary">
     <label for="salary13">13th Salary</label><br>
     
-    <input {% if employee.salary14 == 1 %} checked {%endif %} type="checkbox" id="salary14" name="14salary" value="14th Salary">
+    <input {% if edit and  employee.salary14 == 1 %} checked {%endif %} type="checkbox" id="salary14" name="14salary" value="14th Salary">
     <label for="salary14">14th Salary</label><br>
     
-    <input {% if employee.ann_leave == 1 %} checked {%endif %} type="checkbox" id="actual_leave" name="leave" value="Actual Leave">
+    <input {% if edit and  employee.ann_leave == 1 %} checked {%endif %} type="checkbox" id="actual_leave" name="leave" value="Actual Leave">
     <label for="actual_leave">Actual Leave</label><br><br>
     
     
