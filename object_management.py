@@ -514,14 +514,14 @@ def edit_demployee(emp):
                 request.form.get("name"),
                 request.form.get("title"),
                 request.form.get("def_dep"),
-                request.form.get("days_per_week"),
-                request.form.get("salary"),
+                0 if request.form.get("days_per_week") is None else request.form.get("days_per_week"),
+                0 if request.form.get("salary") is None else request.form.get("salary"),
                 0 if request.form.get("13salary") is None else 1 ,
                 0 if request.form.get("14salary")is None else 1 ,
                 0 if request.form.get("leave")is None else 1 ,
-                request.form.get("gesy"),
-                request.form.get("provident_fund"),
-                request.form.get("guild"),
+                0 if request.form.get("gesy") is None else request.form.get("gesy"),
+                0 if request.form.get("provident_fund")is None else request.form.get("provident_fund"),
+                0 if request.form.get("guild") is None else request.form.get("guild"),
                 
             )
 
