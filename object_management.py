@@ -515,7 +515,7 @@ def edit_demployee(emp):
                 request.form.get("title"),
                 request.form.get("def_dep"),
                 0 if request.form.get("days_per_week") is None else request.form.get("days_per_week"),
-                0 if request.form.get("salary") is None else request.form.get("salary"),
+                0 if request.form.get("salary") is None or request.form.get("salary") ==''  else request.form.get("salary"),
                 0 if request.form.get("13salary") is None else 1 ,
                 0 if request.form.get("14salary")is None else 1 ,
                 0 if request.form.get("leave")is None else 1 ,
