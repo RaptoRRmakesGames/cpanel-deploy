@@ -153,7 +153,7 @@ def add_employee():
         case "POST":
 
             name, title, def_dep, days_per_week,salary, salary13, salary14, leave, gesy, pro_fund, guild= (
-                request.form.get("name"),
+                request.form.get("name").lower().capitalize(),
                 request.form.get("title"),
                 request.form.get("def_dep"),
                 0 if request.form.get("days_per_week") is None else request.form.get("days_per_week"),
@@ -509,7 +509,7 @@ def edit_demployee(emp):
 
         case "POST":
 
-            name = request.form.get("name")
+            name = request.form.get("name").lower().capitalize()
             title = request.form.get("title")
             pref_dep = request.form.get("def_dep")
             name, title, def_dep, days_per_week,salary, salary13, salary14, leave, gesy, pro_fund, guild= (
