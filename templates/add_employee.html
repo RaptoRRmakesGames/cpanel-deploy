@@ -64,8 +64,8 @@
 
     
     <label for="salary">Salary:</label><br>
-    <input {% if edit %} value="{{employee.salary}}" {% endif %} type="number" id="salary" name="salary" step="0.01" required><br>
-    <input {% if edit and  employee.working_days  == 5 %}checked{%endif%} type="radio" id="five_days" name="days_per_week" value="5" required>
+    <input {% if edit %} value="{{employee.salary}}" {% endif %} type="number" id="salary" name="salary" step="0.01" ><br>
+    <input {% if edit and  employee.working_days  == 5 %}checked{%endif%} type="radio" id="five_days" name="days_per_week" value="5" >
     <label for="five_days">5 Days</label>
     
     <input {% if edit and  employee.working_days == 6 %}checked{%endif%} type="radio" id="six_days" name="days_per_week" value="6">
