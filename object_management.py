@@ -521,9 +521,9 @@ def edit_demployee(emp):
                 0 if request.form.get("13salary") is None else 1 ,
                 0 if request.form.get("14salary")is None else 1 ,
                 0 if request.form.get("leave")is None else 1 ,
-                0 if request.form.get("gesy") is None else request.form.get("gesy"),
-                0 if request.form.get("provident_fund")is None else request.form.get("provident_fund"),
-                0 if request.form.get("guild") is None else request.form.get("guild"),
+                0 if request.form.get("gesy") is None or request.form.get("gesy") =='' else request.form.get("gesy"),
+                0 if request.form.get("provident_fund")is None or request.form.get("provident_fund") =='' else request.form.get("provident_fund"),
+                0 if request.form.get("guild") is None or request.form.get("guild") =='' else request.form.get("guild"),
                 
             )
             
