@@ -292,7 +292,7 @@ class User:
 class Employee:
     
     @staticmethod
-    def create_employee(name, title, def_dep, salary, working_days, salary13, salary14, gesy, provident_fund, guild, leave):
+    def create_employee(name, title, def_dep, salary, working_days, salary13, salary14, gesy, provident_fund, guild, leave, time):
         
         db,c = connect()
         
@@ -301,8 +301,8 @@ class Employee:
             print('yeah', f)
             return False
         print(salary13, salary14, leave)
-        c.execute("INSERT INTO employees (name, title, default_dep, user_id, salary, working_days, 13_salary, 14_salary,ann_leave, gesy, provident_fund, guild) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-            [name, title, def_dep, USER_ID, salary, working_days, salary13, salary14,leave,  gesy,provident_fund, guild  ])
+        c.execute("INSERT INTO employees (name, title, default_dep, user_id, salary, working_days, 13_salary, 14_salary,ann_leave, gesy, provident_fund, guild, pref_time) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            [name, title, def_dep, USER_ID, salary, working_days, salary13, salary14,leave,  gesy,provident_fund, guild, time  ])
         db.commit()
         
         c.execute('SELECT * FROM employees WHERE name=%s', [name])
@@ -404,6 +404,7 @@ class Employee:
             'gesy' : f[10],
             'prov_fund' : f[11],
             'guild' : f[12],
+            'time' : f[13]
         }
         
         
@@ -422,6 +423,7 @@ class Employee:
         self.gesy = self.raw['gesy']
         self.prov_fund = self.raw['prov_fund']
         self.guild = self.raw['guild']
+        self.time = self.raw['time']
         
     def copy_to_archive(self):
         
@@ -437,12 +439,12 @@ class Employee:
         
         return True
     
-    def update(self, name, title, def_dep, salary, working_days, salary13, salary14, gesy, provident_fund, guild, leave):
+    def update(self, name, title, def_dep, salary, working_days, salary13, salary14, gesy, provident_fund, guild, leave, time):
         
         db,c = connect()
         
-        c.execute("UPDATE employees SET name=%s, title=%s, default_dep=%s, salary=%s, working_days=%s, 13_salary=%s, 14_salary=%s, ann_leave=%s, gesy=%s, provident_fund=%s, guild=%s WHERE id=%s",
-                  [name, title, def_dep,salary, working_days, salary13, salary14, gesy, provident_fund, guild, leave, self.id])
+        c.execute("UPDATE employees SET name=%s, title=%s, default_dep=%s, salary=%s, working_days=%s, 13_salary=%s, 14_salary=%s, ann_leave=%s, gesy=%s, provident_fund=%s, guild=%s, pref_time=%s WHERE id=%s",
+                  [name, title, def_dep,salary, working_days, salary13, salary14, gesy, provident_fund, guild, leave,time ,self.id])
         
         db.commit()
         
@@ -475,13 +477,13 @@ class Employee:
                 
                 print(e)
                 program = [{
-                    'monday' : [get_random_program(), ''],
-                    'tuesday' : [get_random_program(), ''],
-                    'wednesday' : [get_random_program(), ''],
-                    'thursday' : [get_random_program(), ''],
-                    'friday' : [get_random_program(), ''],
-                    'saturday' : [get_random_program(), ''],
-                    'sunday' : [get_random_program(), ''],
+                    'monday' : [self.time if self.time is not None else get_random_program(), ''],
+                    'tuesday' : [self.time if self.time is not None else get_random_program(), ''],
+                    'wednesday' : [self.time if self.time is not None else get_random_program(), ''],
+                    'thursday' : [self.time if self.time is not None else get_random_program(), ''],
+                    'friday' : [self.time if self.time is not None else get_random_program(), ''],
+                    'saturday' : [self.time if self.time is not None else get_random_program(), ''],
+                    'sunday' : [self.time if self.time is not None else get_random_program(), ''],
                 }]
 
             

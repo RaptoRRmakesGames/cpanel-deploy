@@ -50,15 +50,18 @@
         {% endif %}
         {% endfor%}
     </select> <br>
-    {% if not edit%}
+
     <label for="">Work Schedule</label><br>
-    <select name="" id="">
+    <select name="time" id="">
         <option value=""></option>
         {% for program in programs%}
-        <option value="{{program}}">{{program}}</option>
+        {% if program == employee.time%}
+        <option value="{{program}}" selected >{{program}}</option>
+        {%else %}
+        <option value="{{program}}" >{{program}}</option>
+        {% endif %}
         {% endfor%}
     </select> <br>
-    {% endif %}
 
 
 
