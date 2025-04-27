@@ -344,7 +344,7 @@ class Employee:
         
         db,c = connect()
         
-        c.execute("SELECT id FROM employees WHERE user_id=%s", [USER_ID])
+        c.execute("SELECT id FROM employees WHERE user_id=%s ORDER BY default_dep", [USER_ID])
         
         employees = [Employee(ide[0]) for ide in c.fetchall()]
         while True:
