@@ -144,6 +144,7 @@
                 <th>Name</th>
                 <th>Title</th>
                 <th>Department</th>
+                <th>Time Programs</th>
                 <th>Edit</th>
                 <th>Delete</th>
             </tr>
@@ -172,6 +173,20 @@
                             <option value="{{department}}" selected>{{department}}</option>
                             {% else %}
                             <option value="{{department}}">{{department}}</option>
+                            {% endif %}
+
+                        {% endfor %}
+                    </select>
+                
+                </td>
+                <td>
+                    <select name="" id="" class="employee_time {{employee.id}}">
+                        {% for program in programs%}
+
+                            {% if program == employee.time%}
+                            <option value="{{program}}" selected>{{program}}</option>
+                            {% else %}
+                            <option value="{{program}}">{{program}}</option>
                             {% endif %}
 
                         {% endfor %}
@@ -360,6 +375,30 @@
                 "new_name" : item.value
             }
             fetch('/save_emp_title', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Successfully Saved Employee')
+                })
+                .catch((error) => {
+                    alert('Issue Saving Employee: ' + error)
+                });
+
+        })
+    })
+    Array.from(document.getElementsByClassName('employee_time')).forEach(function(item){
+        item.addEventListener('change', function(){
+            console.log(item.classList)
+            data = {
+                "id": item.classList[1],
+                "new_time" : item.value
+            }
+            fetch('/save_emp_program', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

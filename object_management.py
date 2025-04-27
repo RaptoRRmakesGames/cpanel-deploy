@@ -261,7 +261,8 @@ def edit_objects():
 
     employee_departments = db.Department.get_all_departments()
     all_employees = db.Employee.get_all_employees()
-    all_programs = db.get_all_programs(True)
+    all_programs = db.get_all_programs()
+    print(all_programs)
     all_titles = db.get_all_titles(True)
 
     dbe, c = db.connect()
@@ -1007,6 +1008,28 @@ def save_emp_name():
         dbe, c = db.connect()
         c.execute(
             "UPDATE employees SET name=%s WHERE id=%s", [data["new_name"], data["id"]]
+        )
+        dbe.commit()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        print("Error:", e)  # Debug statement to check the error
+        return jsonify({"status": "error", "message": str(e)})
+    finally:
+        c.close()
+        dbe.close()
+        
+@app.route("/save_emp_program", methods=["POST"])
+def save_emp_time():
+    if not auth():
+        return redirect(url_for("login_page"))
+
+    data = request.json
+    print("Received data:", data)  # Debug statement to check received data
+
+    try:
+        dbe, c = db.connect()
+        c.execute(
+            "UPDATE employees SET pref_time=%s WHERE id=%s", [data["new_time"], data["id"]]
         )
         dbe.commit()
         return jsonify({"status": "success"})
