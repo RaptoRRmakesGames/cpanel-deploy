@@ -390,7 +390,6 @@ class Employee:
                 print("Employee Doesnt Exist (check_archive = False)")
                 return None
             
-        print(f)
         self.raw = {
             'id' : self.id,
             'name' : f[1],
