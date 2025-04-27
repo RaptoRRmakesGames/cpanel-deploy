@@ -183,10 +183,10 @@
                     <select name="" id="" class="employee_time {{employee.id}}">
                         {% for program in programs%}
 
-                            {% if program == employee.time%}
-                            <option value="{{program}}" selected>{{program}}</option>
+                            {% if program[1] == employee.time%}
+                            <option value="{{program[0]}}" selected>{{program[1]}}</option>
                             {% else %}
-                            <option value="{{program}}">{{program}}</option>
+                            <option value="{{program[0]}}">{{program[1]}}</option>
                             {% endif %}
 
                         {% endfor %}

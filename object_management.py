@@ -261,8 +261,7 @@ def edit_objects():
 
     employee_departments = db.Department.get_all_departments()
     all_employees = db.Employee.get_all_employees()
-    all_programs = db.get_all_programs()
-    print(all_programs)
+    all_programs = db.get_all_programs(True)
     all_titles = db.get_all_titles(True)
 
     dbe, c = db.connect()
