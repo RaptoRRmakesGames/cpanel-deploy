@@ -55,7 +55,7 @@
     <select name="time" id="">
         <option value=""></option>
         {% for program in programs%}
-        {% if program == employee.time%}
+        {% if edit and program == employee.time%}
         <option value="{{program}}" selected >{{program}}</option>
         {%else %}
         <option value="{{program}}" >{{program}}</option>
