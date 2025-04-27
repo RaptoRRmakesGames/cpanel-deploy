@@ -169,7 +169,11 @@ def add_employee():
             )
             
             print(gesy, pro_fund, guild)
-
+            name_parts = name.split(" ")
+            name=''
+            for part in name_parts:
+                name += part.capitalize() + ' '
+            print(name, 'name')
             employee = db.Employee.create_employee(
                 name, title, def_dep, salary, days_per_week, salary13, salary14, gesy, pro_fund, guild, leave, time )
 
