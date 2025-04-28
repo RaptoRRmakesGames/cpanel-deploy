@@ -190,7 +190,7 @@ def add_employee():
                 week = sched[1]
                 js = json.loads(sched[2].replace("'", '"'))
 
-                program = db.get_random_program()
+                program = db.get_random_program2()
 
                 for kitchen in js:
 

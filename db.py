@@ -191,16 +191,16 @@ def remove_from_string(stre, to_remove='%20'):
         
     return final_str
 
-# def get_random_program():
+def get_random_program2():
     
-#     dbe,c =connect()
+    dbe,c =connect()
     
-#     c.execute('SELECT * FROM programs WHERE user_id=%s', [USER_ID])
+    c.execute('SELECT * FROM programs WHERE user_id=%s', [USER_ID])
     
-#     try:
-#         return c.fetchall()[0][1]
-#     except IndexError:
-#         return None
+    try:
+        return c.fetchall()[0][1]
+    except IndexError:
+        return None
 
 class User:
     
