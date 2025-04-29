@@ -1,4 +1,3 @@
-
 from owner_panel import app 
 
 
