@@ -1266,7 +1266,7 @@ def add_bednight(date_start, date_end, current_date):
             flash('Bednight Created!')
             print(current_date, date_start, date_end)
             if date == date_end:
-                return redirect(url_for('edit_objects'))
+                return redirect(url_for('select_bednight_date'))
 
             new_current = (datetime.strptime(current_date, '%Y-%m-%d') + timedelta(days=1)).strftime('%Y-%m-%d')
 
