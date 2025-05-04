@@ -1213,3 +1213,115 @@ def add_from_excel():
             
             flash('Successfully Created All Employees!')
             return redirect(url_for('add_from_excel'))
+        
+@app.route('/select_bednight_date', methods=['GET', 'POST'])
+def select_bednight_date():
+    if not auth():
+        return redirect(url_for("login_page"))
+    
+    match request.method:
+        
+        case 'GET':
+            return render_template('select_bednight_date.html', title='Select Bednight Date')
+        
+        case 'POST':
+            
+            date_start = request.form.get('date_start')
+            date_end = request.form.get('date_end')
+            print(request.form.get('mode'))
+            if request.form.get('mode') == 'add':
+                return redirect(url_for('add_bednight',date_start = date_start, date_end = date_end, current_date=date_start))
+            else:
+                return redirect(url_for('manage_bednights',start_date = date_start, end_date = date_end))
+        
+@app.route('/add_bednight/<date_start>/<date_end>/<current_date>', methods=['GET', 'POST'])
+def add_bednight(date_start, date_end, current_date):
+    if not auth():
+        return redirect(url_for("login_page"))
+
+    match request.method:
+        case 'GET':
+            return render_template('add_bednight.html', title='Add Bednight',
+                                   date_start=date_start, date_end=date_end, current_date=current_date)
+
+        case 'POST':
+            dbe, c = db.connect()
+
+            zero_six = request.form.get('zero_six')
+            six_twelve = request.form.get('six_twelve')
+            twleve_eighteen = request.form.get('twelve_eighteen')
+            adults = request.form.get('adults')
+            date = request.form.get('current_date')
+            
+            c.execute('SELECT * FROM bednights WHERE date=%s AND user_id=%s', [date, session['user_id']])
+            bednights = c.fetchall()
+            if len(bednights) > 0:
+                c.execute('UPDATE bednights SET zero_six=%s, six_twelve=%s, twelve_eighteen=%s, adults=%s WHERE date=%s AND user_id=%s', 
+                          [zero_six, six_twelve, twleve_eighteen, adults, date, session['user_id']])
+
+            c.execute('INSERT INTO bednights (zero_six, six_twelve, twelve_eighteen, adults, date, user_id) VALUES (%s, %s, %s, %s, %s, %s)',
+                      [zero_six, six_twelve, twleve_eighteen, adults, date, session['user_id']])
+            dbe.commit()
+
+            flash('Bednight Created!')
+            print(current_date, date_start, date_end)
+            if date == date_end:
+                return redirect(url_for('edit_objects'))
+
+            new_current = (datetime.strptime(current_date, '%Y-%m-%d') + timedelta(days=1)).strftime('%Y-%m-%d')
+
+            return redirect(url_for('add_bednight',date_start=str(date_start), date_end=str(date_end), current_date=str(new_current)), )
+        
+@app.route('/manage_bednights/<start_date>/<end_date>', methods=['GET'])
+def manage_bednights(start_date, end_date):
+    if not auth():
+        return redirect(url_for("login_page"))
+
+    dbe, c = db.connect()
+
+    # Αναμένουμε ότι bednights έχει πεδίο `date` σε μορφή DATE ή DATETIME
+    c.execute(
+        '''
+        SELECT * FROM bednights
+        WHERE user_id = %s AND date BETWEEN %s AND %s
+        ORDER BY date
+        ''',
+        (session['user_id'], start_date, end_date)
+    )
+
+    bednights_raw = c.fetchall()
+
+    return render_template(
+        'manage_bednights.html',
+        title='Manage Bednights',
+        bednights=bednights_raw
+    )
+
+
+@app.route('/update_bednight', methods=['POST'])
+def update_bednight():
+    if not auth():
+        return redirect(url_for("login_page"))
+
+    data = request.get_json()
+    ide = data['id']
+    field = data['field']
+    old_value = data['old_value']
+    new_value = data['new_value']
+
+    # Προστασία: επέτρεψε μόνο συγκεκριμένα ονόματα πεδίων
+    allowed_fields = {'zero_six', 'six_twelve', 'twelve_eighteen', 'adults'}
+    if field not in allowed_fields:
+        return jsonify({"error": "Invalid field name"}), 400
+
+    conn, c = db.connect()
+
+    # Safe string interpolation for column name (MUST be sanitized like above!)
+    query = f'UPDATE bednights SET {field} = %s WHERE id = %s'
+    c.execute(query, (new_value, ide))
+    conn.commit()
+    c.close()
+    conn.close()
+
+    print(f"Updating ID {ide}: {field} from {old_value} to {new_value}")
+    return jsonify(success=True)

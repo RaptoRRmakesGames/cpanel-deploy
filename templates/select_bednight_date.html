@@ -1,0 +1,27 @@
+{% extends '/include_files/base.html' %}
+
+{% block title %}
+{{title}}
+{% endblock %}
+
+
+{% block content %}
+
+<h1>Select Bedtime Date</h1>
+
+<form method="POST">
+    
+    <label for="date_start">Starting Date </label>
+    <input type="date" name="date_start" id="date_start" required><br>
+
+    <label for="date_start">Starting Date </label>
+    <input type="date" name="date_end" id="date_end" required><br>
+
+    <select name="mode" id="">
+        <option value="view">View</option>
+        <option value="add" selected>Edit/Add</option>
+    </select><br>
+
+    <input type="submit" value="Submit" id="submit"><br>
+</form>
+{% endblock %}

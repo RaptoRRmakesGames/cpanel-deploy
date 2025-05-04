@@ -1,0 +1,27 @@
+{% extends '/include_files/base.html' %}
+
+{% block title %}
+{{title}}
+{% endblock %}
+
+
+{% block content %}
+
+<h1>Add A Bednight for {{current_date}}</h1>
+
+<form method="POST">
+
+    <label for="">Kids 6 And Under</label><br>
+    <input type="number" name="zero_six" id="zero_six" required><br>
+    <label for="">Kids 6-12</label><br>
+    <input type="number" name="six_twelve" id="six_twelve" required><br>
+    <label for="">Teens 12-18</label><br>
+    <input type="number" name="twelve_eighteen" id="twelve_eighteen" required><br>
+    <label for="">Adults 18+</label><br>
+    <input type="number" name="adults" id="adults" required><br>
+    <input type="date" name="current_date" id="date" value="{{current_date}}" readonly required hidden><br>
+    <input type="date" name="start_date" id="date" value="{{date_start}}" readonly required hidden><br>
+    <input type="date" name="end_date" id="date" value="{{date_end}}" readonly required hidden><br>
+    <input type="submit" value="Submit" id="submit"><br>
+</form>
+{% endblock %}

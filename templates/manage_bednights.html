@@ -1,0 +1,138 @@
+{% extends '/include_files/base.html' %}
+
+{% block title %}
+{{title}}
+{% endblock %}
+
+
+{% block content %}
+
+<style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .month {
+      margin-bottom: 30px;
+    }
+    .month-name {
+      font-weight: bold;
+      font-size: 1.5em;
+      margin-bottom: 10px;
+    }
+    .days {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .day {
+      width: 35px;
+      height: 35px;
+      line-height: 35px;
+      text-align: center;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .highlight {
+      background-color: #333;
+      color: white;
+      font-weight: bold;
+    }
+    .table {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      font-family: sans-serif;
+      border-collapse: collapse;
+    }
+  
+    .table-header, .table-row {
+      display: flex;
+    }
+  
+    .table-header li, .table-row li {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      list-style: none;
+      text-align: center;
+    }
+  
+    .table-header {
+      font-weight: bold;
+      background-color: #f0f0f0;
+    }
+  
+    .table-row input {
+      width: 90%;
+      padding: 5px;
+      box-sizing: border-box;
+    }
+  </style>
+
+<h1>Manage Bedtimes</h1>
+
+
+<div id="schedule_box"></div>
+
+<ul class="table">
+  <ul class="table-header">
+    <li>Date</li>
+    <li>0–6</li>
+    <li>6–12</li>
+    <li>12–18</li>
+    <li>18+</li>
+    <li>Gross</li>
+    <li>Net</li>
+  </ul>
+
+  <!-- Example data row -->
+  {% for bednight in bednights %}
+  <ul class="table-row">
+    <li>{{ bednight[5] }}</li>
+    <li><input type="number" name="zero_six" value="{{ bednight[1] }}" data-id="{{ bednight[0] }}"/></li>
+    <li><input type="number" name="six_twelve" value="{{ bednight[2] }}" data-id="{{ bednight[0] }}"/></li>
+    <li><input type="number" name="twelve_eighteen" value="{{ bednight[3] }}" data-id="{{ bednight[0] }}"/></li>
+    <li><input type="number" name="adults" value="{{ bednight[4] }}" data-id="{{ bednight[0] }}"/></li>
+    <li>{{ bednight[1] + bednight[2] + bednight[3] + bednight[4] }}</li>
+    <li>{{ (0.4 * bednight[1] + 0.7 * bednight[2] + 0.9 * bednight[3] + bednight[4]) | int }}</li>
+  </ul>
+{% endfor %}
+
+</ul>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+      let oldValue;
+
+      input.addEventListener('focus', () => {
+        oldValue = input.value;
+      });
+
+      input.addEventListener('change', () => {
+        const id = input.dataset.id;
+        const field = input.name;
+        const newValue = input.value;
+
+        fetch('/update_bednight', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: id,
+            field: field,
+            old_value: oldValue,
+            new_value: newValue
+          })
+        }).then(() => {
+          location.reload();
+        });
+      });
+    });
+  });
+</script>
+
+  
+  
+{% endblock %}

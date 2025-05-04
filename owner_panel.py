@@ -226,7 +226,3 @@ def delete_user(ide):
     
     return redirect(url_for('manage_users'))
 
-
-@app.route('/chemistry')
-def chemistry_project():
-    return render_template('chem_project.html')
