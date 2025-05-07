@@ -1277,7 +1277,7 @@ def add_bednight_row():
     
     
     dbe,c = db.connect()
-    c.execute('SELECT id FROM BEDNIGHTS WHERE (user_id=%s OR user_id=%s)  AND date=%s', [session['user_id'],session['parent_id'], date])
+    c.execute('SELECT id FROM bednights WHERE (user_id=%s OR user_id=%s)  AND date=%s', [session['user_id'],session['parent_id'], date])
     existing_bednight = c.fetchall()
     if len(existing_bednight) > 0:
         c.execute('UPDATE bednights SET zero_six=%s, six_twelve=%s, twelve_eighteen=%s, adults=%s WHERE id=%s',
