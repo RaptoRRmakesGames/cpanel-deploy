@@ -19,7 +19,9 @@
 
     <select name="mode" id="">
         <option value="view">View</option>
+        {% if owner%}
         <option value="add" selected>Edit/Add</option>
+        {% endif %}
     </select><br>
 
     <input type="submit" value="Submit" id="submit"><br>

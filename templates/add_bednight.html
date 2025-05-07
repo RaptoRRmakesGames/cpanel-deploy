@@ -7,21 +7,132 @@
 
 {% block content %}
 
+<style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .month {
+      margin-bottom: 30px;
+    }
+    .month-name {
+      font-weight: bold;
+      font-size: 1.5em;
+      margin-bottom: 10px;
+    }
+    .days {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .day {
+      width: 35px;
+      height: 35px;
+      line-height: 35px;
+      text-align: center;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .highlight {
+      background-color: #333;
+      color: white;
+      font-weight: bold;
+    }
+    .table {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      font-family: sans-serif;
+      border-collapse: collapse;
+    }
+  
+    .table-header, .table-row {
+      display: flex;
+    }
+  
+    .table-header li, .table-row li {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      list-style: none;
+      text-align: center;
+    }
+  
+    .table-header {
+      font-weight: bold;
+      background-color: #f0f0f0;
+    }
+  
+    .table-row input {
+      width: 90%;
+      padding: 5px;
+      box-sizing: border-box;
+    }
+  </style>
+
 <h1>Add A Bednight for {{current_date}}</h1>
 
-<form method="POST">
 
-    <label for="">Kids 6 And Under</label><br>
-    <input type="number" name="zero_six" id="zero_six" required><br>
-    <label for="">Kids 6-12</label><br>
-    <input type="number" name="six_twelve" id="six_twelve" required><br>
-    <label for="">Teens 12-18</label><br>
-    <input type="number" name="twelve_eighteen" id="twelve_eighteen" required><br>
-    <label for="">Adults 18+</label><br>
-    <input type="number" name="adults" id="adults" required><br>
-    <input type="date" name="current_date" id="date" value="{{current_date}}" readonly required hidden><br>
-    <input type="date" name="start_date" id="date" value="{{date_start}}" readonly required hidden><br>
-    <input type="date" name="end_date" id="date" value="{{date_end}}" readonly required hidden><br>
-    <input type="submit" value="Submit" id="submit"><br>
-</form>
+<ul class="table">
+    <ul class="table-header">
+      <li>Date</li>
+      <li>0–6</li>
+      <li>6–12</li>
+      <li>12–18</li>
+      <li>18+</li>
+      <li>Submit</li>
+    </ul>
+
+    {% for day in days %}
+    <ul class="table-row">
+      <li><input type="text" value="{{day}}" readonly class="date"></li>
+      <li><input type="number" class="zero_six"/></li>
+      <li><input type="number" class="six_twelve"/></li>
+      <li><input type="number" class="twelve_eighteen"/></li>
+      <li><input type="number" class="adults"/></li>
+      <li><input type="button" value="Enter" onclick="submitRow(this)"/></li>
+    </ul>
+  {% endfor %}
+
+</ul>
+
+<script>
+    function submitRow(button) {
+      const row = button.parentElement.parentElement;
+    
+      const data = {
+        date: row.querySelector('.date').value,
+        zero_six: row.querySelector('.zero_six').value,
+        six_twelve: row.querySelector('.six_twelve').value,
+        twelve_eighteen: row.querySelector('.twelve_eighteen').value,
+        adults: row.querySelector('.adults').value
+      };
+    
+      if (Object.values(data).every(value => value !== '')) {
+        fetch('/add_bednight', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+          alert('Successfully submitted!');
+          row.remove();
+    
+          // Check if any rows are left
+          const remainingRows = document.querySelectorAll('.table-row');
+          if (remainingRows.length === 0) {
+            window.location.href = '/select_bednight_date';
+          }
+        })
+        .catch(error => alert('Error submitting data.'));
+      } else {
+        alert('Please fill in all fields.');
+      }
+    }
+</script>
+    
+    
 {% endblock %}

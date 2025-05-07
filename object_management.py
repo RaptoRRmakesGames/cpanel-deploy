@@ -1222,7 +1222,7 @@ def select_bednight_date():
     match request.method:
         
         case 'GET':
-            return render_template('select_bednight_date.html', title='Select Bednight Date')
+            return render_template('select_bednight_date.html', title='Select Bednight Date', owner = session['user_hotel_owner'])
         
         case 'POST':
             
@@ -1230,47 +1230,73 @@ def select_bednight_date():
             date_end = request.form.get('date_end')
             print(request.form.get('mode'))
             if request.form.get('mode') == 'add':
-                return redirect(url_for('add_bednight',date_start = date_start, date_end = date_end, current_date=date_start))
+                return redirect(url_for('add_bednight',date_start = date_start, date_end = date_end))
             else:
                 return redirect(url_for('manage_bednights',start_date = date_start, end_date = date_end))
         
-@app.route('/add_bednight/<date_start>/<date_end>/<current_date>', methods=['GET', 'POST'])
-def add_bednight(date_start, date_end, current_date):
+@app.route('/add_bednight/<date_start>/<date_end>', methods=['GET',])
+def add_bednight(date_start, date_end):
     if not auth():
         return redirect(url_for("login_page"))
+    if not session['user_hotel_owner']:
+        return redirect(url_for('index'))
+    
 
-    match request.method:
-        case 'GET':
-            return render_template('add_bednight.html', title='Add Bednight',
-                                   date_start=date_start, date_end=date_end, current_date=current_date)
+    days = []
 
-        case 'POST':
-            dbe, c = db.connect()
+    start_date = datetime.strptime(date_start, "%Y-%m-%d")
+    end_date = datetime.strptime(date_end, "%Y-%m-%d")
 
-            zero_six = request.form.get('zero_six')
-            six_twelve = request.form.get('six_twelve')
-            twleve_eighteen = request.form.get('twelve_eighteen')
-            adults = request.form.get('adults')
-            date = request.form.get('current_date')
-            
-            c.execute('SELECT * FROM bednights WHERE date=%s AND user_id=%s', [date, session['user_id']])
-            bednights = c.fetchall()
-            if len(bednights) > 0:
-                c.execute('UPDATE bednights SET zero_six=%s, six_twelve=%s, twelve_eighteen=%s, adults=%s WHERE date=%s AND user_id=%s', 
-                          [zero_six, six_twelve, twleve_eighteen, adults, date, session['user_id']])
+    current_date = start_date
+    while current_date <= end_date:
+        days.append(current_date.strftime("%Y-%m-%d"))
+        current_date += timedelta(days=1)
 
-            c.execute('INSERT INTO bednights (zero_six, six_twelve, twelve_eighteen, adults, date, user_id) VALUES (%s, %s, %s, %s, %s, %s)',
-                      [zero_six, six_twelve, twleve_eighteen, adults, date, session['user_id']])
-            dbe.commit()
+    return render_template('add_bednight.html', title='Add Bednight',
+                           date_start=date_start, date_end=date_end, days=days)
+    
+@app.route('/add_bednight', methods=['POST'])
+def add_bednight_row():
+    if not session['user_hotel_owner']:
+        return redirect(url_for('index'))
+    data = request.get_json()
 
-            flash('Bednight Created!')
-            print(current_date, date_start, date_end)
-            if date == date_end:
-                return redirect(url_for('select_bednight_date'))
+    date = data.get('date')
+    zero_six = data.get('zero_six')
+    six_twelve = data.get('six_twelve')
+    twelve_eighteen = data.get('twelve_eighteen')
+    adults = data.get('adults')
 
-            new_current = (datetime.strptime(current_date, '%Y-%m-%d') + timedelta(days=1)).strftime('%Y-%m-%d')
+    if None in (date, zero_six, six_twelve, twelve_eighteen, adults):
+        return jsonify({"error": "Missing data"}), 400
 
-            return redirect(url_for('add_bednight',date_start=str(date_start), date_end=str(date_end), current_date=str(new_current)), )
+    # Here, you would typically save this data to your database.
+    # For demonstration, let's print the received data.
+    print(f"Received data: {data}")
+    
+    
+    
+    dbe,c = db.connect()
+    c.execute('SELECT id FROM BEDNIGHTS WHERE (user_id=%s OR user_id=%s)  AND date=%s', [session['user_id'],session['parent_id'], date])
+    existing_bednight = c.fetchall()
+    if len(existing_bednight) > 0:
+        c.execute('UPDATE bednights SET zero_six=%s, six_twelve=%s, twelve_eighteen=%s, adults=%s WHERE id=%s',
+                 [zero_six, six_twelve, twelve_eighteen, adults, existing_bednight[0][0]])
+        return jsonify({"message": "Data successfully received", "data": data}), 200
+    else:
+        c.execute(
+            '''
+            INSERT INTO bednights (user_id, date, zero_six, six_twelve, twelve_eighteen, adults)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            ''',
+            (session['parent_id'], date, zero_six, six_twelve, twelve_eighteen, adults)
+        )
+        dbe.commit()
+
+
+        return jsonify({"message": "Data successfully received", "data": data}), 200
+
+
         
 @app.route('/manage_bednights/<start_date>/<end_date>', methods=['GET'])
 def manage_bednights(start_date, end_date):
@@ -1286,7 +1312,7 @@ def manage_bednights(start_date, end_date):
         WHERE user_id = %s AND date BETWEEN %s AND %s
         ORDER BY date
         ''',
-        (session['user_id'], start_date, end_date)
+        (session['parent_id'], start_date, end_date)
     )
 
     bednights_raw = c.fetchall()
@@ -1294,7 +1320,8 @@ def manage_bednights(start_date, end_date):
     return render_template(
         'manage_bednights.html',
         title='Manage Bednights',
-        bednights=bednights_raw
+        bednights=bednights_raw,
+        owner= session['user_hotel_owner'],
     )
 
 

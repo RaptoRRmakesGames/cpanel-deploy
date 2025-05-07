@@ -70,10 +70,7 @@
     }
   </style>
 
-<h1>Manage Bedtimes</h1>
-
-
-<div id="schedule_box"></div>
+<h1>Bednights</h1>
 
 <ul class="table">
   <ul class="table-header">
@@ -90,10 +87,10 @@
   {% for bednight in bednights %}
   <ul class="table-row">
     <li>{{ bednight[5] }}</li>
-    <li><input type="number" name="zero_six" value="{{ bednight[1] }}" data-id="{{ bednight[0] }}"/></li>
-    <li><input type="number" name="six_twelve" value="{{ bednight[2] }}" data-id="{{ bednight[0] }}"/></li>
-    <li><input type="number" name="twelve_eighteen" value="{{ bednight[3] }}" data-id="{{ bednight[0] }}"/></li>
-    <li><input type="number" name="adults" value="{{ bednight[4] }}" data-id="{{ bednight[0] }}"/></li>
+    <li><input type="number" name="zero_six" value="{{ bednight[1] }}" data-id="{{ bednight[0] }} " {% if not owner%}readonly {%endif%}/></li>
+    <li><input type="number" name="six_twelve" value="{{ bednight[2] }}" data-id="{{ bednight[0] }} " {% if not owner%}readonly {%endif%}/></li>
+    <li><input type="number" name="twelve_eighteen" value="{{ bednight[3] }}" data-id="{{ bednight[0] }} " {% if not owner%}readonly {%endif%}/></li>
+    <li><input type="number" name="adults" value="{{ bednight[4] }}" data-id="{{ bednight[0] }} " {% if not owner%}readonly {%endif%}/></li>
     <li>{{ bednight[1] + bednight[2] + bednight[3] + bednight[4] }}</li>
     <li>{{ (0.4 * bednight[1] + 0.7 * bednight[2] + 0.9 * bednight[3] + bednight[4]) | int }}</li>
   </ul>
