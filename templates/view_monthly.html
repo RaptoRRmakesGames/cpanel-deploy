@@ -1,0 +1,53 @@
+{% extends '/include_files/base.html' %}
+
+{% block title %}
+{{title}}
+{% endblock %}
+
+{% block content %}
+
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: sans-serif;
+        font-size: 14px;
+    }
+    th, td {
+        border: 1px solid #999;
+        padding: 4px;
+        text-align: center;
+    }
+    th {
+        background-color: #f0f0f0;
+    }
+    .name-col {
+        text-align: left;
+        white-space: nowrap;
+    }
+</style>
+
+<h2>Schedule for {{ month }}/{{ year }}</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            {% for d in days %}
+                <th>{{ loop.index }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for name, shifts in data.items() %}
+            <tr>
+                <td>{{ loop.index }}</td>  {# This is like ID (starts at 1) #}
+                <td class="name-col">{{ name }}</td>
+                {% for d in days %}
+                    <td>{{ shifts[d] }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock%}

@@ -1,0 +1,26 @@
+{% extends '/include_files/base.html' %}
+
+{% block title %}
+{{title}}
+{% endblock %}
+
+{% block content %}
+
+
+<main>
+
+    <h1>Select Monthly Schedule </h1>
+
+    <form method="GET" action="/monthly_sched" style="display: flex; flex-direction: column; align-content: stretch; justify-content: space-around; align-items: baseline;">
+        <select name="month" id="">
+            {% for month in months%}
+            <option value="{{month[0]}}">{{month[1]}}</option>
+            {% endfor %}
+        </select><br><br>
+        <input type="submit" name="" value="Load" id="">
+
+    </form>
+</main>
+
+
+{% endblock %}

@@ -28,6 +28,9 @@ from io import BytesIO
 
 import pandas as pd 
 
+import calendar
+
+from collections import defaultdict
 
 @app.route("/")
 def index():
@@ -1352,3 +1355,104 @@ def update_bednight():
 
     print(f"Updating ID {ide}: {field} from {old_value} to {new_value}")
     return jsonify(success=True)
+
+@app.route('/monthly', methods=['GET', 'POST'])
+def select_monthly():
+    
+    if not auth():
+        return redirect(url_for("login_page"))
+    
+    dbe,c = db.connect()
+    c.execute('SELECT week FROM schedules')
+    all_months = c.fetchall()
+    month_dict = {
+        '01' : 'january',
+        '02' : 'february',
+        '03' : 'march',
+        '04' : 'april',
+        '05' : 'may',
+        '06' : 'june',
+        '07' : 'july',
+        '08' : 'august',
+        '09' : 'september',
+        '10' : 'october',
+        '11' : 'november',
+        '12' : 'december'
+    }
+    months=[]
+    for month in all_months:
+        month = month[0]
+        date_str = month[1:][:-1]
+        dates = date_str.split(' - ')
+        for d in dates:
+            m = d.split('-')[1] 
+            print(m)
+            if [f'{m}+{d.split("-")[0]}',f'{month_dict[m].capitalize()} {d.split("-")[0]}'] not in months:
+                months.append([f'{m}+{d.split("-")[0]}',f'{month_dict[m].capitalize()} {d.split("-")[0]}'])
+        
+    
+    
+    return render_template('select_monthly.html', months=months)
+@app.route('/monthly_sched')
+def monthly_sched():
+    if not auth():
+        return redirect(url_for("login_page"))
+
+    # Step 1: Parse month and year
+    month_str, year_str = request.args.get('month').split('+')
+    month = int(month_str)
+    year = int(year_str)
+
+    first_day = datetime(year, month, 1).date()
+    _, last_day_num = calendar.monthrange(year, month)
+    last_day = datetime(year, month, last_day_num).date()
+
+    # Step 2: DB Connection
+    dbe, cursor = db.connect()
+
+    # Get employee name mapping
+    cursor.execute("SELECT id, name FROM employees")
+    id_to_name = {int(emp_id): name for emp_id, name in cursor.fetchall()}
+
+    # Get schedule records
+    cursor.execute("SELECT week, schedule_json FROM schedules WHERE user_id=%s", [session['user_id']])
+    rows = cursor.fetchall()
+    dbe.close()
+
+    # Step 3: Prepare schedule
+    days_list = [(first_day + timedelta(days=i)) for i in range((last_day - first_day).days + 1)]
+    schedule_per_employee = defaultdict(lambda: {d.isoformat(): "" for d in days_list})
+
+    for week_range, sched_json in rows:
+        try:
+            week_start_str, week_end_str = week_range.split(' - ')
+            week_start = datetime.strptime(week_start_str.strip('() '), "%Y-%m-%d").date()
+            week_end = datetime.strptime(week_end_str.strip('() '), "%Y-%m-%d").date()
+
+            if week_start <= last_day and week_end >= first_day:
+                data = json.loads(sched_json.replace("'", '"'))
+
+                for department, areas in data.items():
+                    for section, shifts in areas.items():
+                        for emp_id, day_data_list in shifts:
+                            emp_id = int(emp_id)
+                            emp_name = id_to_name.get(emp_id, f"Unknown ({emp_id})")
+
+                            for day_data in day_data_list:
+                                for weekday, (shift, _) in day_data.items():
+                                    day_index = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'].index(weekday)
+                                    shift_date = week_start + timedelta(days=day_index)
+
+                                    if first_day <= shift_date <= last_day and shift:
+                                        date_key = shift_date.isoformat()
+                                        schedule_per_employee[emp_name][date_key] = "X"
+        except Exception as e:
+            print(f"Error processing row {week_range}: {e}")
+
+    return render_template(
+        "view_monthly.html",
+        month=f"{month:02d}",
+        year=year,
+        days=[d.isoformat() for d in days_list],
+        data=schedule_per_employee
+    )
