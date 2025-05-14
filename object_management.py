@@ -1363,7 +1363,7 @@ def select_monthly():
         return redirect(url_for("login_page"))
     
     dbe,c = db.connect()
-    c.execute('SELECT week FROM schedules')
+    c.execute('SELECT week FROM schedules WHERE user_id=%s', [session['user_id']])
     all_months = c.fetchall()
     month_dict = {
         '01' : 'january',
@@ -1445,7 +1445,17 @@ def monthly_sched():
 
                                     if first_day <= shift_date <= last_day and shift:
                                         date_key = shift_date.isoformat()
-                                        schedule_per_employee[emp_name][date_key] = "X"
+                                        # X if it contains digits or the word "IN"
+                                        print(emp_name, shift, any(char.isdigit() for char in shift) or "IN" in shift.upper())
+                                        if any(char.isdigit() for char in shift) or "IN" in shift.upper():
+                                            entry = "X"
+                                        else:
+                                            entry = shift
+                                        existing = schedule_per_employee[emp_name][date_key]
+                                        schedule_per_employee[emp_name][date_key] = (
+                                            f"{existing} / {entry}" if existing else entry
+                                        )
+
         except Exception as e:
             print(f"Error processing row {week_range}: {e}")
 
