@@ -567,7 +567,7 @@ def delete_program(program):
     if remove:
         flash(f"`{program}` Deleted Successfully")
 
-        c.execute("DELETE FROM programs WHERE name=%s ", [program])
+        c.execute("DELETE FROM programs WHERE name=%s AND user_id != -1", [program])
         db_obj.commit()
     else:
         flash(f"`{program}` Could not be deleted because it is used in a Schedule!.")
@@ -967,7 +967,7 @@ def save_program():
     try:
         dbe, c = db.connect()
         c.execute(
-            "UPDATE programs SET name=%s WHERE id=%s", [data["new_name"], data["id"]]
+            "UPDATE programs SET name=%s WHERE id=%s AND user_id != %s", [data["new_name"], data["id"], -1]
         )
         dbe.commit()
         return jsonify({"status": "success"})
@@ -1450,7 +1450,7 @@ def monthly_sched():
                                         if any(char.isdigit() for char in shift) or "IN" in shift.upper():
                                             entry = "X"
                                         else:
-                                            entry = shift
+                                            entry = shift.split(' - ')[0].strip()
                                         existing = schedule_per_employee[emp_name][date_key]
                                         schedule_per_employee[emp_name][date_key] = (
                                             f"{existing} / {entry}" if existing else entry

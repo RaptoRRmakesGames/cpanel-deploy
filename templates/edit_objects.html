@@ -102,9 +102,10 @@
 
             {% for program in programs%}
             <tr>
-                <td><input type="text" class="program_name {{program[0]}}" value="{{program[1]}}"></td>
+                <td><input type="text" {% if program[2] == -1 %} readonly {% endif %} class="program_name {{program[0]}}" value="{{program[1]}}"></td>
+                {% if program[2] != -1 %}
                 <td><button onclick='redirect("/delete/program/{{program[1]}}")'>Delete</button></td>
-
+                {% endif %}
             </tr>
             {% endfor %}
         </table>
