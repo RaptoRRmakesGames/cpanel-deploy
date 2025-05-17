@@ -175,7 +175,7 @@ def add_program(name:str):
 def get_all_programs(get_id = False):
     db,c = connect()
     
-    c.execute("SELECT * FROM programs WHERE user_id=%s OR user_id = -1", [USER_ID])
+    c.execute("SELECT * FROM programs WHERE user_id=%s OR user_id = -1 ORDER BY user_id DESC", [USER_ID])
     
     if get_id:
         return [[f[0],f[1],f[2]] for f in c.fetchall()]

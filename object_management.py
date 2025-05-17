@@ -248,7 +248,10 @@ def create_program():
 
         case "POST":
 
-            name = request.form.get("name")
+            start = str(request.form.get("start"))
+            end = str(request.form.get("end"))
+            name = f'{start} - {end}'
+            print(start, end)
 
             db.add_program(name)
 
@@ -757,8 +760,12 @@ def object_startup(page):
                     return redirect(url_for("object_startup", page=page))
 
                 case "program":
+                    start = str(request.form.get("start"))
+                    end = str(request.form.get("end"))
+                    name = f'{start} - {end}'
+                    print(start, end)
 
-                    db.add_program(request.form.get("name"))
+                    db.add_program(name)
 
                     flash("Program Created Successfully!")
                     return redirect(url_for("object_startup", page=page))
