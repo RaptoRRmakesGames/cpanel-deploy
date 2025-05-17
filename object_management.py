@@ -1400,6 +1400,32 @@ def select_monthly():
     
     
     return render_template('select_monthly.html', months=months)
+def calculate_shift_hours(shift: str) -> int:
+    try:
+        start_str, end_str = shift.split('-')
+
+        # Special handling for '24:00'
+        if end_str.strip() == '24:00':
+            end_str = '00:00'
+            next_day = True
+        else:
+            next_day = False
+
+        start_dt = datetime.strptime(start_str.strip(), '%H:%M')
+        end_dt = datetime.strptime(end_str.strip(), '%H:%M')
+
+        if next_day or end_dt <= start_dt:
+            end_dt += timedelta(days=1)
+
+        time_diff = end_dt - start_dt
+        return int(time_diff.total_seconds() // 3600)
+
+    except ValueError as e:
+        raise ValueError(f"Invalid shift format '{shift}'. Expected 'HH:MM-HH:MM'. Error: {e}")
+
+
+
+
 @app.route('/monthly_sched')
 def monthly_sched():
     if not auth():
@@ -1454,8 +1480,16 @@ def monthly_sched():
                                         date_key = shift_date.isoformat()
                                         # X if it contains digits or the word "IN"
                                         print(emp_name, shift, any(char.isdigit() for char in shift) or "IN" in shift.upper())
+                                        # 5hrs = 0.5 else X
                                         if any(char.isdigit() for char in shift) or "IN" in shift.upper():
-                                            entry = "X"
+                                            if 'IN' not in shift.upper():
+                                                print(shift, type(shift), calculate_shift_hours(shift))
+                                                if calculate_shift_hours(shift) == 5:
+                                                    entry = "0.5"
+                                                else:
+                                                    entry = "X"
+                                            else:
+                                                entry = "X"
                                         else:
                                             entry = shift.split(' - ')[0].strip().upper()
                                             if entry == 'ARMY':
