@@ -1457,7 +1457,9 @@ def monthly_sched():
                                         if any(char.isdigit() for char in shift) or "IN" in shift.upper():
                                             entry = "X"
                                         else:
-                                            entry = shift.split(' - ')[0].strip()
+                                            entry = shift.split(' - ')[0].strip().upper()
+                                            if entry == 'ARMY':
+                                                entry = 'AR'
                                         existing = schedule_per_employee[emp_name][date_key]
                                         schedule_per_employee[emp_name][date_key] = (
                                             f"{existing} / {entry}" if existing else entry
