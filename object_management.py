@@ -250,7 +250,7 @@ def create_program():
 
             start = str(request.form.get("start"))
             end = str(request.form.get("end"))
-            name = f'{start} - {end}'
+            name = f'{start}-{end}'
             print(start, end)
 
             db.add_program(name)
@@ -984,6 +984,54 @@ def save_program():
     finally:
         c.close()
         dbe.close()
+        
+@app.route("/save_program_start", methods=["POST"])
+def save_program_start():
+    if not auth():
+        return redirect(url_for("login_page"))
+
+    data = request.json
+    print("Received data:", data)  # Debug statement to check received data
+
+    try:
+        dbe, c = db.connect()
+        c.execute('SELECT * FROM programs WHERE id=%s', [data['id']])
+        old_time = c.fetchall()[0][1]
+        new_time = f"{data['new_name']}-{old_time.split('-')[1]}"
+        c.execute('UPDATE programs SET name=%s WHERE id=%s ', [new_time, data['id']])
+        print(new_time)
+        dbe.commit()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        print("Error:", e)  # Debug statement to check the error
+        return jsonify({"status": "error", "message": str(e)})
+    finally:
+        c.close()
+        dbe.close()
+@app.route("/save_program_end", methods=["POST"])
+def save_program_end():
+    if not auth():
+        return redirect(url_for("login_page"))
+
+    data = request.json
+    print("Received data:", data)  # Debug statement to check received data
+
+    try:
+        dbe, c = db.connect()
+        c.execute('SELECT * FROM programs WHERE id=%s', [data['id']])
+        old_time = c.fetchall()[0][1]
+        new_time = f"{old_time.split('-')[0]}-{data['new_name']}"
+        c.execute('UPDATE programs SET name=%s WHERE id=%s ', [new_time, data['id']])
+        print(new_time)
+        dbe.commit()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        print("Error:", e)  # Debug statement to check the error
+        return jsonify({"status": "error", "message": str(e)})
+    finally:
+        c.close()
+        dbe.close()
+
 
 
 @app.route("/save_title", methods=["POST"])

@@ -102,7 +102,12 @@
 
             {% for program in programs%}
             <tr>
+                {% if program[2] == -1 %}
                 <td><input type="text" {% if program[2] == -1 %} readonly {% endif %} class="program_name {{program[0]}}" value="{{program[1]}}"></td>
+                {% else %}
+                <td><input type="time" class="program_start {{program[0]}}" value="{{program[1].split('-')[0]}}">
+                <input type="time" class="program_end {{program[0]}}" value="{{program[1].split('-')[1]}}"></td>
+                {% endif %}
                 {% if program[2] != -1 %}
                 <td><button onclick='redirect("/delete/program/{{program[1]}}")'>Delete</button></td>
                 {% endif %}
@@ -294,14 +299,38 @@
         })
     })
     
-    Array.from(document.getElementsByClassName('program_name')).forEach(function(item){
+    Array.from(document.getElementsByClassName('program_start')).forEach(function(item){
         item.addEventListener('change', function(){
             console.log(item.classList)
             data = {
                 "id": item.classList[1],
                 "new_name" : item.value
             }
-            fetch('/save_program', {
+            fetch('/save_program_start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Successfully Saved Program')
+                })
+                .catch((error) => {
+                    alert('Issue Saving Program: ' + error)
+                });
+
+        })
+    })
+    Array.from(document.getElementsByClassName('program_end')).forEach(function(item){
+        item.addEventListener('change', function(){
+            console.log(item.classList)
+            data = {
+                "id": item.classList[1],
+                "new_name" : item.value
+            }
+            fetch('/save_program_end', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
