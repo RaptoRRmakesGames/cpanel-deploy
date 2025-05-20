@@ -41,8 +41,8 @@
     <tbody>
         {% for name, shifts in data.items() %}
             <tr>
-                <td>{{ loop.index }}</td>  {# This is like ID (starts at 1) #}
-                <td class="name-col">{{ name }}</td>
+                <td>{{ name[1] }}</td>  {# This is like ID (starts at 1) #}
+                <td class="name-col">{{ name[0] }}</td>
                 {% for d in days %}
                     <td>{{ shifts[d] }}</td>
                 {% endfor %}

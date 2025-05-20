@@ -1540,6 +1540,7 @@ def monthly_sched():
                         for emp_id, day_data_list in shifts:
                             emp_id = int(emp_id)
                             emp_name = id_to_name.get(emp_id, f"Unknown ({emp_id})")
+                            emp_code = db.Employee(emp_id).code
 
                             for day_data in day_data_list:
                                 for weekday, (shift, _) in day_data.items():
@@ -1549,7 +1550,6 @@ def monthly_sched():
                                     if first_day <= shift_date <= last_day and shift:
                                         date_key = shift_date.isoformat()
                                         # X if it contains digits or the word "IN"
-                                        print(emp_name, shift, any(char.isdigit() for char in shift) or "IN" in shift.upper())
                                         # 5hrs = 0.5 else X
                                         if any(char.isdigit() for char in shift) or "IN" in shift.upper():
                                             if 'IN' not in shift.upper():
@@ -1564,14 +1564,14 @@ def monthly_sched():
                                             entry = shift.split(' - ')[0].strip().upper()
                                             if entry == 'ARMY':
                                                 entry = 'AR'
-                                        existing = schedule_per_employee[emp_name][date_key]
-                                        schedule_per_employee[emp_name][date_key] = (
+                                        existing = schedule_per_employee[(emp_name, emp_code)][date_key]
+                                        schedule_per_employee[(emp_name, emp_code)][date_key] = (
                                             f"{existing} / {entry}" if existing else entry
                                         )
 
         except Exception as e:
             print(f"Error processing row {week_range}: {e}")
-
+    print(schedule_per_employee)
     return render_template(
         "view_monthly.html",
         month=f"{month:02d}",

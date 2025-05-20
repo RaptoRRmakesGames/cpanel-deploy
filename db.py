@@ -363,6 +363,8 @@ class Employee:
             final_id = Employee.get_id_by_name_archive(idd)
         
         return Employee(final_id, True)
+    
+    
         
     
     def __init__(self, idd, check_archive=False) -> None:
