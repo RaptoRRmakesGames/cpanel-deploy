@@ -72,7 +72,7 @@ def table(week=None):
 
             all_departments = db.Department.get_all_departments()
 
-            weeks = db.get_next_weeks(4)
+            weeks = db.get_next_weeks(-4, 4)
             selected_week = db.get_current_week() if week == None else formated_week
 
             all_weeks_saved = db.KitchenGroup.get_saved_weeks()
@@ -81,7 +81,6 @@ def table(week=None):
 
             split_days = group.get_split_days()
 
-            print(split_days)
 
             new_week_message = (
                 ""

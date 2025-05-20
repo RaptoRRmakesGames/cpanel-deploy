@@ -155,7 +155,7 @@ def add_employee():
 
         case "POST":
 
-            name, title, def_dep, days_per_week,salary, salary13, salary14, leave, gesy, pro_fund, guild, time= (
+            name, title, def_dep, days_per_week,salary, salary13, salary14, leave, gesy, pro_fund, guild, time,code= (
                 request.form.get("name").lower().capitalize(),
                 request.form.get("title"),
                 request.form.get("def_dep"),
@@ -167,25 +167,25 @@ def add_employee():
                 0 if request.form.get("gesy") is None or request.form.get("gesy") =='' else request.form.get("gesy"),
                 0 if request.form.get("provident_fund")is None or request.form.get("provident_fund") =='' else request.form.get("provident_fund"),
                 0 if request.form.get("guild") is None or request.form.get("guild") =='' else request.form.get("guild"),
-                request.form.get('time')
+                request.form.get('time'),
+                request.form.get('code'),
+                
                 
             )
             
-            print(gesy, pro_fund, guild)
             name_parts = name.split(" ")
             name=''
             for part in name_parts:
                 name += part.capitalize() + ' '
             print(name, 'name')
             employee = db.Employee.create_employee(
-                name, title, def_dep, salary, days_per_week, salary13, salary14, gesy, pro_fund, guild, leave, time )
+                name, title, def_dep, salary, days_per_week, salary13, salary14, gesy, pro_fund, guild, leave, time,code )
 
             dbe, c = db.connect()
 
             c.execute(
                 "SELECT * FROM schedules WHERE user_id=%s", [session["user_id"]]
             )
-            print(employee)
             kitch, dep = employee.prefered_dep
             for sched in c.fetchall():
 
@@ -1069,6 +1069,28 @@ def save_emp_name():
         dbe, c = db.connect()
         c.execute(
             "UPDATE employees SET name=%s WHERE id=%s", [data["new_name"], data["id"]]
+        )
+        dbe.commit()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        print("Error:", e)  # Debug statement to check the error
+        return jsonify({"status": "error", "message": str(e)})
+    finally:
+        c.close()
+        dbe.close()
+        
+@app.route("/save_emp_code", methods=["POST"])
+def save_emp_code():
+    if not auth():
+        return redirect(url_for("login_page"))
+
+    data = request.json
+    print("Received data:", data)  # Debug statement to check received data
+
+    try:
+        dbe, c = db.connect()
+        c.execute(
+            "UPDATE employees SET code=%s WHERE id=%s", [data["new_code"], data["id"]]
         )
         dbe.commit()
         return jsonify({"status": "success"})

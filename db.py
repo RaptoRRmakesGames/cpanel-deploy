@@ -119,14 +119,14 @@ def get_all_departments(get_id=True):
         return [(fe[0], fe[1]) for fe in f]
     return [fe[1] for fe in f]
 
-def get_next_weeks(n=4):
+def get_next_weeks(n1=-4,n2=4):
     # Get today's date
     today = datetime.today()
     
     # Initialize a list to store week ranges
     week_ranges = []
     
-    for i in range(n):
+    for i in range(n1, n2):
         # Calculate the start (Monday) and end (Sunday) of each week
         start_of_week = today - timedelta(days=today.weekday()) + timedelta(weeks=i)
         end_of_week = start_of_week + timedelta(days=6)
@@ -292,7 +292,7 @@ class User:
 class Employee:
     
     @staticmethod
-    def create_employee(name, title, def_dep, salary, working_days, salary13, salary14, gesy, provident_fund, guild, leave, time):
+    def create_employee(name, title, def_dep, salary, working_days, salary13, salary14, gesy, provident_fund, guild, leave, time, code):
         
         db,c = connect()
         
@@ -301,8 +301,8 @@ class Employee:
             print('yeah', f)
             return False
         print(salary13, salary14, leave)
-        c.execute("INSERT INTO employees (name, title, default_dep, user_id, salary, working_days, 13_salary, 14_salary,ann_leave, gesy, provident_fund, guild, pref_time) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-            [name, title, def_dep, USER_ID, salary, working_days, salary13, salary14,leave,  gesy,provident_fund, guild, time  ])
+        c.execute("INSERT INTO employees (name, title, default_dep, user_id, salary, working_days, 13_salary, 14_salary,ann_leave, gesy, provident_fund, guild, pref_time,code) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            [name, title, def_dep, USER_ID, salary, working_days, salary13, salary14,leave,  gesy,provident_fund, guild, time , code ])
         db.commit()
         
         c.execute('SELECT * FROM employees WHERE name=%s', [name])
@@ -403,7 +403,8 @@ class Employee:
             'gesy' : f[10],
             'prov_fund' : f[11],
             'guild' : f[12],
-            'time' : f[13]
+            'time' : f[13],
+            'code' : f[14],
         }
         
         
@@ -423,6 +424,7 @@ class Employee:
         self.prov_fund = self.raw['prov_fund']
         self.guild = self.raw['guild']
         self.time = self.raw['time']
+        self.code = self.raw['code']
         
     def copy_to_archive(self):
         
@@ -438,12 +440,12 @@ class Employee:
         
         return True
     
-    def update(self, name, title, def_dep, salary, working_days, salary13, salary14, gesy, provident_fund, guild, leave, time):
+    def update(self, name, title, def_dep, salary, working_days, salary13, salary14, gesy, provident_fund, guild, leave, time,code):
         
         db,c = connect()
         
-        c.execute("UPDATE employees SET name=%s, title=%s, default_dep=%s, salary=%s, working_days=%s, 13_salary=%s, 14_salary=%s, ann_leave=%s, gesy=%s, provident_fund=%s, guild=%s, pref_time=%s WHERE id=%s",
-                  [name, title, def_dep,salary, working_days, salary13, salary14, gesy, provident_fund, guild, leave,time ,self.id])
+        c.execute("UPDATE employees SET name=%s, title=%s, default_dep=%s, salary=%s, working_days=%s, 13_salary=%s, 14_salary=%s, ann_leave=%s, gesy=%s, provident_fund=%s, guild=%s, pref_time=%s,code=%s WHERE id=%s",
+                  [name, title, def_dep,salary, working_days, salary13, salary14, gesy, provident_fund, guild, leave,time,code ,self.id])
         
         db.commit()
         
@@ -486,7 +488,6 @@ class Employee:
                 }]
 
             
-        print(program)
         department.receive_employee(self, program)
         
     def __repr__(self) -> str:

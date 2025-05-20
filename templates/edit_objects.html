@@ -148,6 +148,7 @@
         <table border="1">
             <tr>
                 <th>Name</th>
+                <th>Code</th>
                 <th>Title</th>
                 <th>Department</th>
                 <th>Time Programs</th>
@@ -158,6 +159,7 @@
             {% for employee in employees%}
             <tr>
                 <td> <input type="text" class="employee_name {{employee.id}}" name="" id="" value="{{employee.name}}"></td>
+                <td> <input type="text" class="employee_code {{employee.id}}" name="" id="" value="{{employee.code}}"></td>
                 <td>
 
                     <select name="" class="employee_title {{employee.id}}" id="">
@@ -381,6 +383,30 @@
                 "new_name" : item.value
             }
             fetch('/save_emp_name', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Successfully Saved Employee')
+                })
+                .catch((error) => {
+                    alert('Issue Saving Employee: ' + error)
+                });
+
+        })
+    })
+    Array.from(document.getElementsByClassName('employee_code')).forEach(function(item){
+        item.addEventListener('change', function(){
+            console.log(item.classList)
+            data = {
+                "id": item.classList[1],
+                "new_code" : item.value
+            }
+            fetch('/save_emp_code', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
