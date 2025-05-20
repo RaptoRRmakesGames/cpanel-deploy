@@ -13,11 +13,34 @@
 
 <form method="POST">
 
-    <label for="name">Time</label><br>
-    <input type="time" placeholder="Start Time" required name="start" id=""> - 
-    <input type="time" placeholder="End Time" required name="end" id=""><br>
+
+    <label for="start">Start time:</label><br>
+    <select name="start" id="start"></select> <br> <br>
+
+    <label for="end">End time:</label><br>
+    <select name="end" id="end"></select><br> <br>
 
     <input type="submit" name="" value="Add" id="">
 
 </form>
+
+<script>
+function generateTimeOptions(selectId) {
+    const select = document.getElementById(selectId);
+    for (let h = 0; h < 24; h++) {
+        for (let m = 0; m < 60; m += 30) {
+            const hour = String(h).padStart(2, '0');
+            const minute = String(m).padStart(2, '0');
+            const timeStr = `${hour}:${minute}`;
+            const option = document.createElement("option");
+            option.value = timeStr;
+            option.textContent = timeStr;
+            select.appendChild(option);
+        }
+    }
+}
+
+generateTimeOptions("start");
+generateTimeOptions("end");
+</script>
 {% endblock %}
