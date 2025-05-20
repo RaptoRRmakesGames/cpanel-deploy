@@ -523,7 +523,7 @@ def edit_demployee(emp):
             name = request.form.get("name").lower().capitalize()
             title = request.form.get("title")
             pref_dep = request.form.get("def_dep")
-            name, title, def_dep, days_per_week,salary, salary13, salary14, leave, gesy, pro_fund, guild, time= (
+            name, title, def_dep, days_per_week,salary, salary13, salary14, leave, gesy, pro_fund, guild, time,code= (
                 request.form.get("name"),
                 request.form.get("title"),
                 request.form.get("def_dep"),
@@ -535,13 +535,13 @@ def edit_demployee(emp):
                 0 if request.form.get("gesy") is None or request.form.get("gesy") =='' else request.form.get("gesy"),
                 0 if request.form.get("provident_fund")is None or request.form.get("provident_fund") =='' else request.form.get("provident_fund"),
                 0 if request.form.get("guild") is None or request.form.get("guild") =='' else request.form.get("guild"),
-                request.form.get('time')
+                request.form.get('time'), request.form.get('code')
                 
             )
             
             print('fwaeh', days_per_week)
 
-            db.Employee(db.Employee.get_id_by_name(emp)).update(name, title, pref_dep, salary, days_per_week, salary13, salary14, leave, gesy, pro_fund, guild, time)
+            db.Employee(db.Employee.get_id_by_name(emp)).update(name, title, pref_dep, salary, days_per_week, salary13, salary14, leave, gesy, pro_fund, guild, time, code)
 
             flash("Updated Department Successfully!")
 

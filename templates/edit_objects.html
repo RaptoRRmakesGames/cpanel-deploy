@@ -102,12 +102,8 @@
 
             {% for program in programs%}
             <tr>
-                {% if program[2] == -1 %}
-                <td><input type="text" {% if program[2] == -1 %} readonly {% endif %} class="program_name {{program[0]}}" value="{{program[1]}}"></td>
-                {% else %}
-                <td><input type="time" class="program_start {{program[0]}}" value="{{program[1].split('-')[0]}}">
-                <input type="time" class="program_end {{program[0]}}" value="{{program[1].split('-')[1]}}"></td>
-                {% endif %}
+                <td><input type="text" readonly class="program_name {{program[0]}}" value="{{program[1]}}"></td>
+
                 {% if program[2] != -1 %}
                 <td><button onclick='redirect("/delete/program/{{program[1]}}")'>Delete</button></td>
                 {% endif %}
@@ -147,8 +143,8 @@
         <div class="insides">
         <table border="1">
             <tr>
-                <th>Name</th>
                 <th>Code</th>
+                <th>Name</th>
                 <th>Title</th>
                 <th>Department</th>
                 <th>Time Programs</th>
@@ -158,8 +154,8 @@
 
             {% for employee in employees%}
             <tr>
-                <td> <input type="text" class="employee_name {{employee.id}}" name="" id="" value="{{employee.name}}"></td>
                 <td> <input type="text" class="employee_code {{employee.id}}" name="" id="" value="{{employee.code}}"></td>
+                <td> <input type="text" class="employee_name {{employee.id}}" name="" id="" value="{{employee.name}}"></td>
                 <td>
 
                     <select name="" class="employee_title {{employee.id}}" id="">
