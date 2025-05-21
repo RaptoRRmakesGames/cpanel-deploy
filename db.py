@@ -873,6 +873,7 @@ class KitchenGroup:
                     
                     if str(emp[0]).isnumeric():
                         (emp[0], 'numeric')
+                        print(emp[0])
                         em = Employee(emp[0])
                     else:
                         (emp[0], 'name')
