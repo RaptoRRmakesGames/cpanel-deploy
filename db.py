@@ -315,14 +315,21 @@ class Employee:
         db,c = connect()
         
         c.execute("SELECT id FROM employees WHERE name =%s AND user_id=%s", [name, USER_ID])
-        
+        print(name)
         try:
-            
+            print(f"`{name}` found from main list")
             return c.fetchall()[0][0]
         except IndexError:
-            c.execute("SELECT id FROM employees WHERE name =%s AND user_id=%s", [remove_from_string(name), USER_ID])
-            
-            return c.fetchall()[0][0]
+            try:
+                print(f"`{name}` found from main list")
+                c.execute("SELECT id FROM employees WHERE name =%s AND user_id=%s", [remove_from_string(name).strip(), USER_ID])
+                
+                return c.fetchall()[0][0]
+            except IndexError:
+                print(f"`{name}` found from archive")
+                c.execute("SELECT id FROM employee_archive WHERE name =%s AND user_id=%s", [remove_from_string(name).strip(), USER_ID])
+                
+                return c.fetchall()[0][0]
         
     @staticmethod 
     def get_id_by_name_archive(name):
