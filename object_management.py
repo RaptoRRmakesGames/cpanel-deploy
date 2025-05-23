@@ -1595,7 +1595,7 @@ def download_schedule():
 
     output = io.BytesIO()
 
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
         df.to_excel(writer, sheet_name='Schedule')
 
     output.seek(0)
