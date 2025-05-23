@@ -1590,21 +1590,20 @@ import io
 @app.route('/download-monthly', methods=['POST'])
 def download_schedule():
     data = request.get_json()
+
     df = pd.DataFrame.from_dict(data, orient='index')
 
     output = io.BytesIO()
-    
+
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
         df.to_excel(writer, sheet_name='Schedule')
 
     output.seek(0)
 
-    # Explicitly set headers
-    return Response(
-        output.getvalue(),
-        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        headers={
-            'Content-Disposition': 'attachment; filename=schedule.xlsx',
-            'Content-type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        }
+    response = make_response(output.getvalue())
+    response.headers["Content-Disposition"] = "attachment; filename=schedule.xlsx"
+    response.headers["Content-Type"] = (
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
+    return response
