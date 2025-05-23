@@ -12,6 +12,7 @@ from flask import (
     jsonify,
     make_response,
     send_file,
+    Response
 )
 from datetime import timedelta, datetime
 
@@ -1588,21 +1589,22 @@ import io
 
 @app.route('/download-monthly', methods=['POST'])
 def download_schedule():
-    # Get JSON data from the request
     data = request.get_json()
-
-    # Convert to DataFrame
     df = pd.DataFrame.from_dict(data, orient='index')
 
-    # Create a bytes buffer
     output = io.BytesIO()
     
-    # Write DataFrame to Excel file
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
         df.to_excel(writer, sheet_name='Schedule')
 
-    # Set pointer to the start of the stream
     output.seek(0)
 
-    # Send the file to be downloaded
-    return send_file(output, download_name="schedule.xlsx", as_attachment=True, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    # Explicitly set headers
+    return Response(
+        output.getvalue(),
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        headers={
+            'Content-Disposition': 'attachment; filename=schedule.xlsx',
+            'Content-type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        }
+    )
