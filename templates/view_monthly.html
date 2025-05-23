@@ -50,4 +50,55 @@
         {% endfor %}
     </tbody>
 </table>
+
+<button id="submitButton">Download Excel</button>
+
+<script>
+function sendTableToFlask() {
+    const table = document.querySelector('table');
+    const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.innerText);
+    const rows = Array.from(table.querySelectorAll('tbody tr'));
+
+    const data = {};
+
+    rows.forEach(row => {
+        const cols = row.querySelectorAll('td');
+        const name = cols[1].innerText.trim();
+
+        data[name] = {};
+
+        cols.forEach((col, index) => {
+            if (index > 1) {
+                const day = headers[index];
+                data[name][day] = col.innerText.trim();
+            }
+        });
+    });
+
+    fetch('/download-monthly', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.blob())
+    .then(blob => {
+        // Create a link element to trigger download
+        const downloadUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = "schedule.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(downloadUrl);
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+// Ensure the button exists and binds correctly
+document.querySelector('#submitButton').addEventListener('click', sendTableToFlask);
+
+</script>
 {% endblock%}

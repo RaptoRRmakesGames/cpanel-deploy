@@ -1538,8 +1538,10 @@ def monthly_sched():
                 for department, areas in data.items():
                     for section, shifts in areas.items():
                         for emp_id, day_data_list in shifts:
+                            cur_emp_id = emp_id
                             emp_id = int(emp_id)
                             emp_name = id_to_name.get(emp_id, f"Unknown ({emp_id})")
+                            # print(db.Employee(emp_id))
                             emp_code = db.Employee(emp_id).code
 
                             for day_data in day_data_list:
@@ -1553,7 +1555,7 @@ def monthly_sched():
                                         # 5hrs = 0.5 else X
                                         if any(char.isdigit() for char in shift) or "IN" in shift.upper():
                                             if 'IN' not in shift.upper():
-                                                print(shift, type(shift), calculate_shift_hours(shift))
+                                                # print(shift, type(shift), calculate_shift_hours(shift))
                                                 if calculate_shift_hours(shift) == 5:
                                                     entry = "0.5"
                                                 else:
@@ -1570,8 +1572,10 @@ def monthly_sched():
                                         )
 
         except Exception as e:
-            print(f"Error processing row {week_range}: {e}")
-    print(schedule_per_employee)
+            print(f"Error processing row {cur_emp_id} {week_range}: {e}")
+        
+    with open('test.txt', 'w') as f:
+        f.write(str(schedule_per_employee))
     return render_template(
         "view_monthly.html",
         month=f"{month:02d}",
@@ -1579,3 +1583,26 @@ def monthly_sched():
         days=[d.isoformat() for d in days_list],
         data=schedule_per_employee
     )
+
+import io 
+
+@app.route('/download-monthly', methods=['POST'])
+def download_schedule():
+    # Get JSON data from the request
+    data = request.get_json()
+
+    # Convert to DataFrame
+    df = pd.DataFrame.from_dict(data, orient='index')
+
+    # Create a bytes buffer
+    output = io.BytesIO()
+    
+    # Write DataFrame to Excel file
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, sheet_name='Schedule')
+
+    # Set pointer to the start of the stream
+    output.seek(0)
+
+    # Send the file to be downloaded
+    return send_file(output, download_name="schedule.xlsx", as_attachment=True, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
