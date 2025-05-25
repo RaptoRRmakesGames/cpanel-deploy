@@ -274,6 +274,8 @@ def edit_objects():
     all_employees = db.Employee.get_all_employees()
     all_programs = db.get_all_programs(True)
     all_titles = db.get_all_titles(True)
+    
+    print(len(all_employees), 'all_employees')
 
     dbe, c = db.connect()
 
@@ -1543,7 +1545,10 @@ def monthly_sched():
                             emp_id = int(emp_id)
                             emp_name = id_to_name.get(emp_id, f"Unknown ({emp_id})")
                             # print(db.Employee(emp_id))
-                            emp_code = db.Employee(emp_id).code
+                            emp_code = db.Employee(emp_id, True).code
+                            if emp_obj := db.Employee(emp_id, True).archived:
+                                emp_name = f"{emp_name} (Archived)"
+                                continue
 
                             for day_data in day_data_list:
                                 for weekday, (shift, _) in day_data.items():
@@ -1574,8 +1579,8 @@ def monthly_sched():
                                         )
 
         except Exception as e:
-            print(f"Error processing row {cur_emp_id} {week_range}: {e}")
-        
+            print(f"Error processing id {cur_emp_id} {week_range}: {e}")
+    print('len: ', len(schedule_per_employee))
     return render_template(
         "view_monthly.html",
         month=f"{month:02d}",

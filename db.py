@@ -378,6 +378,7 @@ class Employee:
         db,c = connect()
         
         self.id = idd
+        self.archived = False
         
         c.execute("SELECT * FROM employees WHERE id=%s AND user_id=%s", [self.id, USER_ID])
         # (f"SELECT * FROM employee WHERE id={self.id}")
@@ -393,6 +394,7 @@ class Employee:
                     print("Employee Doesnt Exist (check_archive = True)")
                     return None
                 f = f[0]
+                self.archived = True
                 
             else:
                     
