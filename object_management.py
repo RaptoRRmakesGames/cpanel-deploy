@@ -1575,8 +1575,6 @@ def monthly_sched():
         except Exception as e:
             print(f"Error processing row {cur_emp_id} {week_range}: {e}")
         
-    with open('test.txt', 'w') as f:
-        f.write(str(schedule_per_employee))
     return render_template(
         "view_monthly.html",
         month=f"{month:02d}",

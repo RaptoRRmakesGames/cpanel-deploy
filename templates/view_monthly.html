@@ -32,8 +32,8 @@
     <thead>
         <!-- Sorting Row -->
         <tr>
-            <th style="width: 7%;"><button onclick="sortTable(0)">ID</button> <input type="text" id="idFilter" onkeyup="filterTable()" placeholder="Search ID" style="width: 35%;"></th>
-            <th style="width: 10%;"><button onclick="sortTable(1)">Name</button> <input type="text" id="nameFilter" onkeyup="filterTable()" placeholder="Search Name" style="width: 35%;"></th>
+            <th style="width: 7%;"><button onclick="sortTable(0)">ID</button> <input type="text" id="idFilter" onkeyup="filterTable()" placeholder="Search ID" style="width: 66%;"></th>
+            <th style="width: 10%;"><button onclick="sortTable(1)">Name</button> <input type="text" id="nameFilter" onkeyup="filterTable()" placeholder="Search Name" style="width: 66%;"></th>
             {% for d in days %}
                 <th>{{ loop.index }}</th>
             {% endfor %}
