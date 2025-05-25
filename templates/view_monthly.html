@@ -28,11 +28,11 @@
 </style>
 
 <h2>Schedule for {{ month }}/{{ year }}</h2>
-<table>
+<table id="scheduleTable">
     <thead>
         <tr>
-            <th>ID</th>
-            <th>Name</th>
+            <th><button onclick="sortTable(0)">ID</button></th>
+            <th><button onclick="sortTable(1)">Name</button></th>
             {% for d in days %}
                 <th>{{ loop.index }}</th>
             {% endfor %}
@@ -41,8 +41,8 @@
     <tbody>
         {% for name, shifts in data.items() %}
             <tr>
-                <td>{{ name[1] }}</td>  {# This is like ID (starts at 1) #}
-                <td class="name-col">{{ name[0] }}</td>
+                <td>{{ name[1] }}</td>  {# ID #}
+                <td class="name-col">{{ name[0] }}</td>  {# Name #}
                 {% for d in days %}
                     <td>{{ shifts[d] }}</td>
                 {% endfor %}
@@ -100,5 +100,31 @@ function sendTableToFlask() {
 // Ensure the button exists and binds correctly
 document.querySelector('#submitButton').addEventListener('click', sendTableToFlask);
 
+</script>
+
+<script>
+let sortDirections = [true, true]; // true = ascending, false = descending
+
+function sortTable(colIndex) {
+    const table = document.getElementById("scheduleTable");
+    const tbody = table.tBodies[0];
+    const rows = Array.from(tbody.rows);
+
+    const ascending = sortDirections[colIndex];
+    sortDirections = sortDirections.map((_, i) => i === colIndex ? !ascending : true); // reset other columns
+
+    rows.sort((a, b) => {
+        const valA = a.cells[colIndex].textContent.trim();
+        const valB = b.cells[colIndex].textContent.trim();
+
+        if (!isNaN(valA) && !isNaN(valB)) {
+            return ascending ? valA - valB : valB - valA;
+        } else {
+            return ascending ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        }
+    });
+
+    rows.forEach(row => tbody.appendChild(row));
+}
 </script>
 {% endblock%}

@@ -42,6 +42,62 @@
 <h1>Edit Objects</h1>
 
 <div class="boxes">
+    <div class="employees table table-container">
+        <h3>Employees</h3>
+        <div class="insides">
+            <table border="1" id="employeeTable">
+                <thead>
+                    <tr>
+                        <th><button onclick="sortEmployees(0)">Code</button></th>
+                        <th><button onclick="sortEmployees(1)">Name</button></th>
+                        <th><button onclick="sortEmployees(2)">Title</button></th>
+                        <th><button onclick="sortEmployees(3)">Department</button></th>
+                        <th>Time Programs</th>
+                        <th>Edit</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for employee in employees %}
+                    <tr>
+                        <td><input type="text" class="employee_code {{employee.id}}" value="{{employee.code}}"></td>
+                        <td><input type="text" class="employee_name {{employee.id}}" value="{{employee.name}}"></td>
+                        <td>
+                            <select class="employee_title {{employee.id}}">
+                                {% for title in titles %}
+                                <option value="{{title[1]}}" {% if title[1]==employee.title %}selected{% endif %}>
+                                    {{title[1]}}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <select class="employee_department {{employee.id}}">
+                                {% for department in employee_departments %}
+                                <option value="{{department}}" {% if department==employee.prefered_dep_str %}selected{%
+                                    endif %}>{{department}}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <select class="employee_time {{employee.id}}">
+                                {% for program in programs %}
+                                <option value="{{program[0]}}" {% if program[1]==employee.time %}selected{% endif %}>
+                                    {{program[1]}}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td><button onclick='redirect("/edit/employee/{{employee}}")'>Edit</button></td>
+                        <td><button onclick='redirect("/delete/employee/{{employee}}")'>Delete</button></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="last_row" style="display: flex; justify-content: space-evenly;">
+                <button style="width: 100%;" onclick="redirect('/add_employee')">Add</button>
+                <button style="width: 100%;" onclick="redirect('/add_from_excel')">Add From Excel</button>
+            </div>
+        </div>
+    </div>
 
     <div class="department table table-container">
         <h3>Departments</h3>
@@ -79,7 +135,8 @@
 
                 {% for kitchen in kitchens%}
                 <tr>
-                    <td><input type="text" name="" id="" class="kitchen_name {{kitchen[0]}}" value="{{kitchen[1]}}"></td>
+                    <td><input type="text" name="" id="" class="kitchen_name {{kitchen[0]}}" value="{{kitchen[1]}}">
+                    </td>
                     <td><button onclick='redirect("/edit/kitchen/{{kitchen[1]}}")'>Edit</button></td>
                     <td><button onclick='redirect("/delete/kitchen/{{kitchen[1]}}")'>Delete</button></td>
 
@@ -89,128 +146,55 @@
             <tr class="last_row">
                 <button onclick="redirect('/add_kitchen')">Add</button>
             </tr>
-    </div>
+        </div>
     </div>
     <div class="programs table table-container">
         <h3>Programs</h3>
         <div class="insides">
-        <table border="1">
-            <tr>
-                <th>Program</th>
-                <th>Delete</th>
-            </tr>
+            <table border="1">
+                <tr>
+                    <th>Program</th>
+                    <th>Delete</th>
+                </tr>
 
-            {% for program in programs%}
-            <tr>
-                <td><input type="text" readonly class="program_name {{program[0]}}" value="{{program[1]}}"></td>
+                {% for program in programs%}
+                <tr>
+                    <td><input type="text" readonly class="program_name {{program[0]}}" value="{{program[1]}}"></td>
 
-                {% if program[2] != -1 %}
-                <td><button onclick='redirect("/delete/program/{{program[1]}}")'>Delete</button></td>
-                {% endif %}
+                    {% if program[2] != -1 %}
+                    <td><button onclick='redirect("/delete/program/{{program[1]}}")'>Delete</button></td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </table>
+            <tr class="last_row">
+                <button onclick="redirect('/add_program')">Add</button>
             </tr>
-            {% endfor %}
-        </table>
-        <tr class="last_row">
-            <button onclick="redirect('/add_program')">Add</button>
-        </tr>
-    </div>
+        </div>
     </div>
     <div class="title table table-container">
         <h3>Title</h3>
         <div class="insides">
-        <table border="1">
-            <tr>
-                <th>Title</th>
-                <th>Delete</th>
+            <table border="1">
+                <tr>
+                    <th>Title</th>
+                    <th>Delete</th>
+                </tr>
+
+                {% for title in titles%}
+                <tr>
+                    <td><input type="text" class="title_name {{title[0]}}" value="{{title[1]}}"></td>
+                    <td><button onclick='redirect("/delete/title/{{title[1]}}")'>Delete</button></td>
+
+                </tr>
+                {% endfor %}
+            </table>
+            <tr class="last_row">
+                <button onclick="redirect('/add_title')">Add</button>
             </tr>
-
-            {% for title in titles%}
-            <tr>
-                <td><input type="text" class="title_name {{title[0]}}" value="{{title[1]}}"></td>
-                <td><button onclick='redirect("/delete/title/{{title[1]}}")'>Delete</button></td>
-
-            </tr>
-            {% endfor %}
-        </table>
-        <tr class="last_row">
-            <button onclick="redirect('/add_title')">Add</button>
-        </tr>
+        </div>
     </div>
-    </div>
-    <div class="employees table table-container">
-        <h3>Employees</h3>
 
-        <div class="insides">
-        <table border="1">
-            <tr>
-                <th>Code</th>
-                <th>Name</th>
-                <th>Title</th>
-                <th>Department</th>
-                <th>Time Programs</th>
-                <th>Edit</th>
-                <th>Delete</th>
-            </tr>
-
-            {% for employee in employees%}
-            <tr>
-                <td> <input type="text" class="employee_code {{employee.id}}" name="" id="" value="{{employee.code}}"></td>
-                <td> <input type="text" class="employee_name {{employee.id}}" name="" id="" value="{{employee.name}}"></td>
-                <td>
-
-                    <select name="" class="employee_title {{employee.id}}" id="">
-                        {% for title in titles %}
-                            {% if title[1] == employee.title %}
-                                <option value="{{title[1]}}" selected >{{title[1]}}</option>
-                            {% else %}
-                                <option value="{{title[1]}}"  >{{title[1]}}</option>
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-
-                </td>
-                <td>
-                    <select name="" id="" class="employee_department {{employee.id}}">
-                        {% for department in employee_departments%}
-
-                            {% if department == employee.prefered_dep_str%}
-                            <option value="{{department}}" selected>{{department}}</option>
-                            {% else %}
-                            <option value="{{department}}">{{department}}</option>
-                            {% endif %}
-
-                        {% endfor %}
-                    </select>
-                
-                </td>
-                <td>
-                    <select name="" id="" class="employee_time {{employee.id}}">
-                        {% for program in programs%}
-
-                            {% if program[1] == employee.time%}
-                            <option value="{{program[0]}}" selected>{{program[1]}}</option>
-                            {% else %}
-                            <option value="{{program[0]}}">{{program[1]}}</option>
-                            {% endif %}
-
-                        {% endfor %}
-                    </select>
-                
-                </td>
-                <td><button onclick='redirect("/edit/employee/{{employee}}")'>Edit</button></td>
-                <td><button onclick='redirect("/delete/employee/{{employee}}")'>Delete</button></td>
-
-            </tr>
-            {% endfor %}
-        </table>
-        <tr class="last_row">
-            <div style="display: flex; justify-content: space-evenly;">
-                <button style="width: 100%;" onclick="redirect('/add_employee')">Add</button>
-                <button style="width: 100%;" onclick="redirect('/add_from_excel')">Add From Excel</button>
-            </div>
-        </tr>
-    </div>
-    </div>
 
     <div class="schedules table table-container">
         <h3>Schedules</h3>
@@ -246,13 +230,13 @@
     }
 
 
-    Array.from(document.getElementsByClassName('department_name')).forEach(function(item){
-        console.log('fweah: ',item)
-        item.addEventListener('change', function(){
+    Array.from(document.getElementsByClassName('department_name')).forEach(function (item) {
+        console.log('fweah: ', item)
+        item.addEventListener('change', function () {
             console.log(item.classList)
             data = {
                 "id": item.classList[1],
-                "new_name" : item.value
+                "new_name": item.value
             }
             fetch('/save_department', {
                 method: 'POST',
@@ -272,12 +256,12 @@
         })
     })
 
-    Array.from(document.getElementsByClassName('kitchen_name')).forEach(function(item){
-        item.addEventListener('change', function(){
+    Array.from(document.getElementsByClassName('kitchen_name')).forEach(function (item) {
+        item.addEventListener('change', function () {
             console.log(item.classList)
             data = {
                 "id": item.classList[1],
-                "new_name" : item.value
+                "new_name": item.value
             }
             fetch('/save_kitchen', {
                 method: 'POST',
@@ -296,13 +280,13 @@
 
         })
     })
-    
-    Array.from(document.getElementsByClassName('program_start')).forEach(function(item){
-        item.addEventListener('change', function(){
+
+    Array.from(document.getElementsByClassName('program_start')).forEach(function (item) {
+        item.addEventListener('change', function () {
             console.log(item.classList)
             data = {
                 "id": item.classList[1],
-                "new_name" : item.value
+                "new_name": item.value
             }
             fetch('/save_program_start', {
                 method: 'POST',
@@ -321,12 +305,12 @@
 
         })
     })
-    Array.from(document.getElementsByClassName('program_end')).forEach(function(item){
-        item.addEventListener('change', function(){
+    Array.from(document.getElementsByClassName('program_end')).forEach(function (item) {
+        item.addEventListener('change', function () {
             console.log(item.classList)
             data = {
                 "id": item.classList[1],
-                "new_name" : item.value
+                "new_name": item.value
             }
             fetch('/save_program_end', {
                 method: 'POST',
@@ -345,13 +329,13 @@
 
         })
     })
-    
-    Array.from(document.getElementsByClassName('title_name')).forEach(function(item){
-        item.addEventListener('change', function(){
+
+    Array.from(document.getElementsByClassName('title_name')).forEach(function (item) {
+        item.addEventListener('change', function () {
             console.log(item.classList)
             data = {
                 "id": item.classList[1],
-                "new_name" : item.value
+                "new_name": item.value
             }
             fetch('/save_title', {
                 method: 'POST',
@@ -370,13 +354,13 @@
 
         })
     })
-    
-    Array.from(document.getElementsByClassName('employee_name')).forEach(function(item){
-        item.addEventListener('change', function(){
+
+    Array.from(document.getElementsByClassName('employee_name')).forEach(function (item) {
+        item.addEventListener('change', function () {
             console.log(item.classList)
             data = {
                 "id": item.classList[1],
-                "new_name" : item.value
+                "new_name": item.value
             }
             fetch('/save_emp_name', {
                 method: 'POST',
@@ -395,12 +379,12 @@
 
         })
     })
-    Array.from(document.getElementsByClassName('employee_code')).forEach(function(item){
-        item.addEventListener('change', function(){
+    Array.from(document.getElementsByClassName('employee_code')).forEach(function (item) {
+        item.addEventListener('change', function () {
             console.log(item.classList)
             data = {
                 "id": item.classList[1],
-                "new_code" : item.value
+                "new_code": item.value
             }
             fetch('/save_emp_code', {
                 method: 'POST',
@@ -419,12 +403,12 @@
 
         })
     })
-    Array.from(document.getElementsByClassName('employee_title')).forEach(function(item){
-        item.addEventListener('change', function(){
+    Array.from(document.getElementsByClassName('employee_title')).forEach(function (item) {
+        item.addEventListener('change', function () {
             console.log(item.classList)
             data = {
                 "id": item.classList[1],
-                "new_name" : item.value
+                "new_name": item.value
             }
             fetch('/save_emp_title', {
                 method: 'POST',
@@ -443,12 +427,12 @@
 
         })
     })
-    Array.from(document.getElementsByClassName('employee_time')).forEach(function(item){
-        item.addEventListener('change', function(){
+    Array.from(document.getElementsByClassName('employee_time')).forEach(function (item) {
+        item.addEventListener('change', function () {
             console.log(item.classList)
             data = {
                 "id": item.classList[1],
-                "new_time" : item.value
+                "new_time": item.value
             }
             fetch('/save_emp_program', {
                 method: 'POST',
@@ -467,12 +451,12 @@
 
         })
     })
-    Array.from(document.getElementsByClassName('employee_department')).forEach(function(item){
-        item.addEventListener('change', function(){
+    Array.from(document.getElementsByClassName('employee_department')).forEach(function (item) {
+        item.addEventListener('change', function () {
             console.log(item.classList)
             data = {
                 "id": item.classList[1],
-                "new_name" : item.value
+                "new_name": item.value
             }
             fetch('/save_emp_pref_dep', {
                 method: 'POST',
@@ -493,6 +477,39 @@
     })
 
 
+</script>
+<script>
+let empSortDirections = [true, true, true, true]; // one per sortable column
+
+function getCellValue(cell, colIndex) {
+    const input = cell.querySelector('input');
+    const select = cell.querySelector('select');
+    if (input) return input.value.trim();
+    if (select) return select.options[select.selectedIndex].text.trim();
+    return cell.textContent.trim();
+}
+
+function sortEmployees(colIndex) {
+    const table = document.getElementById("employeeTable");
+    const tbody = table.tBodies[0];
+    const rows = Array.from(tbody.rows);
+    const ascending = empSortDirections[colIndex];
+
+    empSortDirections = empSortDirections.map((_, i) => i === colIndex ? !ascending : true); // reset others
+
+    rows.sort((a, b) => {
+        const valA = getCellValue(a.cells[colIndex], colIndex);
+        const valB = getCellValue(b.cells[colIndex], colIndex);
+
+        if (!isNaN(valA) && !isNaN(valB)) {
+            return ascending ? valA - valB : valB - valA;
+        } else {
+            return ascending ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        }
+    });
+
+    rows.forEach(row => tbody.appendChild(row)); // reattach in order
+}
 </script>
 
 {% endblock %}
