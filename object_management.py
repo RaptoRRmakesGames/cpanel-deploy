@@ -1554,6 +1554,7 @@ def monthly_sched():
                                         date_key = shift_date.isoformat()
                                         # X if it contains digits or the word "IN"
                                         # 5hrs = 0.5 else X
+                                        entry = 'BRBR'
                                         if any(char.isdigit() for char in shift) or "IN" in shift.upper():
                                             if 'IN' not in shift.upper():
                                                 # print(shift, type(shift), calculate_shift_hours(shift))
