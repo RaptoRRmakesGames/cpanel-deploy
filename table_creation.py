@@ -189,7 +189,7 @@ def save_table_excel():
     department_names = [f[0] for f in department_names]
     kitchens_names = [f[0] for f in kitchens_names]
 
-    print(department_names, kitchens_names)
+    # print(department_names, kitchens_names)
 
     # Define thicker borders
     thick_border = Border(

@@ -38,7 +38,7 @@ def create_database():
 
 def get_subdept(ide):
     
-    # print(ide)
+
     try:
         db,c = connect(); c.execute('SELECT * FROM sub_department WHERE id=%s', [ide]); return Department(c.fetchall()[0][0])
     except Exception as e:
@@ -247,7 +247,7 @@ class User:
             return 'No user With this Email!'
 
         f = f[0]    
-        print(f[6])    
+        # print(f[6])    
         if not check_password_hash(f[6], password):
             return 'Wrong Password'
         
@@ -282,7 +282,7 @@ class User:
             for n in ids:
                 nme = execute('SELECT name FROM sub_department WHERE id=%s', [n])[0][0]
                 deps.append(f'{name} - {nme}')
-        print('deps: ', deps)
+
         return deps
             
             
@@ -843,7 +843,7 @@ class KitchenGroup:
                     if isinstance(prog, int):
                         continue
 
-                    print(f"prog: {prog}, key: {key}")
+                    # print(f"prog: {prog}, key: {key}")
                     try:
                         if prog[key][1] != '':
                             days.add(key.lower())
