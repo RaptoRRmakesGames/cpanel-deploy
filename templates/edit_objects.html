@@ -44,18 +44,29 @@
 <div class="boxes">
     <div class="employees table table-container">
         <h3>Employees</h3>
+
         <div class="insides">
             <table border="1" id="employeeTable">
                 <thead>
+                    <!-- Sorting Buttons -->
                     <tr>
-                        <th><button onclick="sortEmployees(0)">Code</button></th>
-                        <th><button onclick="sortEmployees(1)">Name</button></th>
+                        <th >
+                            <button onclick="sortEmployees(0)">Code</button>
+                            <input type="text" onkeyup="filterTable()" id="codeFilter" placeholder="Search Code" style="width: 95%;">
+                        </th>
+                        <th >
+
+                            <button onclick="sortEmployees(1)">Name</button>
+                            <input type="text" onkeyup="filterTable()" id="nameFilter" placeholder="Search Name" style="width: 95%;">
+
+                        </th>
                         <th><button onclick="sortEmployees(2)">Title</button></th>
                         <th><button onclick="sortEmployees(3)">Department</button></th>
                         <th>Time Programs</th>
                         <th>Edit</th>
                         <th>Delete</th>
                     </tr>
+                    <!-- Filter Inputs for Code and Name only -->
                 </thead>
                 <tbody>
                     {% for employee in employees %}
@@ -65,24 +76,21 @@
                         <td>
                             <select class="employee_title {{employee.id}}">
                                 {% for title in titles %}
-                                <option value="{{title[1]}}" {% if title[1]==employee.title %}selected{% endif %}>
-                                    {{title[1]}}</option>
+                                    <option value="{{title[1]}}" {% if title[1] == employee.title %}selected{% endif %}>{{title[1]}}</option>
                                 {% endfor %}
                             </select>
                         </td>
                         <td>
                             <select class="employee_department {{employee.id}}">
                                 {% for department in employee_departments %}
-                                <option value="{{department}}" {% if department==employee.prefered_dep_str %}selected{%
-                                    endif %}>{{department}}</option>
+                                    <option value="{{department}}" {% if department == employee.prefered_dep_str %}selected{% endif %}>{{department}}</option>
                                 {% endfor %}
                             </select>
                         </td>
                         <td>
                             <select class="employee_time {{employee.id}}">
                                 {% for program in programs %}
-                                <option value="{{program[0]}}" {% if program[1]==employee.time %}selected{% endif %}>
-                                    {{program[1]}}</option>
+                                    <option value="{{program[0]}}" {% if program[1] == employee.time %}selected{% endif %}>{{program[1]}}</option>
                                 {% endfor %}
                             </select>
                         </td>
@@ -92,7 +100,9 @@
                     {% endfor %}
                 </tbody>
             </table>
-            <div class="last_row" style="display: flex; justify-content: space-evenly;">
+
+            <!-- Add Buttons -->
+            <div class="last_row" style="display: flex; justify-content: space-evenly; margin-top: 10px;">
                 <button style="width: 100%;" onclick="redirect('/add_employee')">Add</button>
                 <button style="width: 100%;" onclick="redirect('/add_from_excel')">Add From Excel</button>
             </div>
@@ -479,14 +489,14 @@
 
 </script>
 <script>
-let empSortDirections = [true, true, true, true]; // one per sortable column
+let empSortDirections = [true, true, true, true];
 
-function getCellValue(cell, colIndex) {
+function getCellValue(cell) {
     const input = cell.querySelector('input');
     const select = cell.querySelector('select');
-    if (input) return input.value.trim();
-    if (select) return select.options[select.selectedIndex].text.trim();
-    return cell.textContent.trim();
+    if (input) return input.value.trim().toLowerCase();
+    if (select) return select.options[select.selectedIndex].text.trim().toLowerCase();
+    return cell.textContent.trim().toLowerCase();
 }
 
 function sortEmployees(colIndex) {
@@ -495,11 +505,11 @@ function sortEmployees(colIndex) {
     const rows = Array.from(tbody.rows);
     const ascending = empSortDirections[colIndex];
 
-    empSortDirections = empSortDirections.map((_, i) => i === colIndex ? !ascending : true); // reset others
+    empSortDirections = empSortDirections.map((_, i) => i === colIndex ? !ascending : true);
 
     rows.sort((a, b) => {
-        const valA = getCellValue(a.cells[colIndex], colIndex);
-        const valB = getCellValue(b.cells[colIndex], colIndex);
+        const valA = getCellValue(a.cells[colIndex]);
+        const valB = getCellValue(b.cells[colIndex]);
 
         if (!isNaN(valA) && !isNaN(valB)) {
             return ascending ? valA - valB : valB - valA;
@@ -508,7 +518,23 @@ function sortEmployees(colIndex) {
         }
     });
 
-    rows.forEach(row => tbody.appendChild(row)); // reattach in order
+    rows.forEach(row => tbody.appendChild(row));
+}
+
+function filterTable() {
+    const codeFilter = document.getElementById("codeFilter").value.toLowerCase();
+    const nameFilter = document.getElementById("nameFilter").value.toLowerCase();
+
+    const table = document.getElementById("employeeTable");
+    const rows = Array.from(table.tBodies[0].rows);
+
+    rows.forEach(row => {
+        const code = row.cells[0].querySelector('input').value.toLowerCase();
+        const name = row.cells[1].querySelector('input').value.toLowerCase();
+
+        const show = code.includes(codeFilter) && name.includes(nameFilter);
+        row.style.display = show ? "" : "none";
+    });
 }
 </script>
 

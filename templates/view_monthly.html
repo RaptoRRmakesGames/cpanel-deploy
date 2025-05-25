@@ -30,13 +30,16 @@
 <h2>Schedule for {{ month }}/{{ year }}</h2>
 <table id="scheduleTable">
     <thead>
+        <!-- Sorting Row -->
         <tr>
-            <th><button onclick="sortTable(0)">ID</button></th>
-            <th><button onclick="sortTable(1)">Name</button></th>
+            <th style="width: 7%;"><button onclick="sortTable(0)">ID</button> <input type="text" id="idFilter" onkeyup="filterTable()" placeholder="Search ID" style="width: 35%;"></th>
+            <th style="width: 10%;"><button onclick="sortTable(1)">Name</button> <input type="text" id="nameFilter" onkeyup="filterTable()" placeholder="Search Name" style="width: 35%;"></th>
             {% for d in days %}
                 <th>{{ loop.index }}</th>
             {% endfor %}
         </tr>
+        <!-- Search Input Row -->
+
     </thead>
     <tbody>
         {% for name, shifts in data.items() %}
@@ -125,6 +128,22 @@ function sortTable(colIndex) {
     });
 
     rows.forEach(row => tbody.appendChild(row));
+}
+
+function filterTable() {
+    const idValue = document.getElementById("idFilter").value.toLowerCase();
+    const nameValue = document.getElementById("nameFilter").value.toLowerCase();
+
+    const table = document.getElementById("scheduleTable");
+    const rows = Array.from(table.tBodies[0].rows);
+
+    rows.forEach(row => {
+        const idText = row.cells[0].textContent.toLowerCase();
+        const nameText = row.cells[1].textContent.toLowerCase();
+
+        const show = idText.includes(idValue) && nameText.includes(nameValue);
+        row.style.display = show ? "" : "none";
+    });
 }
 </script>
 {% endblock%}
