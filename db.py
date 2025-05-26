@@ -445,7 +445,8 @@ class Employee:
         if len(c.fetchall()) != 0:
             return False
         
-        c.execute('INSERT INTO employee_archive (id,name,title,default_dep,user_id) VALUES (%s,%s,%s,%s,%s)', [self.id, self.name, self.title, self.prefered_dep_str, self.user_id])
+        c.execute('INSERT INTO employee_archive (id,name,title,default_dep,user_id,salary, working_days, 13_salary, 14_salary, ann_leave, gesy, provident_fund, guild, pref_time, code) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
+                  [self.id, self.name, self.title, self.prefered_dep_str, self.user_id,self.salary, self.working_days, self.salary13, self.salary14, self.ann_leave, self.gesy, self.prov_fund, self.guild, self.time, self.code])
     
         dbe.commit()
         
