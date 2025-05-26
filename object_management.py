@@ -173,6 +173,7 @@ def add_employee():
                 
                 
             )
+            print('code in add: ' , code)
             
             name_parts = name.split(" ")
             name=''
